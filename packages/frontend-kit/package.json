@@ -1,0 +1,69 @@
+{
+  "name": "@gatedpath/frontend-kit",
+  "version": "0.2.0",
+  "description": "React components and one hook for the five eligibility states every Redbelly dApp has: not connected, connected but not verified on the network, verified but ineligible for this action, eligible, credential expiring soon; plus explainError, the plain words for a viem or wagmi error from the shared failure table. wagmi + viem, headless with a small default style.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gatedpath/builder-path.git",
+    "directory": "packages/frontend-kit"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./dev": {
+      "types": "./dist/dev/index.d.ts",
+      "import": "./dist/dev/index.js"
+    },
+    "./styles.css": "./dist/styles.css",
+    "./dev.css": "./dist/dev.css",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "docs"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node -e \"require('fs').copyFileSync('src/styles.css','dist/styles.css');require('fs').copyFileSync('src/dev.css','dist/dev.css')\"",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepack": "npm run build"
+  },
+  "peerDependencies": {
+    "@gatedpath/agent-rules": "^0.2.0",
+    "@gatedpath/chains": "^0.2.0",
+    "@tanstack/react-query": ">=5.0.0",
+    "react": ">=18.0.0",
+    "viem": ">=2.0.0",
+    "wagmi": ">=2.0.0"
+  },
+  "devDependencies": {
+    "@gatedpath/agent-rules": "file:../agent-rules",
+    "@gatedpath/chains": "file:../chain-definitions",
+    "@tanstack/react-query": "5.102.8",
+    "@testing-library/react": "16.3.3",
+    "@types/react": "19.2.3",
+    "@types/react-dom": "19.2.3",
+    "jsdom": "30.0.1",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "typescript": "5.9.3",
+    "viem": "2.56.3",
+    "vitest": "5.0.0",
+    "wagmi": "3.7.7"
+  },
+  "preferUnplugged": true
+}

@@ -1,0 +1,136 @@
+---
+title: 'Project 5: Tokenised bond'
+description: 'Build a fixed-coupon bond on the gated token: coupons in a stablecoin on a schedule, claims that wait for a lapsed holder, and accounting that can always pay what it owes, by directing an agent or by writing the Solidity yourself.'
+lastVerified: '2026-09-18'
+tableOfContents: false
+prev: false
+next: false
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import ForAgents from '../../../components/ForAgents.astro';
+import StatusPill from '../../../components/StatusPill.astro';
+import Sample from '../../../components/Sample.astro';
+import Ext from '../../../components/Ext.astro';
+import ProjectSteps from '../../../components/ProjectSteps.astro';
+import StepCard from '../../../components/StepCard.astro';
+import StepPart from '../../../components/StepPart.astro';
+import ProjectStepMake from '../../../components/ProjectStepMake.astro';
+import ProjectStepPreflight from '../../../components/ProjectStepPreflight.astro';
+import ProjectPrompt from '../../../components/ProjectPrompt.astro';
+import ProjectPager from '../../../components/ProjectPager.astro';
+
+<ForAgents
+  page="Project 5: Tokenised bond"
+  facts={[
+    'Build TokenisedBond as a contract that inherits GatedERC20. Do not rewrite the gate, the issuer allowance, forceTransfer or the pause: they are inherited. Bind the gate to request id 708, the AU wholesale investor recipe (recipes/au-wholesale-investor).',
+    'Coupon accounting must see every balance change. Override _update, call super._update FIRST (it is the eligibility check and the pause), then record the correction. Never skip super._update.',
+    'The coupon is fixed per unit, so accumulate couponPerUnit itself. Do not divide a coupon by the supply and multiply back: that pays 249.999999 where 250.000000 is owed.',
+    'Funding rounds up and claims round down, so the sum owed can never exceed the sum funded. If funding rounds down, the last claimant is refused.',
+    'No loop over holders, anywhere. Holders claim; the paying agent funds one number. An unbounded loop is fatal on the review page.',
+    'The scaffold denies lint warnings. Use SafeCast for every int256/uint256 conversion in money arithmetic; justify a block.timestamp comparison inline, as IssuerRegistry.sol does.',
+    'claimCoupons is gated like every other action, and must be tested in all five credential states. A lapsed holder keeps what it accrued; the amount waits.',
+    'Stop at the fork. Do not deploy to 153 or 151 and do not ask for a key. The deploy script must refuse 153 and 151 without STABLECOIN set; a mock stablecoin is for local chains only.',
+  ]}
+/>
+
+<ProjectSteps slug="tokenised-bond" title="Project 5: Tokenised bond">
+
+<ProjectStepMake folder="bond" />
+
+<StepCard n={2} title="Decide what a bond adds, and what it must not touch">
+<StepPart kind="gets">
+A design you can defend before you write a line: what is inherited, what is new, and the two rules the money has to obey.
+</StepPart>
+<StepPart kind="do">
+Open `contracts/src/GatedERC20.sol`. Everything a bond needs for compliance is already there: both parties of every movement are checked against the verifier, an issuer mints inside a time-boxed allowance, the compliance role can move units with a justification hash on the log, and a pauser can stop everything. A bond inherits all of it and changes none of it. Bind it to request id 708, the AU wholesale investor recipe in `recipes/au-wholesale-investor/`, whose privacy note is worth reading first: on a public chain that proof says something financial about a person.
+
+What the bond adds is coupons, and the first decision is how not to pay them. Paying every holder in a loop has no upper bound on gas, and [Review before mainnet](/review/) treats an unbounded loop as fatal. So the paying agent funds one number, and holders claim. For that to be fair, the contract has to see every balance change, so that a unit earns only the coupons funded while its holder held it. There is one place every movement passes through, `_update`, and the kit marks it `virtual` for exactly this.
+
+Then the two rules. The coupon is fixed per unit, so the contract accumulates that fixed amount and never divides a coupon by the supply; a holder of whole units is owed an exact figure, to the last base unit of the stablecoin. And funding rounds up while claims round down, so every coupon brings in at least what it creates in claims. I did not start with either rule. The run below found both.
+</StepPart>
+<StepPart kind="worked">
+You can say, without looking, why a holder who buys after a coupon does not receive it, and why the contract can never owe more than it holds.
+</StepPart>
+</StepCard>
+
+<StepCard n={3} title="Build the bond" track="differs">
+<StepPart kind="gets">
+`TokenisedBond`, its tests with every gated function walked through the five credential states, and a deploy script that refuses a real network without a real stablecoin.
+</StepPart>
+<StepPart kind="do">
+<Tabs syncKey="track">
+<TabItem label="Directing an agent">
+Open your agent in the project folder and give it the card's prompt:
+
+<ProjectPrompt n={5} />
+
+Read the diff before you accept it. A good one adds a contract that inherits `GatedERC20` and leaves that file alone, overrides `_update` with `super._update` as its first line, has no loop over holders, and tests `claimCoupons` in all five states. Ask about any division by `totalSupply()` in the coupon arithmetic, and about which way each rounding goes. If the build is refused for an unsafe typecast, that is the scaffold's linter doing its job on money arithmetic; the fix is `SafeCast`, not silencing the warning.
+
+<StatusPill variant="verified" label="Run 18 Sep 2026, Claude Code: proven on a fork" /> The run took 8 minutes 33 seconds of tool time and did not go straight through, which is the useful part. Its first accounting divided each coupon by the supply and paid a holder of ten units 249.999999 where 250.000000 was owed; five tests failed on that one base unit. Removing the division exposed a second fault, funding that rounded down, under which the last claimant could be refused. Both are fixed, a fuzz test now holds the rule, and four deliberate faults in the finished contract were each caught. The <Ext href="https://github.com/gatedpath/builder-path/blob/main/cards/runs/2026-09-18/card-05.md">run record</Ext> has all of it, and the files are beside it. One agent so far; the plan asks for two.
+</TabItem>
+<TabItem label="Writing Solidity">
+Four new files, and no change to any file the scaffold gave you.
+
+`contracts/src/TokenisedBond.sol` inherits `GatedERC20` and passes a subscription amount of zero, because a bond is issued by its issuer through `mint` and is not claimed by whoever turns up. The schedule is fixed in the constructor: the stablecoin, the coupon per whole unit, when the first coupon falls due, the period, and how many coupons there are. A `PAYING_AGENT_ROLE` funds them, kept apart from the admin so that the account holding the stablecoin is not the account that can change roles.
+
+The hook is the heart of it. `super._update` first, always, because it is the eligibility check and the pause:
+
+<Sample id="project-bond-update" />
+
+Funding a coupon computes the amount from the supply at that moment and never takes it as an argument. It is refused before its due time, after the last coupon, while paused, and when no units exist to receive it:
+
+<Sample id="project-bond-pay-coupon" />
+
+`claimCoupons` carries the `gated` modifier, so a holder must be eligible at the moment it claims. A holder whose credential has lapsed loses nothing: the amount waits.
+
+Then `contracts/test/TokenisedBond.t.sol`, with a six-decimal `contracts/test/mocks/MockStable.sol`. The test that earns its place is the last one. It does not check an example; it holds the rule that the contract can always pay what it owes, and then makes every holder actually claim:
+
+<Sample id="project-bond-fuzz" />
+
+Last, `contracts/script/DeployBond.s.sol`, which runs the scaffold's pre-flight and then deploys. Off mainnet it deploys a mock verifier when `VERIFIER` is unset; on a local chain only, it deploys the mock stablecoin when `STABLECOIN` is unset, and says so in capitals. On 153 and 151 it refuses without a real one. All five files are in the <Ext href="https://github.com/gatedpath/builder-path/tree/main/cards/runs/2026-09-18/card-05">run record's folder</Ext>.
+
+<StatusPill variant="verified" label="Followed by hand, 18 Sep 2026: proven on a fork" /> I followed this tab literally on a second fresh scaffold, with no agent involved: no file the scaffold gave me changed, and every result below came out as written. The <Ext href="https://github.com/gatedpath/builder-path/blob/main/cards/runs/2026-09-18/card-05-solidity.md">record of that run</Ext> is beside the other.
+</TabItem>
+</Tabs>
+</StepPart>
+<StepPart kind="worked">
+`cd contracts && forge fmt --check` prints nothing, and `npm run test` ends with `85 tests passed, 0 failed` across 8 test suites: the 68 you started with and seventeen new ones. If you directed an agent, its count may differ; what must be true is that nothing failed, that `claimCoupons`, `mint`, `transfer` and `forceTransfer` are each tested in all five states, and that a fuzz test compares what is owed with what was funded.
+</StepPart>
+<StepPart kind="ifnot">
+`249999999 != 250000000` in a test means the arithmetic divides a coupon by the supply; accumulate the fixed coupon instead. A fuzz failure that reads "owed more than was funded" means funding rounds down. A build refused for `unsafe-typecast` wants `SafeCast`. [When something fails](/errors/) has the rest.
+</StepPart>
+</StepCard>
+
+<StepCard n={4} title="Rehearse the bond's life on a local copy of testnet">
+<StepPart kind="gets">
+The bond deployed on your own machine against a fork of testnet, refusing everyone it should refuse and paying an exact coupon on the day it falls due.
+</StepPart>
+<StepPart kind="do">
+Save the run record's `rehearse-bond.sh` as `scripts/rehearse-bond.sh`, then:
+
+```sh
+bash scripts/rehearse-bond.sh
+```
+
+It forks testnet onto a local chain with its own chain id, deploys with no `VERIFIER` and no `STABLECOIN` so that both mocks are used, and walks the bond through its life with unlocked test accounts. It holds no key of yours and sends nothing to the real network. It never uses test accounts 0 or 1: their keys are public, and both pass the access check on the real networks.
+</StepPart>
+<StepPart kind="worked">
+Five refusals and four successes, in this order. A mint to an investor with no credential is refused with `NotEligible(wallet, 708)`; once the mock marks the investor Valid, the same mint lands and the investor holds 10 units. Passing a unit to a wallet with no credential is refused. Coupon 1, ninety days early, is refused with `CouponNotDue(number, dueAt)`. After the fork's clock moves 90 days it costs 250000000, which is 250.000000 of the stablecoin; the investor claims exactly that, and 0 is left in the bond. Coupon 2 straight away is refused, and so is a transfer once the investor's credential is revoked.
+</StepPart>
+<StepPart kind="ifnot">
+If every `cast send` is refused but the clock still moves, the script is not running under bash: zsh does not split its flags variable, and the run that recorded this page met exactly that. Run it with `bash`, on a fresh fork. If the fork cannot reach the RPC, check the network before the script.
+</StepPart>
+</StepCard>
+
+<ProjectStepPreflight n={5} message="Tokenised bond: fixed coupons on the gated token, proven on a fork" />
+
+</ProjectSteps>
+
+## What you learned
+
+The gated ERC-20 shape is a base to build on, not a finished product: the bond added 196 lines and changed none of the token's. Scheduled payments belong in accounting, not in loops. And the two faults worth remembering were both in money arithmetic that looked standard: a division that was not needed, and a rounding that went the wrong way. Neither was found by reading. Both were found by a test that expected an exact number.
+
+What this page does not give you is a bond you could issue. No static analyser has read the new contract, the principal is never redeemed, and the stablecoin in the rehearsal mints to anyone. Two design limits belong beside those. A coupon goes to whoever holds the units when it is funded, not when it falls due, so a paying agent who is late moves a coupon from the seller to the buyer; a real bond fixes a record date. And the accounting assumes the stablecoin delivers the amount it was asked to move; a token that takes a fee on transfer would leave the bond short. The <Ext href="https://github.com/gatedpath/builder-path/blob/main/cards/runs/2026-09-18/card-05.md">run record</Ext> lists what is not done, and why.
+
+<ProjectPager n={5} />

@@ -1,0 +1,106 @@
+---
+title: 'Project 4: Break it on purpose'
+description: 'Try to deploy to mainnet right now and be refused three times by three tools, with nothing signed and nothing sent. The refusals are the lesson: they are the list of what mainnet requires.'
+lastVerified: '2026-09-17'
+tableOfContents: false
+prev: false
+next: false
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import ForAgents from '../../../components/ForAgents.astro';
+import StatusPill from '../../../components/StatusPill.astro';
+import Ext from '../../../components/Ext.astro';
+import ProjectSteps from '../../../components/ProjectSteps.astro';
+import StepCard from '../../../components/StepCard.astro';
+import StepPart from '../../../components/StepPart.astro';
+import ProjectStepMake from '../../../components/ProjectStepMake.astro';
+import ProjectPrompt from '../../../components/ProjectPrompt.astro';
+import ProjectPager from '../../../components/ProjectPager.astro';
+
+<ForAgents
+  page="Project 4: Break it on purpose"
+  facts={[
+    'Attempt the mainnet deploy only in ways that cannot send anything: forge script with no --broadcast and no --account, redbelly-preflight --chain 151, and npm run preflight -- --chain 151. All three only read chain 151. Never add --broadcast and never ask for a key.',
+    'Expected refusals (2026-09-17): the deploy script stops at "deployer fails permission.isAllowed" for Foundry default sender 0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38; redbelly-preflight fails admin-safe when the admin is an externally owned account (and slither-report when no Slither report is committed); the scaffold pre-flight fails DEPLOYER, ADMIN_SAFE and VERIFIER, 6 of 9 passing.',
+    'Mainnet requires: a deployer that passes permission.isAllowed, an admin that is a Safe 1.4.1 with threshold at least 2, a real verifier (never the mock), a fresh Slither report, and the ship report for today. Do not change code to get past a refusal.',
+  ]}
+/>
+
+A warm-up, fifteen to thirty minutes, and it changes no code. You are going to try to put this project on mainnet, today, with no preparation, and watch it be refused. Nothing in this project can sign or send anything: there is no wallet in it, and every command only reads. The refusals are worth having seen once while nothing is at stake, because each one is a requirement you will have to meet for real.
+
+I ran the agent track on 12 September 2026 and did the same three attempts by hand on 17 September 2026.
+
+<ProjectSteps slug="break-it-on-purpose" title="Project 4: Break it on purpose">
+
+<ProjectStepMake reuse />
+
+<StepCard n={2} title="Make the attempt" track="differs">
+<StepPart kind="gets">
+Three refusals, from three tools, in the order a builder would meet them.
+</StepPart>
+<StepPart kind="do">
+<Tabs syncKey="track">
+<TabItem label="Directing an agent">
+<ProjectPrompt n={4} />
+
+This is exactly what an agent should try with the tools at hand, and every path it can take is a refusal. Watch what it reaches for. It should not add `--broadcast`, should not ask you for a key, and should not edit the code to get past a check; if it does any of those, stop it and read [What never goes into an agent](/agents-guide/what-never-goes-in/).
+
+<StatusPill variant="verified" label="Run 12 Sep 2026, Claude Code" /> Three refusals in 5 minutes 18 seconds, all read-only against the real mainnet RPC. The transcript is in the <Ext href="https://github.com/gatedpath/builder-path/blob/main/cards/runs/2026-09-12/card-04.md">run record</Ext>. One agent so far; the plan asks for two.
+</TabItem>
+<TabItem label="Writing Solidity">
+Three commands from the project folder. The address in the second is a public one that the research log records as verified on mainnet; it is there so that the tool gets past the first check and shows you the second.
+
+```sh
+cd contracts && forge script script/Deploy.s.sol --rpc-url redbelly_mainnet; cd ..
+node vendor/redbelly-preflight/dist/cli.js --project contracts --chain 151 --rpc https://governors.mainnet.redbelly.network --address 0xA2c6a3fC1E12dF79B9e3D099FaA2Ffe860450F76 --admin 0xA2c6a3fC1E12dF79B9e3D099FaA2Ffe860450F76
+npm run preflight -- --chain 151
+```
+
+<StatusPill variant="verified" label="Run by hand, 17 Sep 2026" /> The <Ext href="https://github.com/gatedpath/builder-path/blob/main/cards/runs/2026-09-17/card-04-by-hand.md">record</Ext> has each output and how it differs from the agent's run.
+</TabItem>
+</Tabs>
+</StepPart>
+<StepPart kind="worked">
+The deploy script ends `Error: script failed: deployer fails permission.isAllowed`. The pre-flight tool ends `not ok: 2 checks failed. Do not deploy.`, or 1 if you have a Slither report committed. The scaffold's own pre-flight ends `Mainnet deploy would be refused.` with 6 of 9 passing.
+</StepPart>
+<StepPart kind="ifnot">
+If anything says it succeeded, stop and read the command again: one of these with `--broadcast` and a real signer is a real deploy. None of the three above can be.
+</StepPart>
+</StepCard>
+
+<StepCard n={3} title="Read the refusals as a list of requirements">
+<StepPart kind="gets">
+What mainnet asks of you, in the tools' own words.
+</StepPart>
+<StepPart kind="do">
+**The deployer must be a verified person.** The script reads the chain id from the RPC, finds the network's permission contract and asks it about the sender before anything else. Foundry's default sender is nobody, so it stops there, before the other checks.
+
+**The admin must be a Safe.** `Admin 0xA2c6… is an externally owned account; on mainnet the admin must be a Safe 1.4.1 with a threshold of at least 2.` No single key holds admin power over something that holds value. [Writing Solidity 5](/solidity/admin-safe-and-timelock/) is the layout.
+
+**The verifier must be real.** `VERIFIER is set (mainnet never deploys a mock verifier)`. The mock that makes testing possible refuses to exist on chain 151.
+
+**The analysis must be fresh.** `No Slither report at reports/slither.json`: the tool wants a static-analysis report newer than your newest source file. I do not have Slither on this machine, so I saw this failure for real.
+
+Notice also what passed: the compiler pins, no secret in the repository's history, and a balance check that priced three million gas at US$1.4286 on both 12 and 17 September, because gas here is priced in dollars.
+</StepPart>
+<StepPart kind="worked">
+You can list the four requirements without looking, and say which tool checks each.
+</StepPart>
+</StepCard>
+
+<StepCard n={4} title="Leave it refused">
+<StepPart kind="gets">
+The right ending.
+</StepPart>
+<StepPart kind="do">
+Do not fix anything. The point of this project is that the quick path to mainnet does not exist, by design: testnet is fast, and mainnet is gated by pre-flight and a ship report written on the day. When you are ready for the real thing, [Review before mainnet](/review/) is the list, and it is longer than these four.
+</StepPart>
+<StepPart kind="worked">
+`git status` shows no change. There is nothing to commit, which for once is the correct result.
+</StepPart>
+</StepCard>
+
+</ProjectSteps>
+
+<ProjectPager n={4} />

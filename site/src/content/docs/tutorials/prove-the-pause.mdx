@@ -1,0 +1,90 @@
+---
+title: 'Project 2: Prove the pause'
+description: 'The token already pauses. Prove who can flip it, that every flip is on the log, and that nothing the token holds changes while it is paused, by directing an agent or by writing the tests yourself.'
+lastVerified: '2026-09-17'
+tableOfContents: false
+prev: false
+next: false
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import ForAgents from '../../../components/ForAgents.astro';
+import StatusPill from '../../../components/StatusPill.astro';
+import Sample from '../../../components/Sample.astro';
+import Ext from '../../../components/Ext.astro';
+import ProjectSteps from '../../../components/ProjectSteps.astro';
+import StepCard from '../../../components/StepCard.astro';
+import StepPart from '../../../components/StepPart.astro';
+import ProjectStepMake from '../../../components/ProjectStepMake.astro';
+import ProjectStepPreflight from '../../../components/ProjectStepPreflight.astro';
+import ProjectPrompt from '../../../components/ProjectPrompt.astro';
+import ProjectPager from '../../../components/ProjectPager.astro';
+
+<ForAgents
+  page="Project 2: Prove the pause"
+  facts={[
+    'GatedERC20 already pauses: pause() is onlyRole(PAUSER_ROLE), unpause() is onlyRole(DEFAULT_ADMIN_ROLE). Do not add a second pause. The work is tests only; nothing under contracts/src/ changes.',
+    'The roles are split on purpose: only PAUSER_ROLE pauses, only DEFAULT_ADMIN_ROLE unpauses. The deploy default gives both to one Safe (PAUSER falls back to ADMIN_SAFE), so prove them apart: in tests, give the two roles to two accounts, and show the admin refused by pause() and the pauser refused by unpause().',
+    'Already proven by the scaffold: every mover reverts EnforcedPause while paused; invariant_noTransferWhilePaused. Worth adding: Paused(account) and Unpaused(account) emitted with the right account; a stranger can do neither; a snapshot of supply, balances and subscription flags taken at the pause is unchanged after every mover, mint included, has been tried.',
+  ]}
+/>
+
+A warm-up, fifteen to thirty minutes, and the first project where the right answer is to write no contract code at all. The token the scaffold gives you already has an emergency pause. What it needs is proof, and writing that proof teaches the two things the card is for: admin power lives behind roles, and an invariant says more than a unit test.
+
+I ran the agent track on 12 September 2026 and did the Solidity track by hand on 17 September 2026. Every count below comes from those runs.
+
+<ProjectSteps slug="prove-the-pause" title="Project 2: Prove the pause">
+
+<ProjectStepMake reuse />
+
+<StepCard n={2} title="Read the pause before you prove it">
+<StepPart kind="gets">
+The discovery that changes what this project is.
+</StepPart>
+<StepPart kind="do">
+Open `contracts/src/GatedERC20.sol` and find `pause()` and `unpause()`. They are guarded by two different roles: the pauser stops the token and only the admin starts it again. Stopping must never wait and restarting must never be one person's quick decision; [Writing Solidity 5](/solidity/admin-safe-and-timelock/) is about why.
+
+This matters for the card's own wording. Until 18 September 2026 the prompt said "only the admin Safe can flip the pause". That holds when one Safe holds both roles, which is what the deploy script does by default, and not otherwise: the scaffold's own test shows the admin being refused when it tries to pause. The contract kit split the roles after the prompt was written. I reworded it to "only the pauser can pause and only the admin can unpause", and ran it again on a fresh scaffold before this page changed, because a reworded prompt is an unrun prompt.
+</StepPart>
+<StepPart kind="worked">
+You can say who pauses and who unpauses, and why they are not the same.
+</StepPart>
+</StepCard>
+
+<StepCard n={3} title="Prove it" track="differs">
+<StepPart kind="gets">
+Tests that show who can flip the pause, that every flip is on the log, and that nothing moves while it is on.
+</StepPart>
+<StepPart kind="do">
+<Tabs syncKey="track">
+<TabItem label="Directing an agent">
+<ProjectPrompt n={2} />
+
+The first version of this prompt said "add an emergency pause". The agent read the contract, found one already there with its role and its events, and declined to add a second; it proved the existing one and strengthened the tests. [Say what you want](/agents-guide/say-what-you-want/) tells that story. A good result touches tests only. If your agent's diff changes anything under `contracts/src/`, ask why.
+
+<StatusPill variant="verified" label="Run 18 Sep 2026, Claude Code, on the reworded prompt" /> The run held the two roles apart: four new tests show the admin refused by `pause()`, the pauser refused by `unpause()`, and both events naming the account that made them, and a new invariant compares everything the token holds against a record taken at the pause, over 2,048 random calls. The suite went from 63 tests to 69, and pre-flight cleared 9 of 9. Two deliberate faults in the contract were each caught. The transcript is in the <Ext href="https://github.com/gatedpath/builder-path/blob/main/cards/runs/2026-09-18/card-02.md">run record</Ext>; the <Ext href="https://github.com/gatedpath/builder-path/blob/main/cards/runs/2026-09-12/card-02.md">first run</Ext>, on the earlier wording, is kept beside it. One agent so far; the plan asks for two.
+</TabItem>
+<TabItem label="Writing Solidity">
+Add one file, `contracts/test/PauseProof.t.sol`, with three tests. The first expects `Paused(pauser)` and then `Unpaused(admin)`, using `vm.expectEmit`. The second shows a stranger refused on both. The third is the one worth reading closely: take a snapshot at the pause, let everyone try every way of moving a balance, and compare.
+
+<Sample id="project-pause-test" />
+
+The whole file is in the <Ext href="https://github.com/gatedpath/builder-path/blob/main/cards/runs/2026-09-17/card-02-solidity/PauseProof.t.sol">run record</Ext>.
+
+<StatusPill variant="verified" label="Run by hand, 17 Sep 2026" /> All three passed on the first run.
+</TabItem>
+</Tabs>
+</StepPart>
+<StepPart kind="worked">
+`forge test --match-contract PauseProofTest` reports `3 passed; 0 failed`, and `npm run test` ends `0 failed`: 71 tests if you started from a fresh project, 75 if you carried on from project 1 as I did. An agent's count may differ by a test or two.
+</StepPart>
+<StepPart kind="ifnot">
+A revert of `AccessControlUnauthorizedAccount` where you expected the pause to work means the wrong account is calling: the pauser pauses, the admin unpauses. [When something fails](/errors/) has the rest.
+</StepPart>
+</StepCard>
+
+<ProjectStepPreflight n={4} message="Prove the pause: events, strangers, and a frozen snapshot" />
+
+</ProjectSteps>
+
+<ProjectPager n={2} />

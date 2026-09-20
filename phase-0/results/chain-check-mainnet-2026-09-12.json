@@ -1,0 +1,100 @@
+{
+  "env": "mainnet",
+  "rpc": "https://governors.mainnet.redbelly.network",
+  "checkedAt": "2026-09-12T08:32:07.762Z",
+  "results": {
+    "eth_chainId": {
+      "ok": true,
+      "value": {
+        "reported": 151,
+        "expected": 151,
+        "match": true
+      }
+    },
+    "web3_clientVersion": {
+      "ok": true,
+      "value": "./linux-amd64/go1.25.14"
+    },
+    "net_version": {
+      "ok": false,
+      "error": "the method net_version does not exist/is not available"
+    },
+    "eth_blockNumber": {
+      "ok": true,
+      "value": 3179487
+    },
+    "eth_gasPrice (wei)": {
+      "ok": true,
+      "value": "215825926579942"
+    },
+    "eth_maxPriorityFeePerGas": {
+      "ok": true,
+      "value": "0"
+    },
+    "eth_feeHistory(4)": {
+      "ok": true,
+      "value": {
+        "baseFeePerGas": [
+          "196043835401595",
+          "196205387799948",
+          "196205387799948",
+          "196205387799948",
+          "196205387799948"
+        ],
+        "gasUsedRatio": [
+          0.000002447683333333333,
+          0.0000010408333333333333,
+          3.5e-7,
+          0.0000023218833333333335
+        ],
+        "rewardSample": [
+          "0",
+          "0",
+          "0"
+        ]
+      }
+    },
+    "latest block": {
+      "ok": true,
+      "value": {
+        "number": 3179487,
+        "timestamp": 1789201757,
+        "txCount": 1,
+        "gasLimit": 60000000000,
+        "gasUsed": 139313,
+        "baseFeePerGas": "196205387799948",
+        "hasWithdrawals": false,
+        "hasBlobGasUsed": true,
+        "hasParentBeaconBlockRoot": false,
+        "hasRequestsHash": true,
+        "miner": "0x0000000000000000000000000000000000000000",
+        "extraDataLen": 26
+      }
+    },
+    "eth_syncing": {
+      "ok": true,
+      "value": false
+    },
+    "txpool_status": {
+      "ok": true,
+      "value": {
+        "pending": "0x0",
+        "queued": "0x0"
+      }
+    },
+    "eth_getLogs (last block)": {
+      "ok": true,
+      "value": {
+        "count": 5
+      }
+    },
+    "debug_traceBlockByNumber": {
+      "ok": false,
+      "error": "the method debug_traceBlockByNumber does not exist/is not available"
+    },
+    "trace_block": {
+      "ok": false,
+      "error": "the method trace_block does not exist/is not available"
+    }
+  }
+}

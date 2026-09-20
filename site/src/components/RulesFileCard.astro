@@ -1,0 +1,44 @@
+---
+// One rules file per tool on /agents: path, what the tool does with it, the one-line install,
+// a copy button that fetches the published copy, and a link to view it raw.
+import CopyButton from './CopyButton.astro';
+import type { RulesFile } from '../data/rules';
+interface Props { rules: RulesFile }
+const { rules } = Astro.props;
+---
+
+<li class="rb-rules">
+  <div class="rb-rules__head">
+    <span class="rb-rules__tool">{rules.tool}</span>
+    <code class="rb-rules__file">{rules.file}</code>
+  </div>
+  <p class="rb-rules__note">{rules.note}</p>
+  <div class="rb-rules__install">
+    <span class="rb-eyebrow">Install</span>
+    <code>{rules.install}</code>
+  </div>
+  <div class="rb-rules__actions">
+    <CopyButton url={rules.url} label={`Copy file: ${rules.file} for ${rules.tool}`} short="Copy file" />
+    <a class="rb-button rb-button--secondary rb-button--small" href={rules.url}>View raw</a>
+  </div>
+</li>
+
+<style>
+  .rb-rules {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    margin: 0;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--rb-color-hairline);
+    border-radius: var(--rb-radius-lg);
+    background: var(--rb-color-bg);
+  }
+  .rb-rules__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem 0.75rem; }
+  .rb-rules__tool { font-weight: 600; color: var(--rb-color-text-strong); }
+  .rb-rules__file, .rb-rules__install code { font-family: var(--sl-font-mono); font-size: var(--sl-text-xs); background: var(--rb-color-code-bg); color: var(--rb-color-code-text); padding: 0.125rem 0.375rem; border-radius: var(--rb-radius-sm); }
+  .rb-rules__note { margin: 0; font-size: var(--sl-text-sm); line-height: 1.5; color: var(--rb-color-text-muted); }
+  .rb-rules__install { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+  .rb-rules__install code { overflow-wrap: anywhere; }
+  .rb-rules__actions { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+</style>

@@ -1,0 +1,111 @@
+---
+title: 'Read what comes back'
+description: 'How to review what an agent hands you when you do not write Solidity yourself: what a good diff looks like, the five things that should stop you, and why you run the proof yourself.'
+lastVerified: '2026-09-17'
+tableOfContents: false
+prev: false
+next: false
+---
+
+import ForAgents from '../../../components/ForAgents.astro';
+import StatusPill from '../../../components/StatusPill.astro';
+import ProjectSteps from '../../../components/ProjectSteps.astro';
+import StepCard from '../../../components/StepCard.astro';
+import StepPart from '../../../components/StepPart.astro';
+import ProjectPrompt from '../../../components/ProjectPrompt.astro';
+
+<ForAgents
+  page="Directing an agent: Read what comes back"
+  facts={[
+    'When you hand back work: show the full diff, state which files changed and why, give exact test counts and the pre-flight result, and name anything in the diff that is not part of the request.',
+    'Never weaken or delete a test to make a suite pass. Never touch the gate (Gated, _update, _authorizeVerifierChange), a role or a dependency unless that is the request; if you must, say so first.',
+    'A written answer must be checkable: cite the page or the research log question for each claim, with its date, and say where the record stops.',
+  ]}
+/>
+
+You are the reviewer. An agent can write a contract faster than you can read one, and the reading is the part that is yours. You do not need to write Solidity to do it well. You need to know what a good result looks like, what should stop you, and how to check a claim without trusting it.
+
+<ProjectSteps slug="agents-read-what-comes-back" title="Read what comes back" backHref="/agents/" backLabel="Directing an agent">
+
+<StepCard n={1} title="Look at the list of files before the code">
+<StepPart kind="gets">
+A judgement in ten seconds about whether the change is the size it should be.
+</StepPart>
+<StepPart kind="do">
+Ask for `git diff --stat`. Project 1's run changed six files: the deploy script's default, the example environment file, a README line, one comment, a test constant. No gate was touched, because changing which credential a gate asks for changes no code. Project 2's run touched tests only and nothing under `src/`, because the pause it was asked for already existed.
+
+Both are what right looks like: the files are the ones you would expect from the request, and the most sensitive files are absent. If you asked for a new recipe and the list includes the token's core, that is your first question.
+</StepPart>
+<StepPart kind="worked">
+You can explain, for every file in the list, why this request needed to change it.
+</StepPart>
+<StepPart kind="ifnot">
+A line you cannot explain is not automatically wrong. In both runs the list included two files from a tooling fix made the same day, and the record says so. What matters is that the agent can tell you what each one is.
+</StepPart>
+</StepCard>
+
+<StepCard n={2} title="Know the five things that should stop you">
+<StepPart kind="gets">
+A short list you can check without reading Solidity fluently.
+</StepPart>
+<StepPart kind="do">
+1. **The gate changed.** Anything in `Gated`, in the token's `_update`, or in `_authorizeVerifierChange` decides who may hold and move the asset. [Writing Solidity 3](/solidity/the-gated-token/) shows what those look like.
+2. **A test was deleted or loosened.** A suite that passes because an assertion was removed has proved nothing. The test count should go up or stay the same; project 2 went from 30 to 32.
+3. **A new dependency appeared.** Every package is code you did not review, running with your project's access.
+4. **Anything that looks like a secret.** A long hexadecimal value, a `.env` file, a keystore path. Pre-flight checks for these, and you should too.
+5. **A role or an address changed.** Who holds the admin role is the most valuable fact in the contract.
+</StepPart>
+<StepPart kind="worked">
+You have searched the diff for each of the five, and you can say what you found.
+</StepPart>
+</StepCard>
+
+<StepCard n={3} title="Run the proof yourself">
+<StepPart kind="gets">
+The result from your machine, not from the agent's summary.
+</StepPart>
+<StepPart kind="do">
+An agent's report that "all tests pass" is a claim. It is usually true, and it takes you five seconds to make it a fact:
+
+```sh
+npm run test
+npm run preflight
+```
+</StepPart>
+<StepPart kind="worked">
+The test run ends `0 failed` with a count that matches what the agent told you, and pre-flight says what you expect. On a fresh project with no wallet configured that is six of seven, failing only on `DEPLOYER`.
+</StepPart>
+<StepPart kind="ifnot">
+If your count differs from the agent's, that is worth a question, not a panic: ask it to run the same command and show the last line.
+</StepPart>
+</StepCard>
+
+<StepCard n={4} title="Check a written answer against its sources">
+<StepPart kind="gets">
+A way to review an explanation, which has no tests.
+</StepPart>
+<StepPart kind="do">
+Project 3 asks for prose: why this project has no reorg handling, and what an indexer must do instead. There was nothing to compile, so I checked the answer claim by claim against the research log, in a table, and it passed.
+
+It is also the best example I have of why you check. Two things that answer said were right on 12 September and are out of date today. It said the ordering of transactions inside a block was unstated; Redbelly has since told me it is documented for the 2021 design and changes in Q4 2026. It read Routescan's `153_2` label as a sign of a testnet reset; a later reading found no reset. The advice the agent gave on both was still safe, because it said not to depend on either. An agent's answer is as current as the rules file and the pages it read. Ask it to cite where each claim comes from and the date, and look at the dates.
+</StepPart>
+<StepPart kind="worked">
+Every factual claim in the answer points at a page or a research-log question you can open, and you have opened the ones that matter.
+</StepPart>
+</StepCard>
+
+<StepCard n={5} title="Accept, or send it back with one question">
+<StepPart kind="gets">
+A decision, and a record of it.
+</StepPart>
+<StepPart kind="do">
+If it passes, commit it with a message that says what changed. If it does not, do not fix it by hand and do not start again: ask the one question you could not answer ("why did `GatedERC20.sol` change?"). The answer is either a good reason you had not thought of or a mistake the agent will now correct, and both are better than guessing.
+</StepPart>
+<StepPart kind="worked">
+The commit is made, or the question is asked.
+</StepPart>
+</StepCard>
+
+</ProjectSteps>
+
+Next: [What never goes into an agent](/agents-guide/what-never-goes-in/).

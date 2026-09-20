@@ -1,0 +1,31 @@
+---
+import Ext from './Ext.astro';
+// The `vine` callout: this fact lives on Vine (or docs.redbelly.network). We link, we don't
+// restate. The last line is always the outbound link with the date it was read.
+import { formatDate, FACTS_VERIFIED } from '../data/site';
+interface Props { href: string; label: string; date?: string; title?: string }
+const { href, label, date = FACTS_VERIFIED, title = 'On Vine' } = Astro.props;
+---
+
+<aside class="rb-vine not-content" aria-label={`${title}: ${label}`}>
+  <p class="rb-eyebrow">{title}</p>
+  <div class="rb-vine__body"><slot /></div>
+  <p class="rb-vine__link"><Ext href={href}>{label}</Ext> <span>· read {formatDate(date)}</span></p>
+</aside>
+
+<style>
+  .rb-vine {
+    margin-block: 1.25rem;
+    padding: 1rem 1.25rem;
+    border-radius: var(--rb-radius-lg);
+    background: var(--rb-color-surface);
+    font-size: 0.9375rem;
+    line-height: 1.55;
+  }
+  .rb-vine__body { margin-top: 0.375rem; }
+  .rb-vine__body :global(p) { margin: 0; }
+  .rb-vine__body :global(p + p) { margin-top: 0.5rem; }
+  .rb-vine__link { margin: 0.625rem 0 0; font-size: var(--sl-text-sm); }
+  .rb-vine__link a { color: var(--rb-color-accent); font-weight: 600; text-decoration: underline; text-underline-offset: 0.2em; }
+  .rb-vine__link span { color: var(--rb-color-text-muted); }
+</style>

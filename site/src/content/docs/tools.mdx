@@ -1,0 +1,84 @@
+---
+title: Tools
+description: Every package this project ships or plans, with its install line and the date its tests last ran green; nothing is on npm until I run the publish workflow, and PUBLISHING.md in the repository has the steps.
+lastVerified: '2026-09-14'
+---
+
+import ForAgents from '../../components/ForAgents.astro';
+import StatusPill from '../../components/StatusPill.astro';
+import Verified from '../../components/Verified.astro';
+import Sample from '../../components/Sample.astro';
+import { tools } from '../../data/tools';
+import { formatDate, REPO } from '../../data/site';
+
+<ForAgents
+  page="Tools"
+  facts={[
+    'Nine packages exist in packages/: chain-definitions, agent-rules, receptor-mock, create-redbelly-dapp, preflight, mcp, contract-kit, frontend-kit and ops-kit, plus four recipes in recipes/. All nine are on npm since 2026-09-18, and at 0.2.0 since 2026-09-19: eight under the @gatedpath scope and create-redbelly-dapp. 0.2.0 is the security release after the audit of 2026-09-19; the 0.1.x versions are deprecated. Every install line on this page was run against the public registry that day.',
+    'Import chain IDs, RPC URLs and contract addresses from @gatedpath/chains. Never retype them.',
+    'Scaffold with node packages/create-redbelly-dapp/bin/index.js my-app --yes (Foundry only; --hardhat adds a Hardhat 3 view). In the scaffold: npm run doctor first, npm run gas -- --chain 153 for RBNT and US cents per test or function, npm run ship -- --chain <151|153> --account <keystore-name> for the ship report. Run redbelly-preflight before any deploy. Never pass a key to any tool; use a keystore name.',
+    'The gated ERC-20 is packages/contract-kit (GatedERC20 with IssuerRegistry, forceTransfer with a bytes32 justification hash, PAUSER_ROLE and COMPLIANCE_ROLE); the scaffolder copies it. useEligibility and the five state components are packages/frontend-kit. Alerts, Routescan scripts, the RPC fallback and the runbook are packages/ops-kit; see /operate/.',
+    'The ship report generator is redbelly ship (packages/preflight). It refuses to write when any check fails, and the deploy script refuses to broadcast on chain 151 without deployments/ship-151-<today>.md.',
+  ]}
+/>
+
+Nine packages and the first four recipes exist. Each entry carries the date its own tests last passed, and the recipes are drafts until one meets a live verifier. The status pill says which is which, so that you do not build a duplicate. None is on npm yet: the publish workflow and my own npmjs.com steps are in `PUBLISHING.md` in the repository, and the install lines below change to `npm install @gatedpath/<name>` and `npm create redbelly-dapp@latest` the day it runs.
+
+<div class="not-content">
+<ul class="rb-tools">
+  {tools.map((t) => (
+    <li class="rb-tools__item">
+      <div class="rb-tools__head">
+        <span class="rb-tools__name">{t.name}</span>
+        {t.status === 'verified' ? <Verified date={t.lastVerified} source={{ label: 'README', href: `${REPO}/${t.path}` }} /> : <StatusPill variant="draft" label={t.statusLabel} />}
+      </div>
+      <p class="rb-tools__summary">{t.summary}</p>
+      <p class="rb-tools__meta"><code>{t.path}</code> · {t.planRef}</p>
+      {t.install && <p class="rb-tools__install"><span class="rb-eyebrow">Install</span> <code>{t.install}</code></p>}
+    </li>
+  ))}
+</ul>
+</div>
+
+<style>{`
+.rb-tools{list-style:none;margin:1.25rem 0;padding:0;display:grid;gap:0.75rem}
+.rb-tools__item{border:1px solid var(--rb-color-hairline);border-radius:var(--rb-radius-lg);padding:1rem 1.25rem;display:flex;flex-direction:column;gap:0.5rem}
+.rb-tools__head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0.5rem}
+.rb-tools__name{font-weight:600;color:var(--rb-color-text-strong);font-family:var(--sl-font-mono);font-size:var(--sl-text-sm)}
+.rb-tools__summary{margin:0;font-size:var(--sl-text-sm);line-height:1.5}
+.rb-tools__meta{margin:0;font-size:var(--sl-text-2xs);color:var(--rb-color-text-muted)}
+.rb-tools__meta code,.rb-tools__install code{font-family:var(--sl-font-mono);font-size:inherit;background:var(--rb-color-code-bg);color:var(--rb-color-code-text);padding:0.125rem 0.375rem;border-radius:var(--rb-radius-sm);overflow-wrap:anywhere}
+.rb-tools__install{margin:0;font-size:var(--sl-text-sm);display:flex;flex-wrap:wrap;align-items:center;gap:0.5rem}
+`}</style>
+
+## What the contract kit gives you
+
+Every mint, burn and transfer of the kit's `GatedERC20` ends in this function: the wallet losing tokens and the wallet gaining them must both be eligible, never a spender, and only a compliance officer's forced transfer skips the check on the sender.
+
+<Sample id="kit-update" />
+
+The forced transfer itself requires a role and an eligible recipient, and it puts the hash of the document that authorised it on the log for good.
+
+<Sample id="kit-force-transfer" />
+
+## What the frontend kit gives you
+
+There is one hook. It reads the network's gate and the dApp's gate, caches both, refetches on a new block or every thirty seconds, and gives the page one of seven states to render.
+
+<Sample id="kit-use-eligibility" />
+
+## What the chain package gives you
+
+The testnet chain object, as compiled in the package. Mainnet is the same shape with chain 151, the Ankr endpoint in `rpcUrls.public`, and no Permit2.
+
+<Sample id="chains-testnet" />
+
+The objects satisfy viem's `Chain` type without importing viem; this file is compiled by `npm run check:viem` to prove it, and to check viem's checksum agrees with the package's for every recorded address:
+
+<Sample id="chains-viem" />
+
+The package also exports `agentNotes`, the facts block that the rules file quotes:
+
+<Sample id="agent-notes" />
+
+The install line is `npm install @gatedpath/chains`; I ran it against the public registry on 18 September 2026 and imported both chain objects from it. I last verified the package itself on 12 September 2026: thirteen offline and sixteen live tests green on 151 and 153, with the output in the package README.

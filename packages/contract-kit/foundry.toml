@@ -1,0 +1,39 @@
+# Redbelly Network pins: EVM Prague, solc 0.8.30 (RESEARCH.md question 1, verified 2026-09-12).
+# The [fmt] section matches the scaffolder's, because create-redbelly-dapp copies src/ and test/
+# from here into every gated-erc20 project and its CI runs `forge fmt --check` on them.
+[profile.default]
+src = "src"
+test = "test"
+script = "script"
+out = "out"
+libs = ["lib"]
+solc_version = "0.8.30"
+evm_version = "prague"
+optimizer = true
+optimizer_runs = 200
+deny = "warnings"
+gas_reports = ["GatedERC20"]
+# The deploy script writes deployments/<chainId>-GatedERC20.json; never a key.
+fs_permissions = [{ access = "read-write", path = "./deployments" }]
+
+[lint]
+ignore = ["test/**/*", "script/**/*"]
+
+[fuzz]
+runs = 512
+seed = "0x52424e54"
+
+[invariant]
+runs = 64
+depth = 32
+fail_on_revert = false
+
+[rpc_endpoints]
+redbelly_testnet = "https://governors.testnet.redbelly.network"
+redbelly_mainnet = "https://governors.mainnet.redbelly.network"
+
+[fmt]
+line_length = 120
+tab_width = 4
+bracket_spacing = true
+int_types = "long"

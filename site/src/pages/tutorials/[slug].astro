@@ -1,0 +1,30 @@
+---
+// One page per prompt card (PLAN.md section 19). A card with a hand-written page under
+// src/content/docs/tutorials/ is skipped here, so the two can never both claim a URL.
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import ProjectGeneric from '../../components/ProjectGeneric.astro';
+import { cards, type PromptCardData } from '../../data/cards';
+
+export function getStaticPaths() {
+  const written = new Set(
+    Object.keys(import.meta.glob('../../content/docs/tutorials/*.mdx')).map((p) => p.split('/').pop()!.replace(/\.mdx$/, '')),
+  );
+  return cards.filter((c) => c.slug && !written.has(c.slug)).map((card) => ({ params: { slug: card.slug }, props: { card } }));
+}
+
+interface Props { card: PromptCardData }
+const { card } = Astro.props;
+---
+
+<StarlightPage
+  frontmatter={{
+    title: `Project ${card.n}: ${card.title}`,
+    description: card.outcome,
+    tableOfContents: false,
+    prev: false,
+    next: false,
+    ...(card.lastVerified ? { lastVerified: card.lastVerified, verifiedWith: card.verifiedWith } : {}),
+  }}
+>
+  <ProjectGeneric card={card} />
+</StarlightPage>

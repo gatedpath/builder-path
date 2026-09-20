@@ -1,0 +1,25 @@
+---
+title: Concepts
+description: Four thin pages, each a link to Vine or the paper plus what the fact means for your code.
+lastVerified: '2026-09-12'
+---
+
+import ForAgents from '../../../components/ForAgents.astro';
+
+<ForAgents
+  page="Concepts"
+  facts={[
+    'Vine (vine.redbelly.network) is the reference for how the network works. Link to it; do not restate it.',
+    'These four pages add only the consequence for code: finality, blocks on demand, the gas model, the identity gate.',
+    'Every fact carries the date it was read or measured. Anything marked partial or open stays out of tutorials.',
+  ]}
+/>
+
+Vine explains the network, and these pages do not repeat it. Each one links to the page that does, states what I measured against the RPC on 12 September 2026, and says what that means for the code you write. A page that would still make sense with Vine gone is theirs, and I have cut it.
+
+- [Consensus and finality](/concepts/consensus-and-finality/): leaderless DBFT with deterministic finality, and the reorg-handling code you delete.
+- [Blocks on demand](/concepts/blocks-on-demand/): there is no block time; there is either traffic or there is not.
+- [Gas model](/concepts/gas-model/): fees priced in US dollars, paid in RBNT, with a zero priority fee.
+- [Identity gate](/concepts/identity-gate/): every wallet passes `isAllowed` before it can send, and what that does to your threat model.
+
+The four research papers these rest on are summarised on the [research page](/research/).

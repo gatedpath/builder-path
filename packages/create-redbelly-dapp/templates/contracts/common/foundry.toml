@@ -1,0 +1,62 @@
+# Foundry configuration for __PROJECT_NAME__ (scaffolded by create-redbelly-dapp __SCAFFOLDER_VERSION__).
+# Network facts: https://vine.redbelly.network/consensus/evm-compatibility/ (Prague, solc 0.8.30).
+
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+test = "test"
+script = "script"
+# Both Redbelly networks run Prague and Vine states Solidity 0.8.30. Never go below cancun.
+solc_version = "0.8.30"
+evm_version = "prague"
+optimizer = true
+optimizer_runs = 200
+# Warnings are errors: an unused variable in a gated contract is a smell worth stopping for.
+deny = "warnings"
+# The deploy script reads ADMIN_SAFE and VERIFIER from the environment; never a key.
+fs_permissions = [{ access = "read-write", path = "./deployments" }]
+gas_reports = ["__CONTRACT_NAME__"]
+
+# forge lint runs on build. src/ is held to it; tests and scripts use patterns it flags on purpose
+# (unchecked test transfers, small casts in fixtures).
+[lint]
+ignore = ["test/**/*", "script/**/*"]
+
+[fuzz]
+runs = 512
+seed = "0x52424e54"   # fixed seed so CI gas diffs are comparable; remove to widen the search locally
+
+[invariant]
+runs = 64
+depth = 32
+fail_on_revert = false
+
+# Chain 153. `forge script --rpc-url redbelly_testnet --account <keystore-name>`.
+[profile.testnet]
+eth_rpc_url = "__TESTNET_RPC__"
+chain_id = 153
+
+# Chain 151. The deploy script refuses this profile unless ADMIN_SAFE is a Safe 1.4.1 with
+# threshold >= 2 and the deployer passes permission.isAllowed. Pre-flight first: `__PM_RUN__ preflight`.
+[profile.mainnet]
+eth_rpc_url = "__MAINNET_RPC__"
+chain_id = 151
+
+[rpc_endpoints]
+redbelly_testnet = "__TESTNET_RPC__"
+redbelly_mainnet = "__MAINNET_RPC__"
+# A local fork: `anvil --fork-url https://governors.testnet.redbelly.network`
+anvil = "http://127.0.0.1:8545"
+
+# Routescan's Etherscan-style verification endpoints. The key is a fixed placeholder that
+# Routescan documents as accepted; it is not a secret.
+[etherscan]
+redbelly_testnet = { key = "verifyContract", url = "__TESTNET_EXPLORER_API_BASE__", chain = 153 }
+redbelly_mainnet = { key = "verifyContract", url = "__MAINNET_EXPLORER_API_BASE__", chain = 151 }
+
+[fmt]
+line_length = 120
+tab_width = 4
+bracket_spacing = true
+int_types = "long"

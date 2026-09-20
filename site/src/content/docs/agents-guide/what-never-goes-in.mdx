@@ -1,0 +1,97 @@
+---
+title: 'What never goes into an agent'
+description: 'Keys, seed phrases, passwords, environment files and customer data stay out of every prompt. What the tools here do so that you never need to paste one, what an agent must never be allowed to do, and what to do if it happens.'
+lastVerified: '2026-09-17'
+tableOfContents: false
+prev: false
+next: false
+---
+
+import ForAgents from '../../../components/ForAgents.astro';
+import StatusPill from '../../../components/StatusPill.astro';
+import ProjectSteps from '../../../components/ProjectSteps.astro';
+import StepCard from '../../../components/StepCard.astro';
+import StepPart from '../../../components/StepPart.astro';
+import ProjectPrompt from '../../../components/ProjectPrompt.astro';
+
+<ForAgents
+  page="Directing an agent: What never goes into an agent"
+  facts={[
+    'Never ask for, accept, read aloud or write down a private key, seed phrase, keystore password, .env contents, API key or webhook URL. If one appears in the conversation, stop, say so, and tell the user to treat it as compromised.',
+    'Signing is the human step. Tools that sign take a Foundry keystore account name (--account <name>) or a hardware wallet path (--ledger); the password is typed by the person into the terminal. Never add --broadcast to a command on your own initiative, and never target chain 151 without the ship report for today.',
+    'The local MCP server (packages/mcp) holds no key and takes none. npm run preflight checks that no .env or keystore is tracked, none was ever committed, and no 64-hex-character value is in a tracked file.',
+  ]}
+/>
+
+On this network a wallet is a verified person, and for many builders it is the same person who holds the assets. A leaked key is not a lost test account; it is an identity and whatever sits under it. So the rule is simple and has no exceptions, and the tools are built so that you never have a reason to break it.
+
+<ProjectSteps slug="agents-what-never-goes-in" title="What never goes into an agent" backHref="/agents/" backLabel="Directing an agent">
+
+<StepCard n={1} title="Know the list">
+<StepPart kind="gets">
+The things that never appear in a prompt, a chat, a screenshot or a file the agent can read.
+</StepPart>
+<StepPart kind="do">
+- A private key or a seed phrase, for any wallet, on any network, test or real.
+- A keystore password.
+- The contents of `.env`, and any API key: an RPC provider's, a verifier's, a package registry token.
+- A webhook URL. Anyone who has it can post alerts that look like yours.
+- Your users' personal or credential data. Your contract never sees it, and your agent should not either.
+
+A conversation with an agent is stored by whoever runs the model, may be logged by the tool, and can end up in a transcript you share. Treat it as you would an email.
+</StepPart>
+<StepPart kind="worked">
+You can say where each of those lives on your machine, and that none of the places is a file inside the project.
+</StepPart>
+</StepCard>
+
+<StepCard n={2} title="See that you never need to">
+<StepPart kind="gets">
+Confidence that the rule costs you nothing.
+</StepPart>
+<StepPart kind="do">
+Everything here was built so that a key is never the easy path. The deploy scripts read no key from a file or the environment: they sign through a Foundry keystore you name (`--account deployer`) and unlock by typing the password into your own terminal, or through a hardware wallet. The local MCP server holds no key and accepts none; its tools that sign take the keystore's name and hand over to `forge`. The environment file holds public addresses. The scaffold's `.gitignore` keeps `.env` and every keystore out of the repository, and the [save your work](/tutorials/change-the-gate/) card proves it on your machine before your first commit.
+</StepPart>
+<StepPart kind="worked">
+`npm run preflight` shows three lines marked ok: no `.env` or keystore is tracked by git, none was ever committed, and no value shaped like a private key is in a tracked file.
+</StepPart>
+</StepCard>
+
+<StepCard n={3} title="Keep signing as your step">
+<StepPart kind="gets">
+A clear line between what the agent does and what only you do.
+</StepPart>
+<StepPart kind="do">
+An agent may write the contract, run the tests, run pre-flight and prepare the deploy command. You run the command that signs. Tell it so at the start: "Never add `--broadcast`. When we are ready to deploy, give me the command and stop." The rules file the scaffold writes already tells the agent the same thing, in these words: "Never ask the person for a key, a seed phrase or a keystore password. When a step needs a signature, print the exact command and let them run it." The tools back it up: a simulated `forge script` sends nothing, and a mainnet deploy is refused without a Safe, a real verifier and that day's ship report.
+
+This is the two speeds of the site. Testnet is fast and an agent can take you most of the way. Mainnet is slow on purpose, and the last step is a person.
+</StepPart>
+<StepPart kind="worked">
+No command the agent has run in your session contains `--broadcast`, and you know which command you will run yourself.
+</StepPart>
+</StepCard>
+
+<StepCard n={4} title="If it happens anyway">
+<StepPart kind="gets">
+The procedure, decided now and not in the moment.
+</StepPart>
+<StepPart kind="do">
+If a key, a seed phrase or a password has been pasted into an agent, committed to a repository, or shown in a screenshot, it is compromised, from that second, whatever you delete afterwards. Do these in order:
+
+1. Move what the key controls to a wallet whose key has never been exposed. Do this first.
+2. Stop using the exposed wallet. On this network that also means it should no longer be a wallet under your identity; ask Redbelly how to unlink it.
+3. Rotate every API key and webhook that was in the same file.
+4. Only then clean up: remove it from the repository and its history, and end the agent session.
+
+Deleting the message or the commit is step four, not step one. It does not un-leak anything.
+</StepPart>
+<StepPart kind="worked">
+You have written down, somewhere you will find it at a bad moment, which wallet you would move assets to.
+</StepPart>
+
+<StatusPill variant="pending" label="Unlinking a wallet: not documented by Redbelly" /> How a wallet is unlinked or replaced under an identity is not published anywhere I have read, and it is one of the questions I have put to Redbelly. Until it is answered, prevention is the whole plan.
+</StepCard>
+
+</ProjectSteps>
+
+Back to [Directing an agent](/agents/), or pick a [project](/tutorials/).

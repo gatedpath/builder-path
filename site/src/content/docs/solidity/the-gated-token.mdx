@@ -1,0 +1,118 @@
+---
+title: '3. Read the gated token'
+description: 'The ERC-20 the scaffold gives you: where the gate sits, who may do what, what happens to a holder whose credential lapses, and the invariants that hold it together.'
+lastVerified: '2026-09-17'
+tableOfContents: false
+prev: false
+next: false
+---
+
+import ForAgents from '../../../components/ForAgents.astro';
+import StatusPill from '../../../components/StatusPill.astro';
+import Sample from '../../../components/Sample.astro';
+import VineAside from '../../../components/VineAside.astro';
+import ProjectSteps from '../../../components/ProjectSteps.astro';
+import StepCard from '../../../components/StepCard.astro';
+import StepPart from '../../../components/StepPart.astro';
+
+<ForAgents
+  page="Writing Solidity 3: Read the gated token"
+  facts={[
+    'GatedERC20 is OpenZeppelin 5.6.1 ERC20, ERC20Pausable and AccessControl on the Gated base. The gate is in _update: from is checked unless minting, to is checked unless burning. A spender in transferFrom is never checked.',
+    'forceTransfer (COMPLIANCE_ROLE) skips the check on from, still requires to to be eligible, and requires a non-zero justification hash. A lapsed holder keeps the balance and can do nothing with it, including burn.',
+    'Roles: DEFAULT_ADMIN_ROLE (unpause, verifier, request id, roles), PAUSER_ROLE (pause), COMPLIANCE_ROLE (forceTransfer), ISSUER_ADMIN_ROLE (setIssuer, revokeIssuer). Design notes are in packages/contract-kit/docs/.',
+    'packages/contract-kit: 53 tests in 6 suites, 12 of them invariants at 64 runs and 2,048 calls each (2026-09-19, version 0.2.0).',
+  ]}
+/>
+
+The scaffold does not give you a toy. It copies a token from the contract kit, with roles, a pause, issuers and a compliance path, and every project starts from it. You do not need to write it; you need to be able to read it, because the first thing a real product does is change it. This tutorial is a reading, with the tests run at the end.
+
+<ProjectSteps slug="solidity-the-gated-token" title="3. Read the gated token" backHref="/solidity/" backLabel="Writing Solidity">
+
+<StepCard n={1} title="Find the gate">
+<StepPart kind="gets">
+The one function every movement of the token passes through.
+</StepPart>
+<StepPart kind="do">
+<Sample id="kit-update" />
+
+This is the whole rule: both real parties of every movement must be eligible. A mint has no real `from` and a burn has no real `to`, so those sides are skipped. Putting the check in `_update` and not on `transfer` means there is no second door: `transferFrom`, a mint, a burn and anything a later version adds all arrive here. A spender is never checked, only the wallet that loses tokens and the wallet that gains them.
+</StepPart>
+<StepPart kind="worked">
+You can explain what `_forcing` is for before reading step 3.
+</StepPart>
+</StepCard>
+
+<StepCard n={2} title="Read a holder action">
+<StepPart kind="gets">
+How a gate, a pause and the token's own rules stack on one function.
+</StepPart>
+<StepPart kind="do">
+<Sample id="kit-subscribe" />
+
+The modifiers run first and in order, so an ineligible wallet is told `NotEligible` before it is told anything else. I met that on 17 September while writing a test: a revoked wallet that had already subscribed gets `NotEligible`, not `AlreadySubscribed`. Order your own checks so that the answer a user sees first is the one they can act on.
+</StepPart>
+<StepPart kind="worked">
+You can say which error each of these sees: a wallet that was never verified, a verified wallet while the token is paused, a verified wallet subscribing twice.
+</StepPart>
+</StepCard>
+
+<StepCard n={3} title="Read the compliance path">
+<StepPart kind="gets">
+The answer to the question a regulator asks first: what happens to tokens held by someone who is no longer eligible.
+</StepPart>
+<StepPart kind="do">
+<Sample id="kit-force-transfer" />
+
+A holder whose credential lapses keeps the balance and can do nothing with it: no send, no receive, no burn. A compliance officer moves it to an eligible wallet, and must give a justification hash that ties the move to a document. The check on `from` is skipped, because the wallet being emptied is usually the one that lapsed; the check on `to` is not. The forcing flag is transient storage, which the network's EVM (Prague) supports, so it cannot be left set.
+
+This is a policy, not a law of nature. Freezing forever, moving to custody automatically and letting the holder exit by burning are all defensible, and each has a regulator's question attached. The scaffold puts a heading for yours in `THREAT-MODEL.md`. Decide before the first testnet deploy.
+</StepPart>
+<StepPart kind="worked">
+You can state your product's revocation policy in one sentence, and say which function enforces it.
+</StepPart>
+</StepCard>
+
+<StepCard n={4} title="Read who may move the gate">
+<StepPart kind="gets">
+Tutorial 1's compile-time hook, as a real contract fills it in.
+</StepPart>
+<StepPart kind="do">
+<Sample id="kit-authorize" />
+
+One line, and it is the most dangerous line in the file: whoever holds that role can point the token at a verifier that says yes to everyone. That is why [Review before mainnet](/review/) requires the admin to be a Safe with a threshold of two or more, and why the ops kit alerts on `VerifierChanged` and `RequestIdChanged` as critical.
+</StepPart>
+<StepPart kind="worked">
+You can name who holds `DEFAULT_ADMIN_ROLE` in your deployment and how many signatures it takes to use it.
+</StepPart>
+</StepCard>
+
+<StepCard n={5} title="Read an invariant, then run everything">
+<StepPart kind="gets">
+The strongest statements the tests make, and the evidence for them on your machine.
+</StepPart>
+<StepPart kind="do">
+<Sample id="kit-invariants" />
+
+A unit test says "this call does this". An invariant says "whatever sequence of calls anyone makes, this stays true". Foundry throws thousands of random calls at the token through a handler and checks after each run. From the repository's root:
+
+```sh
+cd packages/contract-kit
+npm run setup
+forge test
+forge test --match-path test/GatedERC20.invariants.t.sol
+```
+</StepPart>
+<StepPart kind="worked">
+`53 tests passed, 0 failed` across 6 test suites, then `12 tests passed` for the invariants alone, each line reading `runs: 64, calls: 2048, reverts: 0`. One suite lets credentials lapse and proves that nobody ever receives tokens while ineligible. The other forbids lapses and proves the stronger thing, that no ineligible wallet ever holds tokens.
+</StepPart>
+<StepPart kind="ifnot">
+A missing `lib/receptor-mock` or `node_modules/@openzeppelin` means `npm run setup` has not run in this package.
+</StepPart>
+</StepCard>
+
+</ProjectSteps>
+
+The kit's own design notes go further than this page: `packages/contract-kit/docs/` has one page each on the token, the issuer registry, compliance, the pause, the admin pattern, and when to use ERC-3643 and not this at all.
+
+Next: [4. Deploy, and be refused](/solidity/deploy-and-refusals/).

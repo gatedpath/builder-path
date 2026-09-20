@@ -1,0 +1,83 @@
+{
+  "env": "mainnet",
+  "rpc": "https://governors.mainnet.redbelly.network",
+  "minutes": 10,
+  "startedAt": "2026-09-12T08:25:42.531Z",
+  "blocksObserved": 8,
+  "firstBlock": 3179485,
+  "lastBlock": 3179492,
+  "intervalByBlockTimestampSec": {
+    "median": 90,
+    "p95": 192,
+    "min": 2,
+    "max": 192
+  },
+  "intervalByWallClockSec": {
+    "median": 88.638,
+    "p95": 192.532
+  },
+  "emptyBlockRatio": 0,
+  "txPerBlock": {
+    "median": 1,
+    "max": 2
+  },
+  "note": "Block interval is not transaction finality latency. Measure inclusion latency separately with a funded, verified wallet: `cast send` a self-transfer and time until the receipt appears.",
+  "blocks": [
+    {
+      "number": 3179485,
+      "timestamp": 1789201538,
+      "seenAt": 1789201542945,
+      "txCount": 2,
+      "gasUsed": 62450
+    },
+    {
+      "number": 3179486,
+      "timestamp": 1789201628,
+      "seenAt": 1789201631583,
+      "txCount": 1,
+      "gasUsed": 21000
+    },
+    {
+      "number": 3179487,
+      "timestamp": 1789201757,
+      "seenAt": 1789201760081,
+      "txCount": 1,
+      "gasUsed": 139313
+    },
+    {
+      "number": 3179488,
+      "timestamp": 1789201949,
+      "seenAt": 1789201952613,
+      "txCount": 1,
+      "gasUsed": 21000
+    },
+    {
+      "number": 3179489,
+      "timestamp": 1789202052,
+      "seenAt": 1789202054112,
+      "txCount": 1,
+      "gasUsed": 38025
+    },
+    {
+      "number": 3179490,
+      "timestamp": 1789202054,
+      "seenAt": 1789202056539,
+      "txCount": 1,
+      "gasUsed": 38025
+    },
+    {
+      "number": 3179491,
+      "timestamp": 1789202056,
+      "seenAt": 1789202058946,
+      "txCount": 2,
+      "gasUsed": 75990
+    },
+    {
+      "number": 3179492,
+      "timestamp": 1789202129,
+      "seenAt": 1789202131299,
+      "txCount": 1,
+      "gasUsed": 31225
+    }
+  ]
+}

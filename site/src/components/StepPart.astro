@@ -1,0 +1,22 @@
+---
+// One of the four parts of a step card, always under the same label so a reader learns the shape
+// once: what the step gets you, what to do, how you know it worked, and what to do if it did not.
+interface Props { kind: 'gets' | 'do' | 'worked' | 'ifnot' }
+const { kind } = Astro.props;
+const LABEL = { gets: 'What this gets you', do: 'Do this', worked: 'You know it worked when', ifnot: 'If it did not' } as const;
+---
+
+<section class:list={['rb-part', `rb-part--${kind}`]}>
+  <p class="rb-eyebrow not-content">{LABEL[kind]}</p>
+  <div class="rb-part__body"><slot /></div>
+</section>
+
+<style>
+  .rb-part { margin-top: 1rem; }
+  .rb-part:first-child { margin-top: 0; }
+  .rb-part__body { margin-top: 0.25rem; }
+  .rb-part__body :global(> :first-child) { margin-top: 0; }
+  .rb-part--worked, .rb-part--ifnot { padding: 0.75rem 1rem; border-radius: var(--rb-radius-lg); background: var(--rb-color-surface); }
+  .rb-part--worked { border-left: 3px solid var(--rb-color-accent); }
+  .rb-part--ifnot { border-left: 3px solid var(--rb-color-hairline-strong); font-size: 0.9375rem; }
+</style>

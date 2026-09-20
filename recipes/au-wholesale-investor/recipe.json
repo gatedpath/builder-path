@@ -1,0 +1,83 @@
+{
+  "id": "au-wholesale-investor",
+  "title": "AU wholesale investor",
+  "status": "draft",
+  "criterion": "A qualified accountant has certified the wallet holder as a sophisticated or wholesale investor, and a Redbelly accredited issuer has turned that certificate into an AUSophisticatedWholesaleInvestorCredential. The dApp learns that the credential exists and nothing about the accountant.",
+  "credential": {
+    "types": ["AUSophisticatedWholesaleInvestorCredential"],
+    "fields": {
+      "accountantCertification": "string, \"Which professional body does your accountant have membership at? e.g. CPA, CA, IPA\" (vocabulary); example values only, not an enum",
+      "accountantMembershipNumber": "string, the accountant's membership number",
+      "accountantEmail": "string, email"
+    },
+    "whatItDoesNotHold": "No boolean saying wholesale or sophisticated, no test threshold, no date of the certificate, no reference to Corporations Act s708. The schema is the accountant's certificate metadata. The legal test the issuer applied before issuing is not stated in the schema or the docs (verify).",
+    "context": "https://raw.githubusercontent.com/redbellynetwork/receptor-schema/refs/heads/main/schemas/json-ld/AUSophisticatedWholesaleInvestorCredential.jsonld",
+    "schemaSource": "github.com/redbellynetwork/receptor-schema commit 3b37c11, schemas/json/AUSophisticatedWholesaleInvestorCredential.json and credentials/wholesaleInvestorCredential.md",
+    "queryableToday": "Listed among the SDK's seven queryable types; the docs' multi-query example discloses accountantEmail from it off chain.",
+    "issuer": {
+      "testnet": "did:receptor:redbelly:testnet:31K82iKCtE6ciDc7oAr3T5EpjZb4S1EFM7c4xJaWkM2 (the only DID the docs print)",
+      "mainnet": "unknown (RESEARCH.md questions 15 and 29)",
+      "who": "Not stated which accredited issuer issues this type; Averer is named for business verification, not for this credential (verify)."
+    }
+  },
+  "query": {
+    "mechanism": "iden3",
+    "approach": "Proof of issuance: prove the credential exists from an allowed issuer without revealing any field. The docs list \"Proof of Issuance\" as a query type but print no example of its credentialSubject shape (verify). The alternative, accountantCertification $in [\"CPA\", \"CA\", \"IPA\"], depends on values the vocabulary only gives as examples (verify) and would exclude a valid certificate from another body.",
+    "request": {
+      "id": 708,
+      "circuitId": "credentialAtomicQuerySigV2OnChain",
+      "query": {
+        "allowedIssuers": ["did:receptor:redbelly:testnet:31K82iKCtE6ciDc7oAr3T5EpjZb4S1EFM7c4xJaWkM2"],
+        "context": "https://raw.githubusercontent.com/redbellynetwork/receptor-schema/refs/heads/main/schemas/json-ld/AUSophisticatedWholesaleInvestorCredential.jsonld",
+        "type": "AUSophisticatedWholesaleInvestorCredential",
+        "credentialSubject": { "accountantMembershipNumber": { "$exists": true } }
+      }
+    },
+    "shapeSource": "$exists is in the documented operator list; using it on a required field is the closest documented shape to proof of issuance. Whether Redbelly's SDK expects an empty credentialSubject or $exists for proof of issuance is the verify above.",
+    "doNot": "Do not use the off-chain selective-disclosure form (accountantEmail: {}) for eligibility: it reveals a person's email to the verifier and proves nothing the $exists form does not."
+  },
+  "onChain": {
+    "requestId": 708,
+    "binding": "Gated(verifier, 708) with verifier = Iden3VerifierAdapter(<your ZKPVerifier child>, <Surface>)",
+    "howTheCheckMaps": "setZKPRequest(708, request) on your verifier; the holder calls submitZKPResponse(708, ...); the verifier then answers true for (wallet, 708); Gated.gated reads isEligible(msg.sender, 708) and reverts NotEligible(wallet, 708) on false. 708 is a mnemonic for the Corporations Act section, nothing more; any uint64 works.",
+    "stickiness": "As for every Iden3 recipe: an accepted proof stays on the contract after the certificate lapses or the credential is revoked unless your contract enforces a freshness window (2.x, 3.x) or moves to a new request id (1.x).",
+    "regulatorNote": "Which legal test the issuer applied (s708(8) wholesale, s708(10) sophisticated, s761G) is not in the credential. If your offer document names one, ask the issuer in writing which test their credential attests to before relying on it."
+  },
+  "fiveStates": {
+    "NeverIssued": "No AUSophisticatedWholesaleInvestorCredential, or no proof for request 708. NotEligible(wallet, 708).",
+    "Valid": "A credential from an allowed issuer, not revoked, proof accepted. Passes.",
+    "Expired": "The schema has no validity field of its own; expiry is whatever the issuer sets on the credential envelope (verify). A fresh proof against an expired credential fails if the circuit checks expiry; an old accepted proof stays. In tests: setValidUntil then vm.warp.",
+    "Revoked": "The issuer revoked the credential (an accountant's certificate withdrawn, say); the reverse hash service refuses a non-revocation proof. An old accepted proof stays. In tests: setStatus(wallet, 708, Revoked).",
+    "WrongJurisdiction": "The credential is not this type, or its issuer is not in allowedIssuers (a credential from a non-Australian or non-accredited source). No proof can exist. In tests: setStatus(wallet, 708, WrongJurisdiction)."
+  },
+  "privacy": {
+    "leavesWallet": [
+      "A proof for request 708 and its public inputs (holder identity, issuer, schema, query hash; exact signals verify), in a transaction the wallet signs."
+    ],
+    "landsOnChain": [
+      "wallet address -> request 708 -> accepted, on your contract.",
+      "The stored request: that this dApp requires an AUSophisticatedWholesaleInvestorCredential from issuer X. That alone tells an observer the wallet holder is a certified wholesale investor, which is itself financial information; decide whether that is acceptable for your users before shipping."
+    ],
+    "neverOnChain": [
+      "The accountant's name, membership number, professional body or email.",
+      "The holder's name or any identity document field; this credential carries none."
+    ],
+    "consequence": "The multi-query example in the docs shows accountantEmail disclosed off chain. Don't copy that into an eligibility flow."
+  },
+  "verify": [
+    { "what": "proof-of-issuance query shape", "why": "The docs name the query type but print no credentialSubject for it; $exists on a required field is the closest documented operator." },
+    { "what": "accountantCertification values", "why": "The vocabulary gives CPA, CA, IPA as examples (\"e.g.\"), not an enumeration." },
+    { "what": "the legal test behind the credential", "why": "Neither the schema nor the docs say which Corporations Act test the issuer applies before issuing." },
+    { "what": "issuing issuer", "why": "No page names which accredited issuer issues this type or on which network it is live." },
+    { "what": "credential validity period", "why": "The schema has no validity field; the envelope's expiration is the issuer's choice." },
+    { "what": "allowedIssuers on mainnet", "why": "No mainnet issuer DID is published." },
+    { "what": "the whole recipe against a live verifier", "why": "Not run; needs the Eligibility SDK and a testnet deployment." }
+  ],
+  "sources": [
+    { "what": "AUSophisticatedWholesaleInvestorCredential schema: three accountant fields, all required", "url": "https://github.com/redbellynetwork/receptor-schema/blob/3b37c11/schemas/json/AUSophisticatedWholesaleInvestorCredential.json", "checked": "2026-09-12" },
+    { "what": "Vocabulary with example values CPA, CA, IPA", "url": "https://github.com/redbellynetwork/receptor-schema/blob/3b37c11/credentials/wholesaleInvestorCredential.md", "checked": "2026-09-12" },
+    { "what": "Query types including Proof of Issuance; operators including $exists; the multi-query example disclosing accountantEmail; the queryable types", "url": "https://docs.redbelly.network/pages/eligibility-sdk/configure-eligibility-criteria/", "checked": "2026-09-12" },
+    { "what": "Proof by Query flow", "url": "https://docs.redbelly.network/pages/methods/proof-by-query/", "checked": "2026-09-12" }
+  ],
+  "open": ["RESEARCH.md 15", "RESEARCH.md 17", "RESEARCH.md 29"]
+}

@@ -1,0 +1,84 @@
+---
+title: Bring your own agent
+description: Rules files for Claude Code, Codex, Cursor, Copilot and Gemini, rendered from one source; llms.txt and llms-full.txt at the site root; the MCP server with status, explain_failure, doctor, gas_report and ship_report; the key-handling rule.
+lastVerified: '2026-09-14'
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import ForAgents from '../../components/ForAgents.astro';
+import Sample from '../../components/Sample.astro';
+import StatusPill from '../../components/StatusPill.astro';
+import RulesFileCard from '../../components/RulesFileCard.astro';
+import { rulesFiles } from '../../data/rules';
+
+<ForAgents
+  page="Bring your own agent"
+  facts={[
+    'This site serves /llms.txt (the index and rules) and /llms-full.txt (the full text). Fetch them once per session.',
+    'The rules files live at /agent-rules/CLAUDE.md, /agent-rules/AGENTS.md, /agent-rules/cursor-rules-redbelly.mdc, /agent-rules/copilot-instructions.md and /agent-rules/GEMINI.md. They share one body.',
+    'To write them into a project: npx -y @gatedpath/agent-rules --out . (on npm since 2026-09-18).',
+    'The MCP server is packages/mcp (redbelly-mcp), stdio only, on npm as @gatedpath/mcp since 2026-09-18: start it with npx -y @gatedpath/mcp. Fourteen tools; deploy_testnet refuses chain 151 and warns without today\'s ship report on 153; there is no faucet tool.',
+    'Call doctor first on a new machine: one entry per check (node, git, forge, anvil, cast, foundry-version, foundry-exit-code, slither, aderyn, env-tracked, vendor) with pass, warn or fail and the fix. Call gas_report for RBNT and US cents per function. Call ship_report with chain, account (a keystore name) and admin to write deployments/ship-<chain>-<date>.md; it refuses when any check fails, and the deploy script refuses 151 without today\'s report.',
+    'Call status with the project path before a turn: it returns compiles, tests, slither, rulesFiles, deployments and next, the one command to run. Call explain_failure with a revert, a txHash with chain, or a pasted stderr: it returns kind, plainWords, cause and fix, or kind unknown with the raw text.',
+    'No tool you run here ever receives a private key. Signing goes through a Foundry keystore account name or a hardware wallet path, and forge or cast sign locally.',
+  ]}
+/>
+
+You use your own AI account and your own tool. This site hosts no model, proxies no prompts, and holds no API key and no deployer key. Everything here is a file, a package or a program that runs on your machine, and the two I consider most important are a text file and a rule.
+
+This page is the home of the section for people who direct an agent and review what it produces. Everything about working with AI on this site lives here or is linked from here: the rules files and the local MCP server below, three short guides drawn from the runs on record ([Say what you want](/agents-guide/say-what-you-want/), [Read what comes back](/agents-guide/read-what-comes-back/) and [What never goes into an agent](/agents-guide/what-never-goes-in/)), and the agent track of every [project](/tutorials/), where each prompt sits beside the record of what happened when it was run. If you would rather write the contract yourself, the other section is [Writing Solidity](/solidity/). The two are not rivals: both end at the same tests, the same pre-flight and the same refusals, and a good reviewer of an agent's diff has usually read the Solidity path once.
+
+## The rules file
+
+One typed source in `packages/agent-rules/src/source.ts` renders to every format the common tools read. The five files share one body byte for byte; only the heading, one paragraph about the tool and Cursor's front matter differ. The package's own tests fail if a committed sample stops matching the renderer, and this site's build fails if a published copy stops matching the sample. Copy the one your tool reads, or run the CLI and get all of them.
+
+```sh title="Every format, from npm (run 18 Sep 2026 against the public registry)"
+cd /path/to/your/project
+npx -y @gatedpath/agent-rules --out .
+```
+
+<ul class="rb-rules-list not-content">
+  {rulesFiles.map((r) => <RulesFileCard rules={r} />)}
+</ul>
+
+<style>{`.rb-rules-list{list-style:none;margin:1.25rem 0;padding:0;display:grid;gap:0.75rem}`}</style>
+
+I read the conventions from each tool's current documentation on 12 September 2026: Claude Code reads `CLAUDE.md` from the project root and parents and strips HTML comments; Codex CLI walks `AGENTS.md` from the git root with a 32 KiB combined budget; Cursor's project rules are `.cursor/rules/*.mdc` with front matter; Copilot reads `.github/copilot-instructions.md` and also `AGENTS.md`, `CLAUDE.md` and `GEMINI.md`; Gemini CLI loads `GEMINI.md` from the workspace and parents. The overlap is deliberate; `--check` keeps the files identical. Which agent versions the prompt-card verification run targets is still open (question 18).
+
+### The file, in full
+
+The Claude Code rendering, straight from the package's committed sample. The other four differ only in the heading and one paragraph.
+
+<Sample id="rules-claude" wrap={true} />
+
+## llms.txt and llms-full.txt
+
+[`/llms.txt`](/llms.txt) follows llmstxt.org: an H1, a blockquote, the rules as plain bullets, and H2 link sections to Vine, docs.redbelly.network, Routescan and GitHub. [`/llms-full.txt`](/llms-full.txt) inlines the full rules text. Both are the package's samples served verbatim; the site adds nothing and the build refuses to publish a copy that drifts. The package's `llms.txt` still carries a note that site-relative links are to be added now that the site exists; that change belongs in the package, not here.
+
+## MCP server
+
+`@gatedpath/mcp` (`packages/mcp/`, bin `redbelly-mcp`) is a local stdio process on the official MCP SDK. It opens no port, has no hosted variant, sends no telemetry, makes no model call and holds no API key. There are fourteen tools. The read-only ones are `chain_info`, `is_verified` (`permission.isAllowed`), `gas_estimate_usd`, `preflight` (runs the CLI, returns its report), `five_state_tests` (every test contract that inherits `GatedTest`), `rules_files_check` (drift), `docs_lookup` (thirty topics to a URL on Vine or docs.redbelly.network plus one quoted consequence line, never fetched), the two from wave 7 below, and from wave 8 `doctor` and `gas_report`, with `ship_report` the one tool that writes a file. Signing through forge with a keystore name: `deploy_testnet`, which reads `eth_chainId` and refuses 151 outright, runs pre-flight and refuses on any fail, then broadcasts; and `verify_routescan`, a dry run by default. Every schema is strict, and before any handler runs the arguments are walked by pre-flight's secret scanner: anything key-shaped is refused by the name of the argument, never its value (a transaction hash, which has a key's shape, is allowed only in `explain_failure`'s `txHash`, and only ever read). There are thirty-three tests, including an end-to-end `deploy_testnet` on an anvil with chain ID 153 and a mined `NotEligible` revert explained from its hash.
+
+### status and explain_failure
+
+`status` takes the project path and answers `{ compiles, tests: { passed, failed, fiveState }, slither: { present, fresh }, rulesFiles, deployments: { local, 153, 151 }, next: { step, command, why } }`. It runs `forge build` and `forge test --json` locally, reads the Slither report and its sources hash, checks the five rules files against the render, reads `deployments/local.json` (what `npm run dev` writes), the `deployments/<chain>-<Name>.json` records and forge's `broadcast/` folders, and makes no network call unless you pass `rpc`, in which case pre-flight runs read-only against it and Routescan is asked whether a testnet deployment is verified. `next` is the first step not done in the fixed order compile, tests, five-state tests, Slither, rules files, pre-flight, testnet deploy, verify, ship report, with the exact command. Where the step signs, `why` says it needs a keystore of your own; the tool never invents a keystore name and never signs. An agent that calls it before each turn works from that answer rather than guessing the workflow. The recorded run on a fresh scaffold, step by step, is `packages/mcp/reports/wave-7-run-2026-09-14.md`.
+
+`explain_failure` takes one of `revert` (hex data or the message a tool printed), `txHash` with `chain` (the receipt is read; a status-0 transaction is replayed with `eth_call` at its block to recover the revert data, and a `NotEligible` revert is followed by a read of the verifier's `eligibilityStatus`, which on a `ReceptorMock` names the credential state), or `stderr` (a pasted forge, cast, anvil, `npm run dev` or `redbelly-preflight` failure). It answers `{ kind, plainWords, cause, fix: { command?, link? } }` from the one table on the [errors page](/errors/). Unknown input answers `kind: "unknown"` with the raw text, never a guess. Read-only always; with `rpc`, an RBNT failure carries the current price through `gasCostUsd`. The same table ships in the frontend kit as `explainError(error)`, so the scaffold's web app shows the words instead of a hex revert.
+
+### doctor, gas_report and ship_report
+
+`doctor` is `redbelly-doctor` in-process: Node 22 or later; `forge`, `anvil` and `cast` on PATH, one version, and the real binaries rather than the `@foundry-rs` npm shim that exits 0 whatever the binary returned (the server probes with a flag no binary knows: the real ones exit 2, the shim 0, and the fix names the platform binary to link); `slither` and `aderyn` optional; git; no `.env` tracked; in a scaffold, `vendor/` against the version record the scaffolder writes. One entry per check with the fix from the same failure table, so a pasted doctor line and `explain_failure` agree. `gas_report` is `redbelly gas`: the project's `.gas-snapshot` or `forge test --gas-report --json`, every row priced at the chain's latest base fee and feed price in RBNT and US cents, with `diff` against a previous file. `ship_report` is `redbelly ship`: pre-flight with the keystore's address, the Slither sidecar, the tests and the five-state suites, the gas report, the deployer and admin readings, written to `deployments/ship-<chain>-<date>.md` only when every check passes; the deploy script refuses a broadcast on 151 without today's, and `status` reads the report's header for its last step. An agent's mainnet turn is `status`, then `ship_report`, then the `forge script` line `status` gives it, which signs with the keystore and never through this server.
+
+It is on npm as `@gatedpath/mcp`, published on 18 September 2026, and `npx -y @gatedpath/mcp` starts it; I ran that against the public registry the same day and it answered with its fourteen tools. The snippets below were each checked with a built entry on disk. Where one says `node /path/to/redbelly-mcp/dist/main.js`, the command `npx` with the arguments `-y @gatedpath/mcp` starts the same process:
+
+<Sample id="mcp-install" wrap={true} />
+
+<StatusPill variant="draft" label="No faucet tool" tipKey="no-faucet-tool" /> The faucet tool from the plan is deliberately not registered. FAUCETME needs a Discord login, and whether Redbelly objects to a third party wrapping it is question 16; the server holds neither consent nor a session cookie. `docs_lookup("faucet")` gives the URL.
+
+## The key-handling rule
+
+The MCP server, and every tool we add after it, never receives a private key. Tools that sign (deploy, verify, admin actions) take a Foundry keystore account name or a hardware wallet path and shell out to `forge` and `cast`, which sign locally. Faucet and eligibility-status tools take a public address and nothing else. A read-only step never escalates into one that signs. This is a hard rule, and it is in the rules file as well, so your agent holds it too.
+
+<Aside type="note" title="What we won't build">
+A hosted chat-with-the-docs widget (`llms.txt` and your own agent cover it), a cloud deploy button, any flow that asks for an API key, any telemetry that leaves your machine without an explicit opt-in. Each would make this site a custodian of something, and I have designed it not to be one.
+</Aside>

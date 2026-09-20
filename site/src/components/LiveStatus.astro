@@ -1,0 +1,135 @@
+---
+import Ext from './Ext.astro';
+// The live half of /status. Two reads of the same figures: once here at build time (so the
+// page carries a dated snapshot even with JavaScript off, and degrades to it when the RPC is
+// unreachable from the visitor's browser) and once in the browser, straight from the visitor
+// to the public governors RPC. We run no backend, proxy nothing and store nothing; the page's
+// script is the only code that runs, and the RPC sends `access-control-allow-origin: *`
+// (checked 12 September 2026). The interval is measured the way phase-0/measure-blocktime.mjs
+// measures it: consecutive block timestamps over the last N blocks, median, p95, min, max,
+// and the share of empty blocks.
+import { GET_LATEST_PRICE, INTERVAL_BLOCKS, PRICE_FEED_DECIMALS, STATUS_CHAINS, TRANSFER_GAS } from '../data/status';
+import { measure, type ChainReading } from '../lib/status-reader';
+
+const builtAt = new Date().toISOString();
+const readings: Record<string, ChainReading> = {};
+for (const chain of STATUS_CHAINS) {
+  readings[chain.key] = await measure(chain, { timeoutMs: 6000 });
+}
+const config = { chains: STATUS_CHAINS, selector: GET_LATEST_PRICE, intervalBlocks: INTERVAL_BLOCKS, transferGas: TRANSFER_GAS, priceDecimals: PRICE_FEED_DECIMALS };
+const fmt = (n: number | null | undefined, digits = 0) => (n === null || n === undefined ? '—' : n.toLocaleString('en-AU', { maximumFractionDigits: digits }));
+const when = (iso: string) => iso.replace('T', ' ').replace(/\.\d+Z$/, ' UTC');
+---
+
+<div class="rb-status not-content" id="rb-status" data-built-at={builtAt}>
+  <p class="rb-status__line">
+    <span data-status-summary>Figures below were read at build time, {when(builtAt)}. With JavaScript on, your browser reads them again now, straight from the public RPCs.</span>
+    <button type="button" class="rb-button rb-button--secondary rb-status__refresh" data-status-refresh hidden>Check again</button>
+  </p>
+  <div class="rb-status__grid">
+    {STATUS_CHAINS.map((chain) => {
+      const r = readings[chain.key]!;
+      return (
+        <section class="rb-status__card" data-chain={chain.key} aria-labelledby={`status-${chain.key}`}>
+          <h3 id={`status-${chain.key}`} class="rb-status__title">{chain.short}</h3>
+          <p class="rb-status__rpc"><code>{chain.rpc}</code></p>
+          <p class="rb-status__state" data-field="state">{r.ok ? `RPC answered in ${fmt(r.latencyMs)} ms at build` : `RPC did not answer at build: ${r.error}`}</p>
+          <dl class="rb-status__rows">
+            <div><dt>Chain ID</dt><dd data-field="chainId">{r.ok ? (r.chainId === chain.id ? `${r.chainId}, as expected` : `${r.chainId}, expected ${chain.id}`) : '—'}</dd></div>
+            <div><dt>Head block</dt><dd data-field="head">{r.ok ? fmt(r.head) : '—'}</dd></div>
+            <div><dt>Head block age</dt><dd data-field="headAge">{r.ok && r.headAgeSeconds !== null ? `${fmt(r.headAgeSeconds)} s` : '—'}</dd></div>
+            <div><dt>Block interval, last {INTERVAL_BLOCKS} blocks</dt><dd data-field="interval">{r.ok && r.interval ? `median ${fmt(r.interval.median)} s, p95 ${fmt(r.interval.p95)} s, min ${fmt(r.interval.min)} s, max ${fmt(r.interval.max)} s` : '—'}</dd></div>
+            <div><dt>Empty blocks in that window</dt><dd data-field="empty">{r.ok && r.interval ? `${fmt(r.interval.emptyBlocks)} of ${fmt(r.interval.blocks)}` : '—'}</dd></div>
+            <div><dt>Base fee</dt><dd data-field="baseFee">{r.ok && r.gas ? `${fmt(r.gas.baseFeeGwei, 2)} gwei` : '—'}</dd></div>
+            <div><dt>Native transfer ({TRANSFER_GAS.toLocaleString('en-AU')} gas)</dt><dd data-field="transfer">{r.ok && r.gas ? `${fmt(r.gas.transferRbnt, 3)} RBNT, US$${fmt(r.gas.transferUsd, 4)}` : '—'}</dd></div>
+            <div><dt>Feed price</dt><dd data-field="feed">{r.ok && r.gas ? `US$${fmt(r.gas.usdPerRbnt, 6)} per RBNT, feed time ${when(r.gas.feedTime)}` : '—'}</dd></div>
+            <div><dt>Last checked</dt><dd data-field="checkedAt">{when(r.checkedAt)} (at build)</dd></div>
+          </dl>
+          <p class="rb-status__links">
+            <Ext href={chain.explorer}>Routescan</Ext>
+            {chain.faucet && <Ext href={chain.faucet}>Testnet RBNT (FAUCETME, Discord login)</Ext>}
+          </p>
+        </section>
+      );
+    })}
+  </div>
+  <script type="application/json" id="rb-status-config" set:html={JSON.stringify(config)} />
+</div>
+
+<script>
+  import { measure, type ChainReading, type MeasureChain } from '../lib/status-reader';
+
+  const root = document.getElementById('rb-status');
+  const configEl = document.getElementById('rb-status-config');
+  if (root && configEl) {
+    const config = JSON.parse(configEl.textContent ?? '{}') as {
+      chains: MeasureChain[]; selector: string; intervalBlocks: number; transferGas: number; priceDecimals: number;
+    };
+    const summary = root.querySelector<HTMLElement>('[data-status-summary]');
+    const button = root.querySelector<HTMLButtonElement>('[data-status-refresh]');
+    const fmt = (n: number | null | undefined, digits = 0) => (n === null || n === undefined ? '—' : n.toLocaleString('en-AU', { maximumFractionDigits: digits }));
+    const when = (iso: string) => iso.replace('T', ' ').replace(/\.\d+Z$/, ' UTC');
+    const set = (card: Element, field: string, text: string) => {
+      const el = card.querySelector<HTMLElement>(`[data-field="${field}"]`);
+      if (el) el.textContent = text;
+    };
+    const render = (chain: MeasureChain, r: ChainReading) => {
+      const card = root.querySelector(`[data-chain="${chain.key}"]`);
+      if (!card) return;
+      card.classList.toggle('rb-status__card--down', !r.ok);
+      if (!r.ok) {
+        set(card, 'state', `RPC did not answer from your browser: ${r.error}. The build-time figures below stand until it does.`);
+        set(card, 'checkedAt', `${when(r.checkedAt)} (from your browser, failed; figures are from the build)`);
+        return;
+      }
+      set(card, 'state', `RPC answered in ${fmt(r.latencyMs)} ms from your browser`);
+      set(card, 'chainId', r.chainId === chain.id ? `${r.chainId}, as expected` : `${r.chainId}, expected ${chain.id}`);
+      set(card, 'head', fmt(r.head));
+      set(card, 'headAge', r.headAgeSeconds === null ? '—' : `${fmt(r.headAgeSeconds)} s`);
+      set(card, 'interval', r.interval ? `median ${fmt(r.interval.median)} s, p95 ${fmt(r.interval.p95)} s, min ${fmt(r.interval.min)} s, max ${fmt(r.interval.max)} s` : '—');
+      set(card, 'empty', r.interval ? `${fmt(r.interval.emptyBlocks)} of ${fmt(r.interval.blocks)}` : '—');
+      set(card, 'baseFee', r.gas ? `${fmt(r.gas.baseFeeGwei, 2)} gwei` : '—');
+      set(card, 'transfer', r.gas ? `${fmt(r.gas.transferRbnt, 3)} RBNT, US$${fmt(r.gas.transferUsd, 4)}` : '—');
+      set(card, 'feed', r.gas ? `US$${fmt(r.gas.usdPerRbnt, 6)} per RBNT, feed time ${when(r.gas.feedTime)}` : '—');
+      set(card, 'checkedAt', `${when(r.checkedAt)} (from your browser)`);
+    };
+    const run = async () => {
+      if (button) { button.disabled = true; button.textContent = 'Checking…'; }
+      if (summary) summary.textContent = 'Reading the public RPCs from your browser…';
+      const results = await Promise.all(config.chains.map(async (chain) => {
+        const r = await measure(chain, { timeoutMs: 8000, selector: config.selector, intervalBlocks: config.intervalBlocks, transferGas: config.transferGas, priceDecimals: config.priceDecimals });
+        render(chain, r);
+        return r;
+      }));
+      const okCount = results.filter((r) => r.ok).length;
+      if (summary) {
+        summary.textContent = okCount === results.length
+          ? `Read from your browser at ${when(new Date().toISOString())}, straight from the public RPCs. Nothing was sent anywhere else.`
+          : `${okCount} of ${results.length} RPCs answered from your browser at ${when(new Date().toISOString())}; the other card keeps its build-time figures.`;
+      }
+      if (button) { button.disabled = false; button.textContent = 'Check again'; button.hidden = false; }
+    };
+    button?.addEventListener('click', () => void run());
+    void run();
+  }
+</script>
+
+<style>
+  .rb-status { margin-block: 1.25rem 1.75rem; }
+  .rb-status__line { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; margin: 0 0 1rem; font-size: var(--sl-text-sm); color: var(--rb-color-text-muted); }
+  .rb-status__refresh { min-height: 2.25rem; padding-block: 0; }
+  .rb-status__grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); }
+  .rb-status__card { border: 1px solid var(--rb-color-hairline); border-left: 4px solid var(--rb-color-accent); border-radius: var(--rb-radius-lg); padding: 1rem 1.25rem; background: var(--rb-color-bg); }
+  .rb-status__card--down { border-left-color: var(--rb-color-caution-border); }
+  .rb-status__title { margin: 0; font-size: var(--sl-text-lg); font-weight: 600; color: var(--rb-color-heading); }
+  .rb-status__rpc { margin: 0.25rem 0 0.5rem; font-size: var(--sl-text-2xs); color: var(--rb-color-text-muted); overflow-wrap: anywhere; }
+  .rb-status__rpc code { font-size: inherit; background: none; padding: 0; color: inherit; }
+  .rb-status__state { margin: 0 0 0.75rem; font-size: var(--sl-text-sm); font-weight: 600; color: var(--rb-color-text); }
+  .rb-status__card--down .rb-status__state { color: var(--rb-color-caution-text); }
+  .rb-status__rows { margin: 0; display: grid; gap: 0.375rem; font-size: var(--sl-text-sm); }
+  .rb-status__rows div { display: grid; grid-template-columns: minmax(8rem, 40%) 1fr; gap: 0.5rem; padding-block: 0.25rem; border-top: 1px solid var(--rb-color-hairline-light); }
+  .rb-status__rows dt { margin: 0; color: var(--rb-color-text-muted); }
+  .rb-status__rows dd { margin: 0; color: var(--rb-color-text-strong); overflow-wrap: anywhere; }
+  .rb-status__links { margin: 0.75rem 0 0; display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; font-size: var(--sl-text-sm); }
+  .rb-status__links a { color: var(--rb-color-accent); font-weight: 600; text-decoration: underline; text-underline-offset: 0.2em; }
+</style>

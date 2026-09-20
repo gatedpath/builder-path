@@ -1,0 +1,3 @@
+forge-std/=lib/forge-std/src/
+@gatedpath/receptor-mock/=lib/receptor-mock/src/
+@gatedpath/receptor-mock-test/=lib/receptor-mock/test/

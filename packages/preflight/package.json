@@ -1,0 +1,51 @@
+{
+  "name": "@gatedpath/preflight",
+  "version": "0.2.0",
+  "description": "Pre-flight checks before deploying to Redbelly Network (151 mainnet, 153 testnet): chain ID, deployer verification, Safe admin, compiler pins, secrets in git history, RBNT balance, Slither report.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gatedpath/builder-path.git",
+    "directory": "packages/preflight"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "redbelly-preflight": "dist/cli.js",
+    "redbelly-doctor": "dist/doctor-cli.js",
+    "redbelly": "dist/redbelly.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "node scripts/ensure-deps-built.mjs && tsc -p tsconfig.json && node -e \"for (const f of ['cli.js','doctor-cli.js','redbelly.js']) require('fs').chmodSync('dist/'+f,0o755)\"",
+    "test": "npm run build && node --test --test-reporter=spec --test-concurrency=1 test/unit.test.mjs test/preflight.test.mjs test/doctor.test.mjs test/gas.test.mjs test/ship.test.mjs",
+    "test:live": "npm run build && node --test --test-reporter=spec test/live.test.mjs",
+    "prepack": "npm run build"
+  },
+  "dependencies": {
+    "@gatedpath/agent-rules": "file:../agent-rules",
+    "@gatedpath/chains": "file:../chain-definitions"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.2",
+    "typescript": "^5.9.3"
+  },
+  "preferUnplugged": true
+}

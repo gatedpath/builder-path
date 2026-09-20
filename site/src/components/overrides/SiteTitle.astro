@@ -1,0 +1,43 @@
+---
+// Text-only site name with the "community" pill. No logo, no mark, no red letters
+// (DESIGN.md section 10).
+const { siteTitle, siteTitleHref } = Astro.locals.starlightRoute;
+---
+
+<a href={siteTitleHref} class="rb-site-title">
+  <span class="rb-site-title__name" translate="no">{siteTitle}</span>
+  <span class="rb-site-title__pill">community</span>
+</a>
+
+<style>
+  .rb-site-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    min-width: 0;
+    color: var(--rb-color-text-strong);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .rb-site-title__name {
+    font-size: var(--sl-text-lg);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .rb-site-title__pill {
+    flex: none;
+    font-size: var(--sl-text-2xs);
+    font-weight: 600;
+    line-height: 1;
+    padding: 0.3125rem 0.5rem;
+    border-radius: var(--rb-radius-pill);
+    background: var(--rb-color-verified-bg);
+    color: var(--rb-color-verified-text);
+  }
+  @media (max-width: 30em) {
+    .rb-site-title__name { font-size: var(--sl-text-base); }
+    .rb-site-title__pill { display: none; }
+  }
+</style>

@@ -1,0 +1,36 @@
+---
+// The shared "save your work" card (PLAN.md section 19): written once, placed in every project
+// after the first green test and at the end. Every command here was run on a fresh scaffold on
+// 17 September 2026 (cards/runs/2026-09-17/save-your-work.md), including the two failures it names.
+import { Code } from '@astrojs/starlight/components';
+interface Props { when?: 'first' | 'again'; message?: string }
+const { when = 'first', message = 'Baseline: fresh scaffold, tests green' } = Astro.props;
+const first = when === 'first';
+---
+
+<aside class="rb-save not-content" aria-label={first ? 'Save your work: the first commit' : 'Save your work: commit and push'}>
+  <p class="rb-eyebrow">Save your work</p>
+  {first ? (
+    <>
+      <p>A commit is a dated snapshot of the whole project that you can return to. Make one every time the tests are green, before you change anything else. If the next change goes wrong, you go back to the snapshot instead of trying to remember what you touched. An agent that is told to commit at each green test will do the same, and its diff is then the thing you review.</p>
+      <p>Run these in a terminal that is <strong>inside the project folder</strong>. If git answers <code>fatal: not a git repository</code>, you are in the wrong folder; <code>pwd</code> shows where you are and <code>cd gate-demo</code> takes you in.</p>
+      <Code lang="sh" code={`git init                 # once per project\ngit check-ignore .env    # must print: .env\ngit add -A\ngit commit -m "${message}"`} />
+      <p><code>git check-ignore .env</code> is the check that matters. The scaffold's <code>.gitignore</code> already keeps <code>.env</code> and every keystore out of the repository; this line proves it on your machine before the first commit, because a secret that has been committed once stays in the history. If it prints nothing, stop and fix <code>.gitignore</code> first. <code>npm run preflight</code> checks the same thing again later.</p>
+    </>
+  ) : (
+    <>
+      <p>The tests are green again, so take the next snapshot. The message says what changed and why, in a line you will understand in a month.</p>
+      <Code lang="sh" code={`git add -A\ngit commit -m "${message}"`} />
+      <p>A push sends your snapshots to a remote copy, usually a private repository on GitHub, so that your laptop is not the only place the work exists. Create the empty repository on GitHub first, then, once:</p>
+      <Code lang="sh" code={`git branch -M main       # a new project here starts on "master"; GitHub expects "main"\ngit remote add origin https://github.com/<you>/<repo>.git\ngit push -u origin main`} />
+      <p>After that a plain <code>git push</code> is enough. <code>Everything up-to-date</code> means it worked and there was nothing new to send. If you are not sure whether a push is still owed, <code>git status -sb</code> says <code>ahead 1</code> when one commit is waiting and nothing after the branch name when the two copies match.</p>
+    </>
+  )}
+</aside>
+
+<style>
+  .rb-save { margin-block: 1.25rem 0; padding: 1rem 1.25rem; border: 1px dashed var(--rb-color-hairline-strong); border-radius: var(--rb-radius-lg); font-size: 0.9375rem; line-height: 1.55; }
+  .rb-save :global(p) { margin: 0.5rem 0 0; }
+  .rb-save :global(.expressive-code) { margin-top: 0.625rem; }
+  .rb-save code { font-size: 0.875em; }
+</style>

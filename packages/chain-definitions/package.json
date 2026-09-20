@@ -1,0 +1,53 @@
+{
+  "name": "@gatedpath/chains",
+  "version": "0.2.0",
+  "description": "Chain definitions, verified addresses and read-only helpers for Redbelly Network (151 mainnet, 153 testnet).",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gatedpath/builder-path.git",
+    "directory": "packages/chain-definitions"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/esm/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json && tsc -p tsconfig.cjs.json && node -e \"require('fs').writeFileSync('dist/cjs/package.json','{\\\"type\\\":\\\"commonjs\\\"}\\n')\"",
+    "check:viem": "tsc -p tsconfig.viem.json && node dist/viem-check/typecheck/viem-compat.js && echo viem: Chain type satisfied, checksums agree",
+    "test": "npm run build && node --test --test-reporter=spec test/unit.test.mjs",
+    "test:live": "npm run build && node --test --test-reporter=spec --test-concurrency=1 test/live.test.mjs",
+    "prepack": "npm run build"
+  },
+  "peerDependencies": {
+    "viem": ">=2.0.0"
+  },
+  "peerDependenciesMeta": {
+    "viem": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "viem": "^2.56.3"
+  },
+  "preferUnplugged": true
+}

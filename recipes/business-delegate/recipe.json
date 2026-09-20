@@ -1,0 +1,73 @@
+{
+  "id": "business-delegate",
+  "title": "Business delegate",
+  "status": "draft",
+  "criterion": "The wallet is an authorised delegate (a contractor, developer or service account) or an authorised representative (a director or officeholder) of a business that a Redbelly accredited issuer has verified as an incorporated entity. Proven by a public role read on the business's own BusinessIdentifier contract; no zero-knowledge proof is involved.",
+  "credential": {
+    "types": ["none at the point of check; behind the deployment, business verification by an accredited issuer (Averer) with ProofOfIncorporationCredential and BeneficiariesCredential as the schema-level artefacts"],
+    "fields": {
+      "ProofOfIncorporationCredential": "legalName, legalAddress, registrationNumber, jurisdiction, legalForm (all required)",
+      "BeneficiariesCredential": "beneficiaryNames, beneficiaryRoles"
+    },
+    "whichCredentialBacksTheContract": "Vine says the issuer deploys a BusinessIdentifier after verifying the business; the SDK's business onboarding page says the contract is deployed automatically after KYB. Neither page says the deployment is tied to a ProofOfIncorporationCredential being issued, or that the credential is queryable; ProofOfIncorporation is not on the SDK's queryable list (verify).",
+    "schemaSource": "github.com/redbellynetwork/receptor-schema commit 3b37c11, schemas/json/ProofOfIncorporationCredential.json and BeneficiariesCredential.json",
+    "issuer": {
+      "named": "Averer, via a support ticket or the BusinessOnboardingSdk (API key from Averer customer support)",
+      "who may apply": "directors or officeholders, or parties they authorise, who already hold a personal Redbelly account",
+      "whatTheApplicantProvides": "beneficial-owner declaration, the registered public addresses of the initial authorised representatives, registered business address, incorporated name, proof of authorisation if not an officeholder, the applicant's Redbelly address and full name"
+    }
+  },
+  "query": {
+    "mechanism": "contract-read",
+    "read": "BusinessIdentifier(identifier).hasRole(role, wallet) with role = AUTHORISED_DELEGATE_ROLE (keccak256(\"AUTHORISED_DELEGATE\") = 0x6494d5e3707430a1857c88818398044db72cc7b27132465c5a1deeabbc7cfb96) or AUTHORISED_REPRESENTATIVE_ROLE (keccak256(\"AUTHORISED_REPRESENTATIVE\") = 0x863b5b0fef9bf654e0f8d48b44c30a7481c0db52f9f6e900a859fa3097ddd633). hasRole is the public AccessControlUpgradeable getter the contract inherits; the role constants are public in the source Vine prints.",
+    "identifierAddress": "Given to the business by the accredited issuer after verification (Vine's example prints one). There is no registry to look a business up by name from here; the business tells you its identifier address and you pin it. Whether the BusinessIdentifier source Vine prints is the deployed one, and whether the deployed contracts are verified on Routescan, is not confirmed (verify).",
+    "hierarchy": "The contract's own modifiers treat admin (the issuer, DEFAULT_ADMIN_ROLE) above representative above delegate. Representatives add and remove delegates; the admin adds and removes representatives. A representative therefore satisfies a delegate check in the contract's own logic; decide whether your gate does the same (this recipe: requestId 0 accepts either role, requestId 1 accepts representatives only; that mapping is this project's convention, nothing Redbelly defines).",
+    "roleHashesSource": "computed with cast keccak on 2026-09-12 from the role strings in the contract source on Vine"
+  },
+  "onChain": {
+    "requestId": 0,
+    "binding": "Gated(verifier, 0) with verifier = a BusinessDelegateAdapter(identifier) implementing IRedbellyVerifier: isEligible(wallet, 0) returns hasRole(DELEGATE, wallet) || hasRole(REPRESENTATIVE, wallet); isEligible(wallet, 1) returns hasRole(REPRESENTATIVE, wallet). Not yet written; receptor-mock ships Iden3VerifierAdapter and VCVerifierAdapter only. One adapter per business identifier, like VCVerifierAdapter is one per verifier.",
+    "howTheCheckMaps": "There is no request to set and no proof to submit. The business's representative calls addAuthorisedDelegate([wallet]) on the identifier contract (through Routescan's write tab, per Vine's steps, or from code); the contract grants the role and, through IBusinessPermission.requestBusinessPermissionForUser, gives that wallet network write access as a sub-account of the business. From then on hasRole answers true and the gate passes. removeAuthorisedDelegate revokes both the role and the network permission in the same call.",
+    "liveness": "Unlike an Iden3 proof, the read is live: the moment a delegate is removed, hasRole is false and every gated call reverts. No stickiness, no freshness window needed.",
+    "networkAccessCoupling": "A delegate's isAllowed comes from the business (RESEARCH.md question 25). Removing the delegate also removes its network write access, so a removed delegate cannot even attempt the call; the gate is the second line."
+  },
+  "fiveStates": {
+    "NeverIssued": "The wallet has neither role on this identifier contract. hasRole false; NotEligible(wallet, 0). Also the state of a wallet that holds a role on a different business's contract when your gate pins this one.",
+    "Valid": "hasRole(DELEGATE) or hasRole(REPRESENTATIVE) true on the pinned identifier. Passes. In tests: mock.setStatus(wallet, 0, Valid); against a fork, a representative wallet calling addAuthorisedDelegate.",
+    "Expired": "Roles do not expire in the contract source; there is no time field. The state is unreachable on a real identifier. Keep the mock test (setValidUntil then vm.warp) so the gate is proven to reject it anyway, and note that if Redbelly adds expiry later the gate already handles it.",
+    "Revoked": "removeAuthorisedDelegate (by a representative) or removeAuthorisedRepresentative (by the admin) ran. hasRole false at once and the wallet's network permission is withdrawn in the same transaction. In tests: mock.setStatus(wallet, 0, Revoked); against a fork, the remove call.",
+    "WrongJurisdiction": "The wallet holds a role, but on another business's identifier, or holds only the delegate role where the gate demands a representative (requestId 1). In tests: mock.setStatus(wallet, 1, WrongJurisdiction) or a role on a second mock identifier."
+  },
+  "privacy": {
+    "leavesWallet": [
+      "Nothing at check time: the gate is a view call your contract makes. The wallet only sends the gated transaction itself.",
+      "At onboarding, whatever the business's representative gave Averer; none of it is the delegate's personal data unless the delegate is also the applicant."
+    ],
+    "landsOnChain": [
+      "Everything about the business, in public storage on its identifier contract: company name, incorporated name, identifier type and identifier (an ABN or ACN, say), business address, the beneficial-owner flag, the list of official smart contracts.",
+      "Every role grant and removal as a RoleUpdated event with the wallet address, so the set of delegates and representatives is public history. Vine states this openly: the contract exists to let anyone check whether an address is officially associated with a business.",
+      "The delegate wallet's link to the business is therefore public and permanent in the log even after removal."
+    ],
+    "neverOnChain": [
+      "The delegate's own identity: a delegate gets write access as a sub-account of the business without their own KYC.",
+      "The KYB documents Averer saw."
+    ],
+    "consequence": "Use delegate wallets for service accounts and deployments where a public link to the business is wanted (RESEARCH.md question 20 notes business wallets are the one publicly linkable case). Do not use a wallet that is also a person's personal, KYC-linked wallet as a delegate unless they accept that the link is public."
+  },
+  "verify": [
+    { "what": "which credential backs the BusinessIdentifier deployment", "why": "Vine and the SDK page say the issuer deploys the contract after verification; neither ties it to ProofOfIncorporationCredential, which is not on the queryable list." },
+    { "what": "the deployed BusinessIdentifier matches the source Vine prints", "why": "Vine shows an example structure; no verified source has been located on Routescan for a live identifier." },
+    { "what": "Routescan write-tab flow", "why": "Vine's steps for addAuthorisedDelegate go through the explorer's connected-wallet write tab; not exercised here." },
+    { "what": "the requestId convention", "why": "0 for either role, 1 for representatives only is this project's choice for the adapter, not a Redbelly definition." },
+    { "what": "BusinessDelegateAdapter", "why": "Not yet written or tested; receptor-mock has adapters for Iden3 and VC verifiers only." }
+  ],
+  "sources": [
+    { "what": "BusinessIdentifier source: roles, modifiers, addAuthorisedDelegate / removeAuthorisedDelegate with network permission, RoleUpdated event, public business fields; the Routescan steps", "url": "https://vine.redbelly.network/business-verification/identifier-contract/", "checked": "2026-09-12" },
+    { "what": "Business verification: who applies, what they provide, Averer as the issuer", "url": "https://vine.redbelly.network/business-verification/verify-business/", "checked": "2026-09-12" },
+    { "what": "BusinessOnboardingSdk by Averer, automatic deployment after KYB, delegated access without per-account KYB, API key from Averer", "url": "https://docs.redbelly.network/pages/eligibility-sdk/onboarding/business/overview/", "checked": "2026-09-12" },
+    { "what": "ProofOfIncorporationCredential and BeneficiariesCredential fields", "url": "https://github.com/redbellynetwork/receptor-schema/tree/3b37c11/schemas/json", "checked": "2026-09-12" },
+    { "what": "Role hashes computed with cast keccak", "url": "cast keccak AUTHORISED_DELEGATE; cast keccak AUTHORISED_REPRESENTATIVE (forge 1.5.1)", "checked": "2026-09-12" },
+    { "what": "Delegates get network write access as business sub-accounts; business wallets are publicly linkable", "url": "../../RESEARCH.md questions 20 and 25", "checked": "2026-09-12" }
+  ],
+  "open": ["RESEARCH.md 20", "RESEARCH.md 25"]
+}

@@ -1,0 +1,41 @@
+---
+// PageTitle override: the h1, a status pill from frontmatter, and the Verified badge under it.
+// The id `_top` is Starlight's PAGE_TITLE_ID; its skip link and "overview" TOC entry point at it.
+import StatusPill from '../StatusPill.astro';
+import Verified from '../Verified.astro';
+const { entry } = Astro.locals.starlightRoute;
+const data = entry.data;
+// The landing page draws its own h1 inside <Landing />; the panel this override sits in is
+// hidden through the marker below so the page has one h1 and no empty hairline band.
+const landing = data.template === 'splash' && !data.hero && (entry.id === 'index' || entry.id === '' || Astro.locals.starlightRoute.slug === '');
+---
+
+{landing ? <span class="rb-no-title" hidden /> : (
+<div class="rb-page-title">
+  <h1 id="_top">
+    {data.title}
+    {data.status && <StatusPill variant={data.status} label={data.statusLabel} />}
+  </h1>
+  {
+    data.lastVerified && (
+      <Verified date={data.lastVerified} with={data.verifiedWith} source={data.verifiedSource} />
+    )
+  }
+</div>
+)}
+
+<style>
+  .rb-page-title { display: flex; flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+  h1 {
+    margin-top: 1rem;
+    font-size: var(--sl-text-h1);
+    line-height: var(--sl-line-height-headings);
+    font-weight: var(--rb-weight-heading);
+    letter-spacing: var(--rb-tracking-tight);
+    color: var(--rb-color-heading);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+  }
+</style>

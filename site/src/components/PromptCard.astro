@@ -1,0 +1,165 @@
+---
+// One prompt card (PLAN section 14.1): level pill and time, title, one-line outcome, the
+// prompt in a mono block with its own copy button, the learn line, recipe chips and the
+// last-verified badge, which links to the run record when one exists. A card reads
+// "Verification pending" until a run on a fresh scaffold has been recorded under cards/runs/;
+// a verified card with one agent still says a second is pending, because the plan asks for two.
+import CopyButton from './CopyButton.astro';
+import Tip from './Tip.astro';
+import Verified from './Verified.astro';
+import { levelLabels, levelWeight, recipeLabels, tipFor, RUNS_BASE, type PromptCardData } from '../data/cards';
+interface Props { card: PromptCardData }
+const { card } = Astro.props;
+const promptId = `prompt-${card.n}`;
+const runSource = card.run ? { label: 'run record', href: RUNS_BASE + card.run } : undefined;
+const marks = [1, 2, 3];
+---
+
+<li class="rb-pcard" data-level={card.level} data-recipes={card.recipes.join(' ')} id={`card-${card.n}`}>
+  <div class="rb-pcard__meta">
+    <Tip id={`tip-${card.n}-level`} text={tipFor.get(card.level)!} class="rb-pcard__level" placement="bottom" narrow="inline">
+      {/* Three marks, filled by effort. Colour is never the signal: the label is always there,
+          and the meter still reads in greyscale or at any contrast setting. */}
+      <span class="rb-pcard__marks" aria-hidden="true">
+        {marks.map((m) => <span class="rb-pcard__mark" data-on={m <= levelWeight[card.level] ? '' : undefined} />)}
+      </span>
+      {levelLabels[card.level]}
+    </Tip>
+    <span class="rb-pcard__time">{card.time}</span>
+  </div>
+  <h3 class="rb-pcard__title"><span class="rb-pcard__n">{card.n}</span> {card.title}</h3>
+  <p class="rb-pcard__outcome">{card.outcome}</p>
+  {card.slug && (
+    <p class="rb-pcard__open"><a href={`/tutorials/${card.slug}/`}>Open the project, step by step &rarr;</a></p>
+  )}
+  <div class="rb-pcard__prompt">
+    <p class="rb-eyebrow">Say to your agent</p>
+    <pre id={promptId} tabindex="0">{card.prompt}</pre>
+    <CopyButton target={promptId} label={`Copy prompt ${card.n}: ${card.title}`} short="Copy prompt" class="rb-pcard__copy" />
+  </div>
+  <p class="rb-pcard__learn"><span class="rb-pcard__learn-label">Learns</span> {card.learn}</p>
+  <div class="rb-pcard__foot">
+    <span class="rb-pcard__recipes">
+      {card.recipes.map((r) => (
+        <Tip id={`tip-${card.n}-${r}`} text={tipFor.get(r)!} class="rb-chip" narrow="inline">{recipeLabels[r]}</Tip>
+      ))}
+    </span>
+    <Verified date={card.lastVerified} with={card.verifiedWith} source={runSource} />
+  </div>
+  {card.lastVerified && card.forkOnly && <p class="rb-pcard__note">Proven on a fork of testnet. The testnet deploy and the Routescan verification this prompt asks for wait for a wallet.</p>}
+  {card.lastVerified && card.secondAgentPending && <p class="rb-pcard__note">One agent so far; the plan asks for two. A second run is pending.</p>}
+</li>
+
+<style>
+  .rb-pcard {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    margin: 0;
+    padding: 1.25rem;
+    border: 1px solid var(--rb-color-hairline);
+    border-radius: var(--rb-radius-lg);
+    background: var(--rb-color-bg);
+    transition: border-color var(--rb-duration-base) var(--rb-ease-standard), box-shadow var(--rb-duration-base) var(--rb-ease-standard);
+  }
+  .rb-pcard:hover { border-color: var(--rb-color-hairline-strong); box-shadow: var(--rb-shadow-md); }
+  .rb-pcard[hidden] { display: none; }
+  .rb-pcard__open { margin: 0; font-size: var(--sl-text-sm); }
+  .rb-pcard__open a { color: var(--rb-color-accent); font-weight: 600; text-decoration: underline; text-underline-offset: 0.2em; }
+
+  /* A tooltip bubble is most of a card wide, so anchoring it to the chip put it outside the card
+     whichever edge it hung from. The row is the anchor instead: both rows span the card's text
+     width, so `left: 0` with `max-width: 100%` cannot overflow, and the row is the same height as
+     the chip so the bubble still sits right beside what it explains. */
+  .rb-pcard__meta,
+  .rb-pcard__foot { position: relative; }
+  .rb-pcard :global(.rb-tip) { position: static; }
+  .rb-pcard :global(.rb-tip__bubble) { left: 0; right: auto; max-width: 100%; }
+  .rb-pcard__meta { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; font-size: var(--sl-text-2xs); color: var(--rb-color-text-muted); }
+
+  /* The level reads as one object: three effort marks and the word, in a pill that responds to a
+     pointer so it is obviously worth hovering. The word is always present, so the marks are a
+     second encoding rather than the only one. */
+  .rb-pcard :global(.rb-pcard__level) {
+    gap: 0.4375rem;
+    padding: 0.3125rem 0.625rem;
+    border-radius: var(--rb-radius-pill);
+    border: 1px solid var(--rb-color-hairline);
+    background: var(--rb-color-surface);
+    color: var(--rb-color-text-strong);
+    font-size: var(--sl-text-2xs);
+    font-weight: 600;
+    line-height: 1;
+    transition: border-color var(--rb-duration-fast) var(--rb-ease-standard),
+                background-color var(--rb-duration-fast) var(--rb-ease-standard);
+  }
+  .rb-pcard :global(.rb-pcard__level:hover) {
+    border-color: var(--rb-color-accent);
+    background: var(--rb-color-accent-low);
+  }
+  .rb-pcard__marks { display: inline-flex; gap: 2px; }
+  .rb-pcard__mark {
+    width: 4px;
+    height: 10px;
+    border-radius: 1px;
+    background: var(--rb-color-hairline-strong);
+    opacity: 0.4;
+  }
+  .rb-pcard__mark[data-on] { background: var(--rb-color-accent); opacity: 1; }
+
+  .rb-pcard__title { margin: 0; display: flex; align-items: baseline; gap: 0.5rem; font-size: var(--sl-text-lg); font-weight: 600; line-height: 1.25; color: var(--rb-color-heading); }
+  .rb-pcard__n {
+    flex: none;
+    min-width: 1.5rem;
+    padding: 0.0625rem 0.25rem;
+    border-radius: var(--rb-radius-sm);
+    background: var(--rb-color-surface);
+    color: var(--rb-color-text-muted);
+    font-size: var(--sl-text-xs);
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    text-align: center;
+  }
+  .rb-pcard__outcome { margin: 0; font-size: var(--sl-text-sm); color: var(--rb-color-text-muted); line-height: 1.5; }
+  .rb-pcard__prompt { position: relative; margin-top: 0.25rem; }
+  .rb-pcard__prompt .rb-eyebrow { margin: 0 0 0.375rem; }
+  .rb-pcard__prompt pre {
+    margin: 0;
+    padding: 0.875rem 1rem 3rem;
+    border-radius: var(--rb-radius-md);
+    background: var(--rb-color-code-block-bg);
+    color: var(--rb-color-code-block-text);
+    font-family: var(--sl-font-mono);
+    font-size: var(--sl-text-xs);
+    line-height: 1.6;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .rb-pcard :global(.rb-pcard__copy) { position: absolute; right: 0.625rem; bottom: 0.625rem; background: #283A46; color: #EFF3F6; border-color: #395060; }
+  .rb-pcard :global(.rb-pcard__copy:hover) { color: #5EEAD4; border-color: #5EEAD4; }
+  .rb-pcard :global(.rb-pcard__copy[data-copied]) { background: #134E4A; color: #CCFBF1; border-color: #5EEAD4; }
+  .rb-pcard__learn { margin: 0; font-size: var(--sl-text-sm); line-height: 1.5; }
+  .rb-pcard__learn-label { font-weight: 600; color: var(--rb-color-text-strong); }
+  .rb-pcard__learn-label::after { content: ':'; }
+  .rb-pcard__foot { margin-top: auto; padding-top: 0.5rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem; }
+  .rb-pcard__recipes { display: flex; flex-wrap: wrap; gap: 0.375rem; }
+  .rb-pcard__note { margin: 0; font-size: var(--sl-text-2xs); color: var(--rb-color-text-muted); line-height: 1.4; }
+  /* A recipe chip now carries a direction, so it is a control and looks like one: it reacts to a
+     pointer and keeps the site's one focus ring. */
+  .rb-pcard :global(.rb-chip) {
+    font-size: var(--sl-text-2xs);
+    font-weight: 500;
+    line-height: 1;
+    padding: 0.3125rem 0.5rem;
+    border-radius: var(--rb-radius-md);
+    background: var(--rb-color-surface);
+    color: var(--rb-color-text);
+    border: 1px solid var(--rb-color-hairline);
+    transition: border-color var(--rb-duration-fast) var(--rb-ease-standard),
+                color var(--rb-duration-fast) var(--rb-ease-standard);
+  }
+  .rb-pcard :global(.rb-chip:hover) {
+    border-color: var(--rb-color-accent);
+    color: var(--rb-color-text-strong);
+  }
+</style>

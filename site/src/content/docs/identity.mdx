@@ -1,0 +1,119 @@
+---
+title: Identity for builders
+description: 'Receptor from the builder''s side: three roles, on-chain against in-app verification, no network-wide verifier, the five credential states, business identities, and the token and key you need before the SDK will install.'
+lastVerified: '2026-09-12'
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import ForAgents from '../../components/ForAgents.astro';
+import VineAside from '../../components/VineAside.astro';
+import StatusPill from '../../components/StatusPill.astro';
+import Sample from '../../components/Sample.astro';
+
+<ForAgents
+  page="Identity for builders"
+  facts={[
+    'Three roles: issuers verify people and hand out credentials; holders keep them in their wallet; verifiers (your dApp) declare which credentials an action needs. The dApp never sees the documents.',
+    'There is no network-wide verifier contract to pin. Each dApp deploys its own: a VCVerifierBaseContract child or an Iden3 ZKPVerifier child. On-chain verification supports a single query today.',
+    'The Eligibility SDK (@redbellynetwork/eligibility-sdk) is on GitHub Packages. Installing needs a GitHub token with read:packages; running needs a verifier API key from Redbelly support. You cannot obtain either. When one is missing, stop and say where it comes from. Do not stub the SDK.',
+    'Seven schemas are queryable: AMLCTF, AUSophisticatedWholesaleInvestor, DriversLicence, EssentialId, NationalId, Passport, ProofOfAddress. Do not invent others.',
+    'Test every gated function in five states: valid, expired, revoked, wrong-jurisdiction, never-issued. Fewer than five is untested.',
+    'Keep revocation checks on in production. Off-chain queries use credentialAtomicQuerySigV2; on-chain use credentialAtomicQuerySigV2OnChain.',
+    'Gate with Gated from @gatedpath/receptor-mock: inherit it, apply gated (caller) or gatedFor(address) (second party), implement _authorizeVerifierChange with your owner check. Test with GatedTest: assertRevertsForAllInvalidStates and assertGatedPair.',
+    'Production points Gated at Iden3VerifierAdapter or VCVerifierAdapter over the dApp\'s own deployed verifier. ReceptorMock refuses to deploy on chain 151.',
+    'The four recipes in recipes/ are drafts. Anything marked verify in a recipe.json is not pinned by the docs; do not resolve it by guessing.',
+    'Ignore the addresses on docs.redbelly.network/pages/general/rb-env/. They hold no code on either network and the page calls mainnet chain 154.',
+  ]}
+/>
+
+<Aside type="caution" title="Two things you need before the SDK will install, stated up front">
+The Eligibility SDK is published on GitHub Packages, not npm. To install it you need a GitHub token with the `read:packages` scope, pointed at the `@redbellynetwork` scope in `.npmrc`. To run it you need a verifier API key, which comes from Redbelly support. An agent cannot get either for you. Nothing else on this site needs them; the golden path stops short of the SDK on purpose. Source: [Eligibility SDK, getting started](https://docs.redbelly.network/pages/eligibility-sdk/getting-started/), read 12 September 2026. Whether a self-serve key is planned is a question I have put to Redbelly.
+</Aside>
+
+Receptor is Redbelly's identity layer. The docs at [docs.redbelly.network](https://docs.redbelly.network/pages/receptor/) describe it; this page says what it looks like from a contract and a front end.
+
+## Three roles
+
+An issuer is an accredited organisation that verifies a person or a business and issues a W3C verifiable credential. The accredited issuer registry is on-chain: `0x2d68f1C50a057a310EeF28DF3199F95A65cE4ac5` on mainnet, `0x6aEe06F4052ff6d01Ed7E13Fa5Ab53675756A057` on testnet. Issuers take a share of network fees. Averer is the named issuer for business verification.
+
+A holder is the person with the wallet. Credentials live in their identity wallet (Privado web and mobile today; a "Guardian Wallet" is in development per the docs), not in your dApp and not on-chain.
+
+A verifier is you. Your dApp declares which credentials an action requires and checks a proof. It learns "over 18 in Australia" and never the date of birth. Over-disclosure is a design mistake you cannot fix after launch, so decide what each check must prove and what it must never reveal before you write the query.
+
+<VineAside href="https://vine.redbelly.network/identity/accredited-issuers/" label="Vine: accredited issuers">
+Who the issuers are, how they are accredited and how the fee share works.
+</VineAside>
+
+## On-chain against in-app
+
+Two methods exist, and they sit in different places.
+
+Proof by Query is the on-chain path. The holder proves an Iden3 query about a credential with a zero-knowledge proof; your contract, a child of Iden3's `ZKPVerifier`, checks it. The query type on-chain is `credentialAtomicQuerySigV2OnChain`. Only a single query per check is supported today; multi-query and selective disclosure on-chain are listed as coming. This is the path for anything that must hold on the contract itself: a gated transfer, a gated mint, a role that a credential grants.
+
+Selective Disclosure is the off-chain path (Mattr BBS+). The holder reveals chosen fields to your application, which verifies them off-chain with `credentialAtomicQuerySigV2`. This is the path for your front end and your back office: showing the right screen, letting someone into a flow, satisfying a records requirement. It protects your app, not your contract.
+
+Use both. The contract is what enforces, and the app is what explains. A front end that only checks in-app leaves the contract open to anyone who calls it directly. A contract that only checks on-chain gives the person no warning until a transaction fails.
+
+The query operators the SDK supports are `$eq`, `$ne`, `$in`, `$nin`, `$lt`, `$lte`, `$gt`, `$gte`, `$between`, `$nonbetween` and `$exists`; the QR payload limit is about 3 KB. Source: [configure eligibility criteria](https://docs.redbelly.network/pages/eligibility-sdk/configure-eligibility-criteria/) and [Proof by Query](https://docs.redbelly.network/pages/methods/proof-by-query/), 12 September 2026.
+
+## No network-wide verifier
+
+There is not one to pin. Every dApp deploys its own verifier contract, either a `VCVerifierBaseContract` child (from the npm package `@redbellynetwork/receptor-standardvc-sc`, GitHub Packages) or an Iden3 `ZKPVerifier` child. So the pre-flight item you might expect, "verifier address matches the environment", does not exist. What replaces it: the deployer passes `isAllowed` on the target chain, and the issuer registry address matches the target chain.
+
+Two things to ignore. The archived `receptor-verifier-contract-example` repository is superseded; it pins solc 0.8.22 and Shanghai, and its testnet deployment is not verified on Routescan. The docs environment page lists Iden3 State, Poseidon and MTP addresses that hold no code on either network and labels mainnet as chain 154; nothing from it is used anywhere in this project.
+
+## IRedbellyVerifier and the adapters
+
+Because there is no network verifier to pin, the kit binds to one small interface of its own and puts an adapter, or the mock, behind it. That is `@gatedpath/receptor-mock` (`packages/receptor-mock/`): solc 0.8.30, Prague, 222 lines of source, no runtime dependencies.
+
+<Sample id="verifier-interface" />
+
+`Gated` is the base contract every template gates with: one verifier, one request id, `gated` for the caller and `gatedFor(address)` for a second party, a `NotEligible(wallet, requestId)` custom error, and `setVerifier` and `setRequestId` behind an abstract `_authorizeVerifierChange()` hook you wire to `Ownable`, `AccessControl` or a Safe. Forgetting the hook does not compile. Because a reverted transaction's error data is gone once mined on a chain with no trace RPC, there is also a non-reverting path, `_checkEligible` plus `_recordDenial`, that leaves the denial on the log.
+
+<Sample id="gated-modifiers" />
+
+The worked child is a counter: a caller-gated action, a two-party action, and the logging path.
+
+<Sample id="gated-counter" />
+
+Two adapters present a real verifier through the same interface. `Iden3VerifierAdapter` wraps a deployed Iden3 verifier and restates one read per release, because the Iden3 read has changed shape three times and the packages pin solc 0.8.27 exactly: `proofs(address,uint64)` for 1.x (the shape in Redbelly's docs example), `isProofVerified(address,uint64)` for 2.x, `isRequestProofVerified(address,uint256)` for 3.x. A revert from the target reads as not eligible, so a wrong surface fails closed. Which release Redbelly's verifier backend deploys from is not answerable from public sources (question 29). `VCVerifierAdapter` wraps a `VCVerifierBaseContract` child that exposes `verificationStatus(address)`, the getter the archived example's child has and its testnet deployment answers; the base contract's own ABI sits behind GitHub Packages and stays unverified. Real verifiers only know accepted or not, so adapters return `Valid` or `NeverIssued` only, and production logic must never branch on the other states.
+
+## The five credential states
+
+Every gated function is tested in five states, and a gate with fewer than five tests is untested:
+
+| State | What the holder has | What your contract must do | What your UI shows |
+|---|---|---|---|
+| Valid | A current credential that satisfies the query | Allow | The action |
+| Expired | A credential past its validity | Refuse | "Renew your credential", with the issuer |
+| Revoked | A credential the issuer has withdrawn | Refuse; decide what happens to an existing position | "Contact your issuer" |
+| Wrong jurisdiction | A valid credential that fails the predicate | Refuse | Why, in plain words, without revealing the value |
+| Never issued | No credential at all | Refuse | Where to get one |
+
+`GatedTest` is the Foundry base that makes the five states a habit: `assertRevertsForAllInvalidStates` sets each non-valid state on the mock, calls the target as the wallet, asserts the exact `NotEligible` revert, then sets `Valid` and asserts success; `assertGatedPair` does it for both parties of a two-sided action. The scaffold's templates run every gated function through them.
+
+<Sample id="five-state-test" />
+
+Revocation is the state that needs a decision, not just a test: freeze, custody or leave in place, and the race between a transfer approved at block N and a revocation at N+1. Whether revocation also freezes plain transfers at the network level is open question 24. One more thing the recipes turned up: an accepted Iden3 proof is a record on your contract that nothing in the read pages clears on expiry or revocation, so contracts on 2.x or 3.x need a freshness window and contracts on 1.x need a new request id.
+
+## Business verification and delegate wallets
+
+A business proves it is an incorporated entity to an accredited issuer (Averer, by ticket or through the business onboarding SDK). The applicant must already hold a personal account. On verification a `BusinessIdentifier` contract is deployed, a UUPS contract with representative and delegate roles. Addresses added as delegates get write access to the network as sub-accounts of the business, without their own KYC.
+
+For a builder this is the clean place for deployment and operations wallets: under the business, not under a director's personal identity. The contract publicly lists representatives, delegates and official contracts, so business wallets are linkable by anyone; personal wallets under one identity are not, as far as any page states (question 20, partial). Whether a delegate's actions can reach the representative's personal identity is question 25, sharpened and with Redbelly.
+
+<VineAside href="https://vine.redbelly.network/business-verification/verify-business/" label="Vine: verify a business">
+The process, and the [identifier contract page](https://vine.redbelly.network/business-verification/identifier-contract/) with the roles and example source.
+</VineAside>
+
+## Schemas you can query
+
+Twelve schemas exist in the `receptor-schema` repository (commit 3b37c11, 2 July 2026); seven are queryable through the SDK: AMLCTF, AUSophisticatedWholesaleInvestor, DriversLicence, EssentialId, NationalId, Passport, ProofOfAddress. The testnet issuer DID is `did:receptor:redbelly:testnet:31K82iKCtE6ciDc7oAr3T5EpjZb4S1EFM7c4xJaWkM2`. Which issuers are live on mainnet needs the registry's ABI, which is not published; that is question 15's remaining part.
+
+## Recipes
+
+Four recipes exist in `recipes/`, each as `recipe.json` plus a README that says the same thing in prose: `over-18`, `au-wholesale-investor`, `accredited-issuer` and `business-delegate`. Each states the criterion in plain language, the Iden3 query as the docs pin it, the credential type and issuer, how the check maps onto `Gated(verifier, requestId)`, the five-state expectations, a privacy note and dated sources. The first three are Iden3 on-chain single queries; the fourth is a `hasRole` read on the business's `BusinessIdentifier` contract. `node recipes/check.mjs` proves every recipe carries every section.
+
+Every recipe is a draft. Twenty-four `verify` markers name what the docs do not pin: the on-chain circuit id (the SDK page says Sig, the contract example says MTP), mainnet issuer DIDs, whether the circuits enforce credential expiry, the proof-of-issuance query shape, the wholesale credential's legal test, and which credential backs a `BusinessIdentifier` deployment. None has met a live verifier, because that needs the Eligibility SDK's token and key. The over-18 recipe, as data:
+
+<Sample id="recipe-over-18" wrap={true} />

@@ -1,0 +1,16 @@
+# Foundry build output and broadcast logs (broadcast/ holds tx hashes and addresses; keep the
+# deployments/ record instead, which the deploy script writes without any secret).
+out/
+cache/
+broadcast/
+# Dependencies. receptor-mock is vendored by the scaffolder into lib/ and committed on purpose;
+# forge-std is re-fetched at its pinned tag by `forge install --no-git`, OpenZeppelin by npm.
+lib/forge-std/
+node_modules/
+# Keystores never live in the project. Foundry keeps them in ~/.foundry/keystores.
+*.keystore
+keystore/
+keystores/
+.env
+.env.*
+!.env.example

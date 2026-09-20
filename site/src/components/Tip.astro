@@ -1,0 +1,133 @@
+---
+// A short tooltip on a label that a reader cannot decode on its own.
+//
+// No JavaScript: the trigger is a real button, the bubble is a sibling shown on hover and on
+// :focus-visible, and the button carries aria-describedby so a screen reader announces the text
+// without the bubble ever being visible. That covers mouse, keyboard and touch, because tapping a
+// button focuses it.
+//
+// The id is passed in rather than generated, so two chips with the same words on one page cannot
+// collide and the markup is identical between builds.
+//
+// Rules this follows (design/DESIGN.md sections 6 and 7): the focus ring is the site's one rule,
+// the trigger meets the 44px target on a coarse pointer, only named properties transition, and
+// under prefers-reduced-motion the duration tokens are already 0ms so it appears instantly.
+interface Props {
+  /** Unique on the page, e.g. `tip-7-level`. */
+  id: string;
+  /** The direction itself. One or two sentences; it is a nudge, not documentation. */
+  text: string;
+  /** Extra classes for the trigger, so a caller can style the chip it wraps. */
+  class?: string;
+  /** Where the bubble sits relative to the trigger. */
+  placement?: 'top' | 'bottom';
+  /**
+   * Which edge the bubble hangs from. A trigger on the left of its container wants 'left', so the
+   * bubble grows inwards; the second chip in a row wants 'right' for the same reason. The caller
+   * decides, because only the caller knows where the trigger sits.
+   */
+  side?: 'left' | 'right';
+  /**
+   * What the bubble does below 72em, where there is no spare column to grow into. 'sheet' pins it
+   * to the bottom of the screen, which cannot overflow whatever the trigger's position; 'inline'
+   * keeps it beside the trigger, for callers that have already made that safe (the prompt card
+   * anchors its bubbles to a row that spans the card).
+   */
+  narrow?: 'sheet' | 'inline';
+}
+const { id, text, class: cls, placement = 'top', side = 'left', narrow = 'sheet' } = Astro.props;
+---
+
+<span class="rb-tip">
+  <button type="button" class:list={['rb-tip__trigger', cls]} aria-describedby={id}>
+    <slot />
+  </button>
+  <span role="tooltip" id={id} class="rb-tip__bubble" data-placement={placement} data-side={side} data-narrow={narrow}>{text}</span>
+</span>
+
+<style>
+  .rb-tip { position: relative; display: inline-flex; }
+
+  .rb-tip__trigger {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: help;
+    display: inline-flex;
+    align-items: center;
+  }
+  .rb-tip__trigger:focus-visible {
+    outline: var(--rb-focus-width) solid var(--rb-color-focus);
+    outline-offset: var(--rb-focus-offset);
+  }
+  /* The 44px target on touch, without a 44px-tall pill: the hit area grows, the pill does not. */
+  .rb-tip__trigger { position: relative; }
+  @media (pointer: coarse) {
+    .rb-tip__trigger::after {
+      content: '';
+      position: absolute;
+      left: -0.25rem;
+      right: -0.25rem;
+      top: 50%;
+      height: var(--rb-target-min);
+      transform: translateY(-50%);
+    }
+  }
+
+  /* Anchored to the trigger's left edge rather than centred on it. Every tooltip on this site
+     sits near the left of a card, and a centred bubble was clipped by the card's edge; growing
+     rightwards keeps it inside. The width is capped below the 320px minimum card. */
+  .rb-tip__bubble {
+    position: absolute;
+    left: 0;
+    z-index: 30;
+    width: max-content;
+    max-width: min(15rem, 62vw);
+    padding: 0.5rem 0.625rem;
+    border-radius: var(--rb-radius-md);
+    background: var(--rb-color-slate);
+    color: var(--rb-color-slate-text-on);
+    font-size: var(--sl-text-2xs);
+    font-weight: 400;
+    line-height: 1.45;
+    text-align: left;
+    text-wrap: pretty;
+    box-shadow: var(--rb-shadow-md);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--rb-duration-fast) var(--rb-ease-standard),
+                visibility var(--rb-duration-fast) var(--rb-ease-standard);
+  }
+  .rb-tip__bubble[data-placement='top'] { bottom: calc(100% + 0.5rem); }
+  .rb-tip__bubble[data-placement='bottom'] { top: calc(100% + 0.5rem); }
+
+  .rb-tip__trigger:hover + .rb-tip__bubble,
+  .rb-tip__trigger:focus-visible + .rb-tip__bubble {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  /* A trigger in the right half of a narrow card would push a left-anchored bubble off the edge,
+     so there it hangs from the right and grows inwards instead. */
+  .rb-tip__bubble[data-side='right'] { left: auto; right: 0; }
+
+  /* A pill in running prose can sit anywhere on its line, so beside-the-trigger placement would
+     push a bubble off a phone's edge and give the page a sideways scroll. Below 72em, where the
+     layout has no right-hand column to absorb it, the bubble is a sheet along the bottom of the
+     screen instead. From 72em up it may overlap the contents column, which is wider than it is. */
+  @media (max-width: 71.99em) {
+    .rb-tip__bubble[data-narrow='sheet'] {
+      position: fixed;
+      left: 1rem;
+      right: 1rem;
+      top: auto;
+      bottom: 1rem;
+      width: auto;
+      max-width: none;
+      font-size: var(--sl-text-xs);
+    }
+  }
+</style>

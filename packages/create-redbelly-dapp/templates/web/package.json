@@ -1,0 +1,30 @@
+{
+  "name": "web",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Next.js front end for __PROJECT_NAME__: connect, verify-your-wallet interstitial, one gated action.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@gatedpath/agent-rules": "file:../vendor/redbelly-agent-rules",
+    "@gatedpath/chains": "file:../vendor/redbelly-chains",
+    "@gatedpath/frontend-kit": "file:../vendor/redbelly-frontend-kit",
+    "@tanstack/react-query": "5.102.8",
+    "@walletconnect/ethereum-provider": "2.24.0",
+    "next": "16.3.5",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "viem": "2.56.3",
+    "wagmi": "3.7.7"
+  },
+  "devDependencies": {
+    "@types/node": "22.19.0",
+    "@types/react": "19.2.3",
+    "@types/react-dom": "19.2.3",
+    "typescript": "5.9.3"
+  }
+}

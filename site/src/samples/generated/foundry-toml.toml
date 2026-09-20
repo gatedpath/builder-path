@@ -1,0 +1,20 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+# Verified 12 September 2026: both networks run Prague; Vine states Solidity v0.8.30.
+# See RESEARCH.md question 1. Do not go below cancun.
+solc_version = "0.8.30"
+evm_version = "prague"
+optimizer = true
+optimizer_runs = 200
+
+[rpc_endpoints]
+redbelly_testnet = "${RBN_TESTNET_RPC}"
+redbelly_mainnet = "${RBN_MAINNET_RPC}"
+
+# Routescan Etherscan-compatible endpoints. The base exists and answers keyless
+# (RESEARCH.md question 28); the exact forge verify-contract recipe is still to be proven.
+[etherscan]
+redbelly_testnet = { key = "verifyContract", url = "https://api.routescan.io/v2/network/testnet/evm/153/etherscan", chain = 153 }
+redbelly_mainnet = { key = "verifyContract", url = "https://api.routescan.io/v2/network/mainnet/evm/151/etherscan", chain = 151 }

@@ -1,0 +1,55 @@
+{
+  "name": "@gatedpath/agent-rules",
+  "version": "0.2.0",
+  "description": "One source of truth for Redbelly Network agent rules, rendered to CLAUDE.md, AGENTS.md, Cursor MDC, Copilot instructions, GEMINI.md, llms.txt and llms-full.txt, plus the one table of failure messages the MCP server, the frontend kit and the site share.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gatedpath/builder-path.git",
+    "directory": "packages/agent-rules"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/esm/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    },
+    "./failures": {
+      "types": "./dist/esm/failures.d.ts",
+      "import": "./dist/esm/failures.js",
+      "require": "./dist/cjs/failures.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "redbelly-agent-rules": "dist/esm/cli.js"
+  },
+  "files": [
+    "dist",
+    "generated-samples",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json && tsc -p tsconfig.cjs.json && node -e \"require('fs').writeFileSync('dist/cjs/package.json','{\\\"type\\\":\\\"commonjs\\\"}\\n')\" && node -e \"require('fs').chmodSync('dist/esm/cli.js',0o755)\"",
+    "sync": "node scripts/ensure-chains-built.mjs && node scripts/sync-chain-facts.mjs",
+    "samples": "npm run build && node dist/esm/cli.js --out generated-samples && node scripts/update-readme.mjs",
+    "check": "node dist/esm/cli.js --check --out generated-samples",
+    "test": "npm run build && node scripts/ensure-chains-built.mjs && node --test --test-reporter=spec test/unit.test.mjs test/failures.test.mjs",
+    "prepack": "npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^18.19.0",
+    "typescript": "^5.9.3"
+  },
+  "preferUnplugged": true
+}

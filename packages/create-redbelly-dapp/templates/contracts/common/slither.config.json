@@ -1,0 +1,12 @@
+{
+  "filter_paths": "lib/|node_modules/|test/|script/",
+  "exclude_informational": true,
+  "exclude_low": false,
+  "fail_on": "medium",
+  "solc_remaps": [
+    "forge-std/=lib/forge-std/src/",
+    "@openzeppelin/contracts/=node_modules/@openzeppelin/contracts/",
+    "@gatedpath/receptor-mock/=lib/receptor-mock/src/",
+    "@gatedpath/receptor-mock-test/=lib/receptor-mock/test/"
+  ]
+}

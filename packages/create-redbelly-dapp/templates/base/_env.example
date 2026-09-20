@@ -1,0 +1,34 @@
+# Copy to .env and fill in. Every value here is a public address, a URL or a flag. No key,
+# no seed phrase, no API key ever goes in this file or in .env: signing uses a Foundry
+# keystore (`forge script --account <name>`) or a hardware wallet.
+
+# Public address of the Safe 1.4.1 that will hold every admin role. Required for chain 151
+# (the deploy script refuses without it, or with a threshold below 2). Recommended on 153.
+ADMIN_SAFE=
+
+# Public address of your dApp's own verifier contract (a ZKPVerifier or VCVerifierBaseContract
+# child). Required on 151. Leave empty on 153 to deploy a ReceptorMock for the first run.
+VERIFIER=
+
+# The eligibility request id your verifier answers for. 18 is the over-18 recipe
+# (recipes/over-18/), 708 the AU wholesale investor recipe (recipes/au-wholesale-investor/).
+# Both folders are in this project. Any uint64 works on the mock.
+REQUEST_ID=18
+
+# Public address of the wallet you deploy from, used by `npm run preflight` to check
+# permission.isAllowed and the RBNT balance before you sign anything.
+DEPLOYER=
+
+# Which network preflight and the web app target: 153 (testnet) or 151 (mainnet).
+CHAIN_ID=153
+{{#if web}}
+
+# Web app. NEXT_PUBLIC_ values are shipped to the browser; keep them public by nature.
+# The deployed contract the gated action calls (from deployments/<chain>-*.json after a deploy).
+NEXT_PUBLIC_CONTRACT_ADDRESS=
+# Reown (WalletConnect) project id from https://cloud.reown.com. It is a public identifier,
+# not a secret. Leave empty to run with injected wallets only.
+NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=
+# Chain the web app talks to: 153 or 151.
+NEXT_PUBLIC_CHAIN_ID=153
+{{/if}}

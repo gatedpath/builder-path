@@ -1,0 +1,240 @@
+/* Redbelly Development Tool site: design tokens.
+   Generated 2026-09-12 from the design study in site/design/ (see DESIGN.md for every source).
+   Starlight variables (--sl-*) are named after packages/starlight/src/style/props.css as of 2026-09-12;
+   everything else is ours (--rb-*). Load this file through Starlight's customCss. */
+
+:root {
+  /* Type. Readex Pro (OFL 1.1) matches redbelly.network, Vine and docs.redbelly.network; JetBrains Mono (OFL 1.1) is our code face. */
+  --sl-font: 'Readex Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --sl-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+  --sl-text-2xs: 0.75rem;   /* 12px */
+  --sl-text-xs: 0.8125rem;  /* 13px */
+  --sl-text-sm: 0.875rem;   /* 14px */
+  --sl-text-base: 1rem;     /* 16px */
+  --sl-text-lg: 1.125rem;   /* 18px */
+  --sl-text-xl: 1.25rem;    /* 20px */
+  --sl-text-2xl: 1.5rem;    /* 24px */
+  --sl-text-3xl: 1.75rem;   /* 28px (Starlight default 29px) */
+  --sl-text-4xl: 2rem;      /* 32px (Starlight default 35px) */
+  --sl-text-5xl: 2.5rem;    /* 40px (Starlight default 42px); redbelly.network h3 is 40px */
+  --sl-text-6xl: 3.5rem;    /* 56px; redbelly.network h1 is 56px */
+  --sl-text-body: var(--sl-text-base);
+  --sl-text-body-sm: var(--sl-text-sm);
+  --sl-text-code: var(--sl-text-sm);
+  --sl-text-code-sm: var(--sl-text-xs);
+  --sl-text-h1: var(--sl-text-4xl);   /* 32px on mobile; 40px from 50em, see below */
+  --sl-text-h2: var(--sl-text-2xl);
+  --sl-text-h3: var(--sl-text-xl);
+  --sl-text-h4: var(--sl-text-lg);
+  --sl-line-height: 1.6;              /* redbelly.network body is 22/16 = 1.375, too tight for docs; Vine uses 1.6 */
+  --sl-line-height-headings: 1.15;
+
+  /* Layout. redbelly.network container is 1162px with 15px padding; header 71px. */
+  --sl-nav-height: 4.5rem;            /* 72px */
+  --sl-nav-pad-x: 1rem;
+  --sl-sidebar-width: 17.5rem;        /* 280px */
+  --sl-content-width: 45rem;          /* 720px prose measure; card grids may use --rb-container */
+  --sl-content-pad-x: 1rem;
+  --rb-container: 72.625rem;          /* 1162px */
+  --rb-container-pad: 1rem;
+
+  /* Spacing, 4px base */
+  --rb-space-1: 0.25rem; --rb-space-2: 0.5rem; --rb-space-3: 0.75rem; --rb-space-4: 1rem; --rb-space-5: 1.25rem;
+  --rb-space-6: 1.5rem; --rb-space-8: 2rem; --rb-space-10: 2.5rem; --rb-space-12: 3rem; --rb-space-16: 4rem;
+  --rb-section-y: 3.5rem;             /* 56px mobile; 96px from 50em */
+
+  /* Radii: buttons 3px, chips 6px, cards 10px, panels 16px, pills round (all sampled) */
+  --rb-radius-sm: 3px; --rb-radius-md: 6px; --rb-radius-lg: 10px; --rb-radius-xl: 16px; --rb-radius-pill: 9999px;
+
+  /* Shadows (also mapped onto --sl-shadow-* per theme below) */
+  --rb-shadow-sm: 0 1px 1px 0 rgba(0,0,0,0.08);
+  --rb-shadow-md: 0 8px 10px 0 rgba(0,0,0,0.10);
+  --rb-shadow-lg: 0 4px 24px 0 rgba(0,0,0,0.18);
+  --rb-shadow-hover: 0 1px 6px 0 rgba(0,0,0,0.29);
+
+  /* Motion */
+  --rb-duration-fast: 150ms; --rb-duration-base: 250ms; --rb-duration-slow: 400ms;
+  --rb-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --rb-ease-decelerate: cubic-bezier(0, 0, 0.2, 1);
+
+  /* Focus and targets */
+  --rb-focus-width: 2px; --rb-focus-offset: 2px; --rb-target-min: 44px;
+
+  /* Heading weight. redbelly.network sets 500 on h1, h3, h4; Vine uses 700. We follow redbelly.network. */
+  --rb-weight-heading: 500; --rb-weight-strong: 600; --rb-weight-button: 600;
+  --rb-tracking-tight: -0.02em; --rb-tracking-eyebrow: 0.04em;
+}
+
+@media (min-width: 50em) {
+  :root {
+    --sl-nav-height: 4.5rem;
+    --sl-nav-pad-x: 1.5rem;
+    --sl-text-h1: var(--sl-text-5xl);  /* 40px */
+    --sl-text-h2: var(--sl-text-3xl);  /* 28px */
+    --sl-text-h3: 1.375rem;            /* 22px */
+    --sl-text-h4: var(--sl-text-lg);   /* 18px */
+    --rb-section-y: 6rem;              /* 96px; redbelly.network uses 100px */
+  }
+}
+
+/* Dark is Starlight's default theme (no data-theme attribute, or data-theme="dark"). */
+:root, :root[data-theme="dark"] {
+  /* Starlight greys. In light mode Starlight names the darkest value --sl-color-white and the page background --sl-color-black; keep that inversion. */
+  --sl-color-white: #FFFFFF;
+  --sl-color-gray-1: #EFF3F6;
+  --sl-color-gray-2: #DFE7EC;
+  --sl-color-gray-3: #BFCFD9;
+  --sl-color-gray-4: #848B91;
+  --sl-color-gray-5: #395060;
+  --sl-color-gray-6: #283A46;
+  --sl-color-black: #142530;
+  --sl-color-accent-low: #134E4A;
+  --sl-color-accent: #5EEAD4;
+  --sl-color-accent-high: #99F6E4;
+  --sl-color-text: #DFE7EC;
+  --sl-color-text-accent: #5EEAD4;
+  --sl-color-text-invert: #142530;
+  --sl-color-bg: #142530;
+  --sl-color-bg-nav: #142530;
+  --sl-color-bg-sidebar: #142530;
+  --sl-color-bg-inline-code: #283A46;
+  --sl-color-bg-accent: #5EEAD4;
+  --sl-color-hairline-light: #283A46;
+  --sl-color-hairline: #395060;
+  --sl-color-hairline-shade: #283A46;
+  --sl-shadow-sm: 0 1px 1px 0 rgba(0,0,0,0.08);
+  --sl-shadow-md: 0 8px 10px 0 rgba(0,0,0,0.10);
+  --sl-shadow-lg: 0 4px 24px 0 rgba(0,0,0,0.18);
+
+  /* Ours */
+  --rb-color-bg: #142530;
+  --rb-color-bg-nav: #142530;
+  --rb-color-bg-sidebar: #142530;
+  --rb-color-surface: #1C3140;
+  --rb-color-surface-2: #283A46;
+  --rb-color-hairline: #395060;
+  --rb-color-hairline-light: #283A46;
+  --rb-color-hairline-strong: #848B91;
+  --rb-color-text: #DFE7EC;
+  --rb-color-text-strong: #FFFFFF;
+  --rb-color-text-muted: #BFCFD9;
+  --rb-color-heading: #FFFFFF;
+  --rb-color-accent: #5EEAD4;
+  --rb-color-accent-high: #99F6E4;
+  --rb-color-accent-low: #134E4A;
+  --rb-color-accent-text-on: #142530;
+  --rb-color-slate: #395060;
+  --rb-color-slate-text-on: #FFFFFF;
+  --rb-color-code-bg: #283A46;
+  --rb-color-code-text: #EFF3F6;
+  --rb-color-code-block-bg: #0C1A24;
+  --rb-color-code-block-text: #EFF3F6;
+  --rb-color-testnet-bg: #14532D;
+  --rb-color-testnet-text: #BBF7D0;
+  --rb-color-mainnet-bg: #7F1D1D;
+  --rb-color-mainnet-text: #FECACA;
+  --rb-color-note-bg: #1C3140;
+  --rb-color-note-text: #DFE7EC;
+  --rb-color-note-border: #BFCFD9;
+  --rb-color-tip-bg: #134E4A;
+  --rb-color-tip-text: #CCFBF1;
+  --rb-color-tip-border: #5EEAD4;
+  --rb-color-caution-bg: #451A03;
+  --rb-color-caution-text: #FDE68A;
+  --rb-color-caution-border: #FBBF24;
+  --rb-color-danger-bg: #7F1D1D;
+  --rb-color-danger-text: #FECACA;
+  --rb-color-danger-border: #F87171;
+  --rb-color-agents-bg: #0C1A24;
+  --rb-color-agents-text: #EFF3F6;
+  --rb-color-agents-label: #5EEAD4;
+  --rb-color-verified-bg: #283A46;
+  --rb-color-verified-text: #DFE7EC;
+  --rb-color-stale-bg: #451A03;
+  --rb-color-stale-text: #FDE68A;
+  --rb-color-focus: #5EEAD4;
+  --rb-color-redbelly-ref: #FF5050;
+}
+
+:root[data-theme="light"] {
+  /* Starlight greys. In light mode Starlight names the darkest value --sl-color-white and the page background --sl-color-black; keep that inversion. */
+  --sl-color-white: #21272A;
+  --sl-color-gray-1: #283A46;
+  --sl-color-gray-2: #395060;
+  --sl-color-gray-3: #4C6B80;
+  --sl-color-gray-4: #848B91;
+  --sl-color-gray-5: #BFCFD9;
+  --sl-color-gray-6: #DFE7EC;
+  --sl-color-gray-7: #EFF3F6;
+  --sl-color-black: #FFFFFF;
+  --sl-color-accent-low: #CCFBF1;
+  --sl-color-accent: #0F766E;
+  --sl-color-accent-high: #115E59;
+  --sl-color-text: #283A46;
+  --sl-color-text-accent: #0F766E;
+  --sl-color-text-invert: #FFFFFF;
+  --sl-color-bg: #FFFFFF;
+  --sl-color-bg-nav: #FFFFFF;
+  --sl-color-bg-sidebar: #FFFFFF;
+  --sl-color-bg-inline-code: #F4F4F4;
+  --sl-color-bg-accent: #0F766E;
+  --sl-color-hairline-light: #EFF3F6;
+  --sl-color-hairline: #DFE7EC;
+  --sl-color-hairline-shade: #EFF3F6;
+  --sl-shadow-sm: 0 1px 1px 0 rgba(0,0,0,0.08);
+  --sl-shadow-md: 0 8px 10px 0 rgba(0,0,0,0.10);
+  --sl-shadow-lg: 0 4px 24px 0 rgba(0,0,0,0.18);
+
+  /* Ours */
+  --rb-color-bg: #FFFFFF;
+  --rb-color-bg-nav: #FFFFFF;
+  --rb-color-bg-sidebar: #FFFFFF;
+  --rb-color-surface: #EFF3F6;
+  --rb-color-surface-2: #F4F4F4;
+  --rb-color-hairline: #DFE7EC;
+  --rb-color-hairline-light: #EFF3F6;
+  --rb-color-hairline-strong: #848B91;
+  --rb-color-text: #283A46;
+  --rb-color-text-strong: #21272A;
+  --rb-color-text-muted: #4C6B80;
+  --rb-color-heading: #283A46;
+  --rb-color-accent: #0F766E;
+  --rb-color-accent-high: #115E59;
+  --rb-color-accent-low: #CCFBF1;
+  --rb-color-accent-text-on: #FFFFFF;
+  --rb-color-slate: #395060;
+  --rb-color-slate-text-on: #FFFFFF;
+  --rb-color-code-bg: #F4F4F4;
+  --rb-color-code-text: #283A46;
+  --rb-color-code-block-bg: #142530;
+  --rb-color-code-block-text: #EFF3F6;
+  --rb-color-testnet-bg: #DCFCE7;
+  --rb-color-testnet-text: #166534;
+  --rb-color-mainnet-bg: #FEE2E2;
+  --rb-color-mainnet-text: #991B1B;
+  --rb-color-note-bg: #EFF3F6;
+  --rb-color-note-text: #283A46;
+  --rb-color-note-border: #395060;
+  --rb-color-tip-bg: #CCFBF1;
+  --rb-color-tip-text: #134E4A;
+  --rb-color-tip-border: #0F766E;
+  --rb-color-caution-bg: #FEF3C7;
+  --rb-color-caution-text: #78350F;
+  --rb-color-caution-border: #B45309;
+  --rb-color-danger-bg: #FEE2E2;
+  --rb-color-danger-text: #991B1B;
+  --rb-color-danger-border: #B91C1C;
+  --rb-color-agents-bg: #142530;
+  --rb-color-agents-text: #EFF3F6;
+  --rb-color-agents-label: #5EEAD4;
+  --rb-color-verified-bg: #DFE7EC;
+  --rb-color-verified-text: #283A46;
+  --rb-color-stale-bg: #FEF3C7;
+  --rb-color-stale-text: #78350F;
+  --rb-color-focus: #0F766E;
+  --rb-color-redbelly-ref: #FF5050;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --rb-duration-fast: 0ms; --rb-duration-base: 0ms; --rb-duration-slow: 0ms; }
+}

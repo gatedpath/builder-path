@@ -1,0 +1,81 @@
+---
+// One copy control for the whole site: copies the text of the element `target` names (a
+// <template> or any element), or fetches `url` and copies the response. The script is
+// bundled once however many buttons a page has.
+interface Props { target?: string; url?: string; label: string; short?: string; class?: string; dark?: boolean }
+const { target, url, label, short = 'Copy', class: cls, dark = false } = Astro.props;
+---
+
+<button
+  type="button"
+  class:list={['rb-copy', { 'rb-copy--dark': dark }, cls]}
+  data-rb-copy
+  data-copy-target={target}
+  data-copy-url={url}
+  aria-label={label}
+>
+  <svg aria-hidden="true" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10.5 5.5v-2a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2"/></svg>
+  <span data-copy-label aria-live="polite">{short}</span>
+</button>
+
+<script>
+  const read = async (btn: HTMLElement): Promise<string> => {
+    const id = btn.dataset.copyTarget;
+    if (id) {
+      const el = document.getElementById(id);
+      if (el instanceof HTMLTemplateElement) return el.content.textContent ?? '';
+      if (el) return el.textContent ?? '';
+    }
+    const url = btn.dataset.copyUrl;
+    if (url) {
+      const r = await fetch(url);
+      if (!r.ok) throw new Error(String(r.status));
+      return r.text();
+    }
+    return '';
+  };
+  const flash = (btn: HTMLElement, text: string) => {
+    const label = btn.querySelector('[data-copy-label]');
+    if (!label) return;
+    const was = label.textContent;
+    label.textContent = text;
+    btn.setAttribute('data-copied', '');
+    setTimeout(() => { label.textContent = was; btn.removeAttribute('data-copied'); }, 1500);
+  };
+  document.addEventListener('click', async (e) => {
+    const btn = (e.target as HTMLElement | null)?.closest<HTMLElement>('[data-rb-copy]');
+    if (!btn) return;
+    try {
+      await navigator.clipboard.writeText(await read(btn));
+      flash(btn, 'Copied');
+    } catch {
+      flash(btn, 'Copy failed');
+    }
+  });
+</script>
+
+<style>
+  .rb-copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    min-height: 2rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: var(--rb-radius-sm);
+    border: 1px solid var(--rb-color-hairline-strong);
+    background: var(--rb-color-bg);
+    color: var(--rb-color-text);
+    font-family: var(--sl-font);
+    font-size: var(--sl-text-2xs);
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    transition: color var(--rb-duration-fast) var(--rb-ease-standard), border-color var(--rb-duration-base) var(--rb-ease-standard), background-color var(--rb-duration-fast) var(--rb-ease-standard);
+  }
+  .rb-copy:hover { color: var(--rb-color-accent-high); border-color: var(--rb-color-accent); }
+  .rb-copy[data-copied] { background: var(--rb-color-accent-low); color: var(--rb-color-accent-high); border-color: var(--rb-color-accent); }
+  .rb-copy--dark { background: #283A46; color: #EFF3F6; border-color: #395060; }
+  .rb-copy--dark:hover { color: #5EEAD4; border-color: #5EEAD4; }
+  .rb-copy--dark[data-copied] { background: #134E4A; color: #CCFBF1; border-color: #5EEAD4; }
+  @media (pointer: coarse) { .rb-copy { min-height: var(--rb-target-min); min-width: var(--rb-target-min); } }
+</style>

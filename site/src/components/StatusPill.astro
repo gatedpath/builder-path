@@ -1,0 +1,56 @@
+---
+// Pill with a text label, never colour alone. Variants per DESIGN.md: testnet, mainnet,
+// verified, stale, draft; `pending` and `neutral` added for cards and unrun steps.
+//
+// `tipKey` names a direction in data/tips.ts. With one, the pill becomes a tooltip trigger (a real
+// button, see Tip.astro); without one it stays a plain label, so a page's tab order only grows
+// where there is something to say. A key is used once per page: it becomes the element id.
+import Tip from './Tip.astro';
+import { pillTipFor } from '../data/tips';
+export type Variant = 'testnet' | 'mainnet' | 'verified' | 'stale' | 'draft' | 'pending' | 'neutral';
+interface Props {
+  variant: Variant; label?: string; class?: string; tipKey?: string;
+  /** Which way the direction opens. 'top' is for a pill at the foot of a page, where a bubble
+      below it would fall past the end of the document. */
+  tipPlacement?: 'top' | 'bottom';
+}
+const defaults: Record<Variant, string> = {
+  testnet: 'Testnet 153',
+  mainnet: 'Mainnet 151',
+  verified: 'Verified',
+  stale: 'Re-verify',
+  draft: 'Not yet written',
+  pending: 'Verification pending',
+  neutral: '',
+};
+const { variant, label = defaults[variant], class: cls, tipKey, tipPlacement = 'bottom' } = Astro.props;
+const tip = tipKey ? pillTipFor.get(tipKey) : undefined;
+if (tipKey && !tip) throw new Error(`StatusPill: no tip with key "${tipKey}" in data/tips.ts`);
+---
+
+{tip
+  ? <Tip id={`tip-${tipKey}`} text={tip} class={`rb-pill rb-pill--${variant} rb-pill--tip ${cls ?? ''}`} placement={tipPlacement}>{label}</Tip>
+  : <span class:list={['rb-pill', `rb-pill--${variant}`, cls]}>{label}</span>}
+
+<style>
+  :global(.rb-pill) {
+    display: inline-block;
+    font-family: var(--sl-font);
+    font-size: var(--sl-text-2xs);
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.01em;
+    padding: 0.3125rem 0.625rem;
+    border-radius: var(--rb-radius-pill);
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+  :global(.rb-pill--testnet) { background: var(--rb-color-testnet-bg); color: var(--rb-color-testnet-text); }
+  :global(.rb-pill--mainnet) { background: var(--rb-color-mainnet-bg); color: var(--rb-color-mainnet-text); }
+  :global(.rb-pill--verified), :global(.rb-pill--neutral) { background: var(--rb-color-verified-bg); color: var(--rb-color-verified-text); }
+  :global(.rb-pill--stale) { background: var(--rb-color-stale-bg); color: var(--rb-color-stale-text); }
+  :global(.rb-pill--draft), :global(.rb-pill--pending) { background: var(--rb-color-surface); color: var(--rb-color-text-muted); border: 1px solid var(--rb-color-hairline-strong); }
+  /* A pill that carries a direction shows it: a dotted underline is the long-standing mark for
+     "there is more here", and it costs no colour. */
+  :global(.rb-pill--tip) { text-decoration: underline dotted; text-underline-offset: 0.2em; cursor: help; }
+</style>

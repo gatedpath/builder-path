@@ -1,0 +1,50 @@
+---
+title: Tutorials
+description: Twelve prompt cards from warm-up to stretch, filterable by level and recipe; every card is executed before it ships, and the four warm-ups have been, with one agent.
+lastVerified: '2026-09-12'
+---
+
+import ForAgents from '../../components/ForAgents.astro';
+import CardGrid from '../../components/CardGrid.astro';
+import StatusPill from '../../components/StatusPill.astro';
+import { cards } from '../../data/cards';
+
+<ForAgents
+  page="Tutorials"
+  facts={[
+    'Each card is a prompt in a fixed shape: what to build, who may use it, where it runs, how to show it works. Keep that shape when writing your own.',
+    'Cards 1 to 4 were run on 2026-09-12 with one agent (Claude Code) on a fresh scaffold; each compiled, passed the five-state tests and cleared pre-flight, and the run records are linked from the cards. The plan asks for two agents, so a second run is pending. Cards 5 to 12 have not been run; treat them as drafts.',
+    'Every card targets testnet (chain 153). None asks for a mainnet deploy; card 4 asks you to watch pre-flight refuse one.',
+    'The recipes the cards name exist as drafts in recipes/ (over-18, au-wholesale-investor, accredited-issuer, business-delegate) with verify markers where the docs are silent. Bind the request id, run the five states, and treat every verify marker as open; the jurisdiction recipe is not written yet.',
+  ]}
+/>
+
+After the golden path you have a verified wallet, a project, and an agent that has read the rules file. The cards below stop the hand-holding. Each one names a recipe, a network and a proof, and the shape is always the same: what to build, who may use it, where it runs, how to show it works. Once you have the shape, you will write your own prompts that way.
+
+Every prompt is executed before it is published, on a fresh scaffold, with at least two agents. It ships only if the result compiles, passes the five credential-state tests and clears pre-flight, and it carries the date and the tools used. CI re-runs the set monthly, and a failing card is pulled. <StatusPill variant="verified" label="Warm-ups run 12 Sep 2026, one agent" /> Cards 1 to 4 ran on 12 September 2026 with Claude Code as the agent; each card links to its run record (prompt, diff, `forge test`, pre-flight, wall time, tools). I reworded two of the four prompts because the run showed they did not fit the scaffold; the records say what changed and why. A second agent has not run them yet, and the monthly CI re-run is not wired. <StatusPill variant="pending" label="Cards 5 to 12 not run" /> Those still read "Verification pending", and that is what it means.
+
+## The twelve cards
+
+Pick whichever one you like the sound of. Every card opens its own project page, which takes you through it one step at a time, with a checklist, a track for directing an agent and a track for writing the Solidity yourself, and help with saving your work. Projects 1 to 4 have been run and say what happened. Projects 5 to 12 have not been run yet, and their pages say so plainly and give you only the parts that are proven.
+
+<CardGrid cards={cards} />
+
+## Long-form tutorials
+
+The plan pairs each practical skill with the paper it rests on. None of these is written yet; the concept pages carry the parts that are.
+
+| Tutorial | What you build or learn | Rests on | Status |
+|---|---|---|---|
+| Your first deploy | Scaffold, testnet deploy, explorer verify | nothing | the [start page](/start/) covers it |
+| Why your transaction is final | Deleting reorg handling; off-chain idempotency | DBFT, NCA 2018 | <StatusPill variant="draft" /> |
+| Reading a super block | What the explorer shows; why many proposers per block | Red Belly, S&P 2021 | <StatusPill variant="draft" /> |
+| Gate one function | `Gated` base, the five states in tests | Receptor docs | [the start page](/start/), step 7, covers it; long form <StatusPill variant="draft" /> |
+| Design an eligibility query | Minimum disclosure, age and jurisdiction predicates | Iden3 docs | <StatusPill variant="draft" /> |
+| Handle revocation | Freeze, custody or ignore; the race at N+1 | Receptor docs, our threat model | waits for question 24 |
+| Why accountability matters to you | What a dApp can assume if more than a third misbehave | Polygraph, ICDCS 2021 | <StatusPill variant="draft" /> |
+| Trusting the consensus | What "formally verified" does and doesn't mean | Holistic Verification, DISC 2022 | <StatusPill variant="draft" /> |
+| Budgeting gas in dollars | Fixed pricing; a year of operations; stuck transactions | Vine fees page | [Gas model](/concepts/gas-model/) covers the facts |
+| Porting a Uniswap-style DEX | The forked interface; where gating goes in a swap | Red Belly, S&P 2021 | <StatusPill variant="draft" /> |
+| Set up a Safe and timelock | Admin hygiene where a key is an identity | Safe docs | <StatusPill variant="draft" /> |
+| Prepare for audit | Scope, artefacts, responding to findings | nothing | <StatusPill variant="draft" /> |
+| Monitor in production | Routescan API, an approved Goldsky subgraph, alert rules | nothing | <StatusPill variant="draft" /> |

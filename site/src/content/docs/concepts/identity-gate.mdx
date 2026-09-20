@@ -1,0 +1,50 @@
+---
+title: Identity gate
+description: Every wallet is verified before it can send, and the gate is one read, permission.isAllowed(address), which changes your threat model more than your code.
+lastVerified: '2026-09-12'
+---
+
+import ForAgents from '../../../components/ForAgents.astro';
+import VineAside from '../../../components/VineAside.astro';
+import Sample from '../../../components/Sample.astro';
+
+<ForAgents
+  page="Identity gate"
+  facts={[
+    'Every wallet must pass permission.isAllowed(address) before it can transact. The registry 0xDAFEA492D9c6733ae3d56b7Ed1ADB60692c98Bc5 names the permission contract: mainnet 0xcb385cD90ca6b219798F57B4a7958897e91A9163, testnet 0x519ba1b48D571FD92FAF6FE4D20fe74Ca435B690.',
+    'Read isAllowed for the deployer before every deploy and for the user before every send. False means verification at https://access.redbelly.network has not happened.',
+    'Verification is a passport plus a biometric check, once. Testnet credentials carry over to mainnet.',
+    'The same key and the same credentials work on 151 and 153. Every signature scheme must include the chain ID.',
+    'A stolen key carries a verified identity. Admin roles go behind a Safe from the first testnet deploy.',
+    'Whether revocation freezes plain transfers or only gated actions is open (question 24). Design for either.',
+    'Anvil and Hardhat default accounts 0 and 1 pass isAllowed on both networks and their keys are public (question 30). Never deploy or hold anything from them.'
+  ]}
+/>
+
+<VineAside href="https://vine.redbelly.network/identity/user-access/" label="Vine: user access">
+A person gets write access with an access credential from an accredited issuer, then a self-enable call to a network contract. That happens in the [Access dApp](https://access.redbelly.network).
+</VineAside>
+
+What I measured, 12 September 2026: the registry resolves `permission` on both chains, and `isAllowed(address)` (selector `0xbabcc539`, from the `IPermission` interface in a verified third-party contract on testnet) returned true for two known deployers per network and false for the zero and dead addresses. One address that created a contract on mainnet earlier no longer passes, so an allowance can lapse after use; that bears on question 24 and is not yet explained. The helper's signature and its test:
+
+<Sample id="helpers-signatures" title="packages/chain-definitions/src/helpers.ts (isAllowed)" />
+
+<Sample id="helpers-is-allowed" />
+
+## What this means for your code
+
+One read, in two places. Pre-flight reads `isAllowed` for the deployer on the target chain before any deploy. Your front end reads it for the connected wallet before offering a send, and when it is false it shows one thing, a link to the Access dApp. Do not retry, and do not fall back to another wallet or hide the state.
+
+A key is an identity. On Ethereum a stolen key loses funds; here it also impersonates a verified person or business. Every admin role sits behind a Safe with a threshold of at least two, and Safe 1.4.1 is at its canonical addresses on both networks. High-value user actions should prompt a hardware wallet. Rotate where you can, and rehearse the pause.
+
+Two chains, one key. Chain 151 and 153 share your deployer key and your credentials. Any signature your contracts accept, EIP-712 or permits, must bind the chain ID, and there should be a test that a testnet signature fails on mainnet.
+
+Decide revocation now. If a holder's credential is revoked while they hold a position, does the asset freeze, move to custody, or stay put? What happens to a transfer approved against a credential at block N and revoked at N+1? The network's behaviour on revocation is not documented yet (questions 23 and 24 are with Redbelly), so your contract has to be explicit either way and tested in all five credential states, because a regulator will ask.
+
+Public keys pass the gate too. The scaffolder's fork run found that Anvil's well-known accounts 0 and 1, whose private keys are printed by every local node start, pass `isAllowed` on both 151 and 153; somebody verified the public Hardhat keys (question 30, with Redbelly). Pre-flight warns on any of the ten default accounts whatever `isAllowed` says. I would deploy only from a keystore account.
+
+Businesses are wallets too, but differently. A verified business gets a BusinessIdentifier contract whose delegate wallets have write access as sub-accounts, without their own KYC. Development and deployment wallets belong there rather than under a person. The [identity page](/identity/) covers it.
+
+## Where it comes from
+
+Vine's user-access, accredited-issuers and business-verification pages, the registry and permission reads, and the Routescan source of the checker contract, all 12 September 2026 (research log, questions 7, 20, 24 and 25).

@@ -1,0 +1,21 @@
+---
+// Previous and next project at the foot of a hand-written project page, read from cards.ts so the
+// order and the titles cannot drift. The generated pages draw the same thing themselves.
+import { cards } from '../data/cards';
+interface Props { n: number }
+const { n } = Astro.props;
+const list = cards.filter((c) => c.slug);
+const at = list.findIndex((c) => c.n === n);
+const prev = list[at - 1];
+const next = list[at + 1];
+---
+
+<nav class="rb-pager not-content" aria-label="Other projects">
+  {prev ? <a href={`/tutorials/${prev.slug}/`}>&larr; Project {prev.n}: {prev.title}</a> : <span />}
+  {next ? <a href={`/tutorials/${next.slug}/`}>Project {next.n}: {next.title} &rarr;</a> : <span />}
+</nav>
+
+<style>
+  .rb-pager { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem; font-size: var(--sl-text-sm); }
+  .rb-pager a { color: var(--rb-color-accent); font-weight: 600; text-decoration: underline; text-underline-offset: 0.2em; }
+</style>

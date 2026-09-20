@@ -1,0 +1,50 @@
+{
+  "name": "@gatedpath/contract-kit",
+  "version": "0.2.0",
+  "description": "Contract kit v1 for Redbelly Network: a gated ERC-20 on OpenZeppelin 5.x with both-party eligibility, a compliance role with justified forced transfers, pause, an issuer registry with time-boxed mint permissions, and the Safe plus timelock admin pattern.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gatedpath/builder-path.git",
+    "directory": "packages/contract-kit"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "setup": "bash scripts/setup.sh",
+    "build": "forge build",
+    "test": "forge test",
+    "snapshot": "forge snapshot",
+    "abi:export": "node scripts/export-abi.mjs",
+    "abi:check": "node scripts/export-abi.mjs --check",
+    "slither": "bash scripts/slither.sh",
+    "aderyn": "bash scripts/aderyn.sh",
+    "prepack": "forge build"
+  },
+  "devDependencies": {
+    "@openzeppelin/contracts": "5.6.1"
+  },
+  "files": [
+    "src",
+    "test",
+    "script",
+    "abi",
+    "docs",
+    "remappings.txt",
+    "foundry.toml",
+    "README.md",
+    ".gas-snapshot"
+  ],
+  "exports": {
+    "./package.json": "./package.json",
+    "./abi/*": "./abi/*",
+    "./src/*": "./src/*",
+    "./test/*": "./test/*",
+    "./script/*": "./script/*"
+  },
+  "preferUnplugged": true
+}

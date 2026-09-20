@@ -1,0 +1,87 @@
+{
+  "id": "accredited-issuer",
+  "title": "Credential from a named accredited issuer",
+  "status": "draft",
+  "criterion": "The wallet holder holds a credential of one named type issued by one named Redbelly accredited issuer, and that credential satisfies one condition. The recipe is about pinning the issuer; the worked condition is an AML/CTF check that passed.",
+  "credential": {
+    "types": ["AMLCTFCredential (worked example); any of the seven queryable types with allowedIssuers pinned"],
+    "fields": {
+      "amlCheckStatus": "string, enum passed | failed",
+      "pepStatus": "string, enum passed | failed",
+      "sanctionsCheck": "string, enum passed | failed",
+      "adverseMediaStatus": "string, enum passed | failed",
+      "monitoringStatus": "string, enum active | inactive"
+    },
+    "context": "https://raw.githubusercontent.com/redbellynetwork/receptor-schema/refs/heads/main/schemas/json-ld/AMLCTFCredential.jsonld",
+    "schemaSource": "github.com/redbellynetwork/receptor-schema commit 3b37c11, schemas/json/AMLCTFCredential.json (the five status fields are enums in the schema)",
+    "queryableToday": "AMLCTFCredential is the docs' own off-chain example (amlCheckStatus $eq passed) and on the queryable list.",
+    "issuer": {
+      "whatAccreditedMeans": "Vine: accredited issuers are the class of issuers that may grant network access, must meet minimum onboarding requirements (photo ID plus biometric for users; an onboarded officeholder for businesses), are listed in an on-chain registry, and receive a share of gas fees.",
+      "registry": { "mainnet": "0x2d68f1C50a057a310EeF28DF3199F95A65cE4ac5", "testnet": "0x6aEe06F4052ff6d01Ed7E13Fa5Ab53675756A057", "abi": "not public; no verified source on Routescan (RESEARCH.md question 15)" },
+      "testnetDid": "did:receptor:redbelly:testnet:31K82iKCtE6ciDc7oAr3T5EpjZb4S1EFM7c4xJaWkM2 (the docs' example issuer; which organisation it belongs to is not stated)",
+      "mainnet": "no DID published; read the registry once its ABI is known, or ask Redbelly",
+      "namedIssuer": "Averer is the only issuer Vine names, for business verification. Whether Averer issues AMLCTF credentials, and under which DID, is not stated (verify)."
+    }
+  },
+  "query": {
+    "mechanism": "iden3",
+    "rule": "allowedIssuers holds exactly the DIDs you have decided to trust, never [\"*\"]. The docs' contract example uses the wildcard and says in the same line to use trusted issuer DIDs in production.",
+    "request": {
+      "id": 100,
+      "circuitId": "credentialAtomicQuerySigV2OnChain",
+      "query": {
+        "allowedIssuers": ["did:receptor:redbelly:testnet:31K82iKCtE6ciDc7oAr3T5EpjZb4S1EFM7c4xJaWkM2"],
+        "context": "https://raw.githubusercontent.com/redbellynetwork/receptor-schema/refs/heads/main/schemas/json-ld/AMLCTFCredential.jsonld",
+        "type": "AMLCTFCredential",
+        "credentialSubject": { "amlCheckStatus": { "$eq": "passed" } }
+      }
+    },
+    "shapeSource": "The docs' off-chain single query is exactly this credentialSubject with circuitId credentialAtomicQuerySigV2 and id 100; the docs' on-chain example swaps the circuit for credentialAtomicQuerySigV2OnChain. Combining the two is the only change.",
+    "notNetworkAccess": "This is different from permission.isAllowed. isAllowed says the wallet may transact at all (an access credential from an accredited issuer, self-enabled on the network contract). A recipe says what an action requires on top of that. A wallet can pass isAllowed and hold no AMLCTF credential.",
+    "oneConditionPerRequest": "On-chain single query only. Requiring amlCheckStatus, pepStatus and sanctionsCheck all passed is three requests today, or one off-chain multi-query."
+  },
+  "onChain": {
+    "requestId": 100,
+    "binding": "Gated(verifier, 100) with verifier = Iden3VerifierAdapter(<your ZKPVerifier child>, <Surface>)",
+    "howTheCheckMaps": "setZKPRequest(100, request) stores the query and its allowedIssuers on your verifier; the circuit checks the issuer's identity against that list, so a credential from any other issuer cannot produce an accepted proof. After submitZKPResponse(100, ...) the verifier answers true for (wallet, 100) and Gated.gated passes; otherwise NotEligible(wallet, 100).",
+    "changingIssuers": "Adding or removing a trusted issuer means a new setZKPRequest. Proofs accepted under the old list stay recorded (see stickiness); if you drop an issuer because it went bad, move to a new request id so old proofs stop counting.",
+    "stickiness": "An accepted proof stays on the contract after the credential expires or is revoked unless your contract enforces a freshness window (2.x, 3.x) or moves to a new request id (1.x)."
+  },
+  "fiveStates": {
+    "NeverIssued": "No AMLCTF credential, or no proof for request 100. NotEligible(wallet, 100).",
+    "Valid": "A credential from the pinned issuer with amlCheckStatus passed, not revoked, proof accepted. Passes.",
+    "Expired": "The credential envelope's expiration has passed (the schema has no validity field of its own; monitoringStatus inactive is a value, not an expiry). Fresh proof fails if the circuit checks expiry (verify); an old accepted proof stays. In tests: setValidUntil then vm.warp.",
+    "Revoked": "The issuer revoked it (a check re-run and failed, say); the reverse hash service refuses a non-revocation proof; an old accepted proof stays. In tests: setStatus(wallet, 100, Revoked).",
+    "WrongJurisdiction": "The credential's issuer is not in allowedIssuers, or amlCheckStatus is failed. No proof can exist. This is the state this recipe is about: a real credential from the wrong issuer is refused exactly like no credential. In tests: setStatus(wallet, 100, WrongJurisdiction)."
+  },
+  "privacy": {
+    "leavesWallet": [
+      "A proof for request 100 and its public inputs (holder identity, issuer, schema, query hash; exact signals verify), in a signed transaction."
+    ],
+    "landsOnChain": [
+      "wallet address -> request 100 -> accepted, on your contract.",
+      "The stored request: the credential type, the pinned issuer DIDs, the condition. Anyone can read that wallets passing your gate hold an AML/CTF credential from issuer X with a passed status."
+    ],
+    "neverOnChain": [
+      "The other four status fields, the holder's identity fields (the schema has none), the issuer's internal check results."
+    ],
+    "consequence": "A passed AML check is a compliance fact about a person and is inferable from the gate. Say so in your privacy notice."
+  },
+  "verify": [
+    { "what": "mainnet issuer DIDs", "why": "None is published and the registry ABI is not public." },
+    { "what": "which organisation the testnet DID belongs to and whether it issues AMLCTF credentials", "why": "The docs print the DID as an example without naming the issuer." },
+    { "what": "Averer's DID and credential types", "why": "Vine names Averer for business verification only." },
+    { "what": "circuitId for on-chain proofs", "why": "Sig on the SDK page, MTP in the contract example." },
+    { "what": "expiry enforcement in the circuit", "why": "Not stated in Redbelly's docs." },
+    { "what": "the whole recipe against a live verifier", "why": "Not run; needs the Eligibility SDK and a testnet deployment." }
+  ],
+  "sources": [
+    { "what": "Accredited issuers: role, requirements, on-chain registry addresses, fee share", "url": "https://vine.redbelly.network/identity/accredited-issuers/", "checked": "2026-09-12" },
+    { "what": "AML off-chain example (id 100, amlCheckStatus $eq passed, the testnet DID), on-chain example, allowedIssuers", "url": "https://docs.redbelly.network/pages/eligibility-sdk/configure-eligibility-criteria/", "checked": "2026-09-12" },
+    { "what": "allowedIssuers [\"*\"] with the production warning", "url": "https://docs.redbelly.network/pages/methods/proof-by-query/contract-example/", "checked": "2026-09-12" },
+    { "what": "AMLCTFCredential schema with five enum fields", "url": "https://github.com/redbellynetwork/receptor-schema/blob/3b37c11/schemas/json/AMLCTFCredential.json", "checked": "2026-09-12" },
+    { "what": "Network access: access credential from an accredited issuer, self-enable, permission.isAllowed", "url": "https://vine.redbelly.network/identity/user-access/", "checked": "2026-09-12" },
+    { "what": "Registry contracts have no verified source on Routescan", "url": "../../RESEARCH.md (chain-definitions rows)", "checked": "2026-09-12" }
+  ],
+  "open": ["RESEARCH.md 15", "RESEARCH.md 17", "RESEARCH.md 29"]
+}

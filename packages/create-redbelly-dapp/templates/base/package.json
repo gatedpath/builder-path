@@ -1,0 +1,68 @@
+{
+  "name": "__PROJECT_NAME__",
+  "private": true,
+  "type": "module",
+  "description": "Identity-gated dApp on Redbelly Network, scaffolded by create-redbelly-dapp __SCAFFOLDER_VERSION__ (template: __TEMPLATE__).",
+  "engines": {
+    "node": ">=20"
+  },
+{{#unless pnpm}}
+  "workspaces": [
+{{#if web}}
+    "web",
+    "vendor/redbelly-frontend-kit",
+{{/if}}
+{{#if hardhat}}
+    "hardhat",
+{{/if}}
+    "vendor/redbelly-chains",
+    "vendor/redbelly-agent-rules",
+    "vendor/redbelly-preflight"
+  ],
+{{/unless}}
+  "redbelly": {
+    "scaffolder": "__SCAFFOLDER_VERSION__",
+    "vendor": {
+{{#if web}}
+      "redbelly-frontend-kit": "__FRONTEND_KIT_VERSION__",
+{{/if}}
+      "redbelly-chains": "__CHAINS_VERSION__",
+      "redbelly-agent-rules": "__RULES_VERSION__",
+      "redbelly-preflight": "__PREFLIGHT_VERSION__"
+    }
+  },
+  "scripts": {
+    "doctor": "node vendor/redbelly-preflight/dist/doctor-cli.js --project .",
+    "contracts:install": "cd contracts && __PM_INSTALL__ && __PM_RUN__ install:forge-std",
+    "dev": "node scripts/dev.mjs",
+    "build": "cd contracts && forge build",
+    "test": "cd contracts && forge test",
+    "test:gas": "cd contracts && forge test --gas-report",
+    "snapshot": "cd contracts && forge snapshot",
+    "fmt": "cd contracts && forge fmt",
+    "lint:slither": "node scripts/slither.mjs",
+    "lint:aderyn": "cd contracts && aderyn .",
+    "preflight": "node scripts/preflight.mjs",
+    "gas": "node vendor/redbelly-preflight/dist/redbelly.js gas --project contracts",
+    "ship": "node vendor/redbelly-preflight/dist/redbelly.js ship --project contracts",
+    "rules:check": "node vendor/redbelly-agent-rules/dist/esm/cli.js --check --out . --only claude,agents,cursor,copilot,gemini",
+    "rules:write": "node vendor/redbelly-agent-rules/dist/esm/cli.js --out . --only claude,agents,cursor,copilot,gemini",
+    "chains:sync": "node scripts/chains-sync.mjs",
+{{#if web}}
+    "abi:sync": "node scripts/abi-sync.mjs",
+    "web:dev": "__PM_RUN__ --workspace web dev",
+    "web:build": "__PM_RUN__ --workspace web build",
+{{/if}}
+    "anvil:fork": "anvil --fork-url __TESTNET_RPC__ --chain-id 153"
+  },
+  "devDependencies": {
+    "@gatedpath/chains": "file:vendor/redbelly-chains"
+  }{{#if web}},
+  "overrides": {
+    "@tanstack/react-query": "5.102.8",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "viem": "2.56.3",
+    "wagmi": "3.7.7"
+  }{{/if}}
+}

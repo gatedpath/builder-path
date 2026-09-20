@@ -1,0 +1,116 @@
+---
+title: '5. Put the admin behind a Safe and a timelock'
+description: 'Who holds which role, which changes are slow on purpose and which are instant, and what the on-call person does at three in the morning. Read the layout and run the tests that prove it.'
+lastVerified: '2026-09-17'
+tableOfContents: false
+prev: false
+next: false
+---
+
+import ForAgents from '../../../components/ForAgents.astro';
+import StatusPill from '../../../components/StatusPill.astro';
+import Sample from '../../../components/Sample.astro';
+import VineAside from '../../../components/VineAside.astro';
+import ProjectSteps from '../../../components/ProjectSteps.astro';
+import StepCard from '../../../components/StepCard.astro';
+import StepPart from '../../../components/StepPart.astro';
+
+<ForAgents
+  page="Writing Solidity 5: Put the admin behind a Safe and a timelock"
+  facts={[
+    'Layout: a governance Safe (2 of 3) is the only proposer and executor of an OpenZeppelin TimelockController, and the timelock holds DEFAULT_ADMIN_ROLE. PAUSER_ROLE, COMPLIANCE_ROLE and ISSUER_ADMIN_ROLE sit on Safes directly and act at once. The deployer holds nothing after the deploy transaction. The timelock admin is address(0).',
+    'Slow, through the timelock: unpause, setVerifier, setRequestId, setSubscriptionsOpen, grantRole, revokeRole. Fast, on a Safe: pause, forceTransfer, setIssuer, revokeIssuer.',
+    'On chain 151 Deploy.s.sol refuses an ADMIN_SAFE that is not a Safe 1.4.1 with threshold at least 2, refuses a mock verifier, and refuses a timelock delay under one day. Safe 1.4.1 is at its canonical addresses on 151 and 153.',
+    'packages/contract-kit/test/AdminPattern.t.sol: 7 tests (2026-09-17). Full note: packages/contract-kit/docs/admin-pattern.md.',
+  ]}
+/>
+
+In tutorial 3 you read the most dangerous line in the token: whoever holds the admin role can point the gate at a verifier that says yes to everyone. On a network where a wallet is a person, "whoever" must never be one key. This tutorial is the layout the contract kit deploys, and the tests that show it holds.
+
+<ProjectSteps slug="solidity-admin-safe-and-timelock" title="5. Put the admin behind a Safe and a timelock" backHref="/solidity/" backLabel="Writing Solidity">
+
+<StepCard n={1} title="Sort every admin action into slow or fast">
+<StepPart kind="gets">
+The idea the whole pattern rests on.
+</StepPart>
+<StepPart kind="do">
+Anything that **changes the rules** is slow: who is an admin, which verifier decides eligibility, which request id the gate asks for, whether the token runs again after a pause. Those go through a timelock, so anyone can read the pending operation and has the delay, two days on mainnet, to notice a verifier being swapped for one that says yes to strangers.
+
+Anything that **responds to the world** is fast and sits on a Safe directly: pausing, moving a frozen balance under a court order, giving a delegate a week's mint allowance. Each is bounded on its own. A pause can only stop. A forced transfer needs an eligible recipient and a justification hash. An issuer permission expires. So a compromised operational Safe can misuse one lever until it is revoked, and cannot rewrite the token.
+</StepPart>
+<StepPart kind="worked">
+You can sort these four without looking: `pause()`, `unpause()`, `setVerifier()`, `forceTransfer()`. Pausing is fast and unpausing is slow, and that asymmetry is deliberate: stopping must never wait, and restarting must never be one person's decision.
+</StepPart>
+</StepCard>
+
+<StepCard n={2} title="Read the layout">
+<StepPart kind="gets">
+Who holds what, as the deploy script wires it.
+</StepPart>
+<StepPart kind="do">
+A governance Safe, two of three signers, is the timelock's only proposer and executor. The timelock holds `DEFAULT_ADMIN_ROLE` on the token. The pauser, compliance and issuer-admin roles go to Safes, by default the same one, and can be separate. The timelock's own admin is the zero address, so its delay and its roles can only change through an operation that itself waited out the delay. The deployer's wallet holds nothing once the deploy transaction has landed.
+
+The script takes all of this from environment variables that are public addresses, never keys: `ADMIN_SAFE`, and optionally `PAUSER`, `COMPLIANCE` and `ISSUER_ADMIN`. On mainnet it refuses an `ADMIN_SAFE` that is not a Safe 1.4.1 with a threshold of at least two, refuses a mock verifier, and refuses a delay under one day.
+</StepPart>
+<StepPart kind="worked">
+You can draw it: Safe, arrow to timelock, arrow to the admin role; three shorter arrows from Safes straight to the three operational roles; nothing from the deployer.
+</StepPart>
+
+<VineAside href="https://vine.redbelly.network/smart-contracts/interaction/" label="Vine: smart contract interaction">
+Vine covers the network's tooling advice. Safe 1.4.1 is deployed at its canonical addresses on both networks, which I confirmed by reading the code at each address on 12 September 2026; whether the Safe web app lists chain 151 I have not checked, and the transaction builder or `cast` works either way.
+</VineAside>
+</StepCard>
+
+<StepCard n={3} title="Read the emergency path as a test">
+<StepPart kind="gets">
+The three-in-the-morning procedure, written as code that either passes or does not.
+</StepPart>
+<StepPart kind="do">
+<Sample id="kit-admin-emergency" />
+
+Read it as a story. The Safe pauses, and it works in the same block. The Safe tries to unpause directly, and is refused. It schedules the unpause on the timelock, tries to execute early, and is refused again. Time passes, it executes, and the token runs. The Safe is stood in for by an address under `vm.prank`, because what a Safe adds is signatures and signatures are not what is being tested.
+</StepPart>
+<StepPart kind="worked">
+You can say what the on-call person does first in an incident (pause, one transaction, next block) and what they cannot do alone (anything that changes a rule).
+</StepPart>
+</StepCard>
+
+<StepCard n={4} title="Run the seven tests">
+<StepPart kind="gets">
+The layout's claims, checked on your machine.
+</StepPart>
+<StepPart kind="do">
+From the repository's root:
+
+```sh
+cd packages/contract-kit
+forge test --match-contract AdminPatternTest
+```
+</StepPart>
+<StepPart kind="worked">
+`Suite result: ok. 7 passed; 0 failed`. The names are the claims: the deployer holds nothing; pause is immediate and unpause waits; a verifier change goes through the timelock; a scheduled operation can be cancelled before it executes; a role granted through the timelock then acts at once; a stranger can do nothing; and the delay cannot be shortened except through the timelock.
+</StepPart>
+<StepPart kind="ifnot">
+If the suite is not found, you are not in `packages/contract-kit`, or `npm run setup` has not run there.
+</StepPart>
+</StepCard>
+
+<StepCard n={5} title="Write your own table before mainnet">
+<StepPart kind="gets">
+The part no code can do for you.
+</StepPart>
+<StepPart kind="do">
+Fill in, for your product: who the three signers of the governance Safe are and where they live; who holds the pauser role and how they are reached at night; who the compliance signers are and what document authorises a forced transfer; what your delay is and why. The ops kit's runbook has the table and a drill, and [Review before mainnet](/review/) will not pass a deployment whose admin is a single key. Rehearse the pause and the scheduled unpause on testnet with the real signers before there is anything to lose.
+</StepPart>
+<StepPart kind="worked">
+A stranger reading your table could run the emergency path without calling you.
+</StepPart>
+
+<StatusPill variant="pending" label="With real Safes on testnet: not run" /> I have run this pattern in tests and on local chains, not with real Safes on testnet, which needs a verified wallet.
+</StepCard>
+
+</ProjectSteps>
+
+The full design note, with the case where the governance Safe itself is compromised, is `packages/contract-kit/docs/admin-pattern.md`.
+
+Next: [6. Price it in dollars](/solidity/gas-in-dollars/).

@@ -1,0 +1,84 @@
+---
+title: Review before mainnet
+description: What the gate in front of chain 151 checks, the ship report redbelly ship writes when every check passes, and the threats that are specific to this network.
+status: mainnet
+statusLabel: Mainnet, chain 151
+lastVerified: '2026-09-14'
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import ForAgents from '../../components/ForAgents.astro';
+import TwoSpeed from '../../components/TwoSpeed.astro';
+import StatusPill from '../../components/StatusPill.astro';
+import Sample from '../../components/Sample.astro';
+
+<ForAgents
+  page="Review before mainnet"
+  facts={[
+    'Deploy to chain 151 only after pre-flight passes and a ship report exists. Never promise mainnet in an afternoon for anything that holds value.',
+    'Pre-flight, at least: the deployer passes isAllowed on 151; the configured chain ID matches what the RPC reports; the issuer registry address matches the target chain; no secret is in git history; the RBNT balance covers deployment with margin; admin is a Safe with a threshold of two or more.',
+    'The ship report: tests green in all five credential states, static analysis clean or triaged in writing, admin Safe and threshold, contracts verified on Routescan with addresses and commit, monitoring live, security.txt published. redbelly ship --chain <151|153> --account <keystore-name> --admin <safe> writes deployments/ship-<chain>-<date>.md with the first four proven and the last two listed for a person to tick; it refuses to write when any check fails. The deploy script refuses to broadcast on 151 without a report dated today (UTC); 153 warns.',
+    'Run redbelly-preflight (packages/preflight) before any deploy and read every line; exit 1 means do not deploy. Never pass it a key: --account names a keystore, --address is read-only.',
+    'redbelly gas --chain <151|153> prices a gas snapshot or forge gas report in RBNT and US cents at the base fee and feed price; ship carries the same table. redbelly-doctor checks the machine (Node 22, forge, anvil and cast at one version and as real binaries, git, no .env tracked, vendor/) before the first command.',
+  ]}
+/>
+
+<TwoSpeed />
+
+The second speed is a programme, not a checklist, and each stage produces the thing the next one needs. This page is the reviewer's entry point: the gate, the report, and the threats that do not appear on a generic EVM list. The incident runbook and the monitoring that feeds it are on the [Operate](/operate/) page; the threat model template ships in every scaffold as `THREAT-MODEL.md`. Audit preparation and the bug bounty page are not written yet. <StatusPill variant="draft" label="Audit-prep and bounty pages not yet written" />
+
+## The gate
+
+`redbelly-preflight` (`packages/preflight/`) runs seven checks and prints one line each, pass, fail, warn or skip, with a sentence saying why; exit 1 on any fail, `--json` for CI and for the MCP server. It never takes a key: `--account` names a Foundry keystore that `cast` reads, `--address` is a read-only run, and a hex string where a name should be is a bad argument. The scaffold's deploy script makes the same checks in Solidity at broadcast time, so an agent cannot reason around them. The seven:
+
+1. The configured chain ID equals the RPC's `eth_chainId`. The same key and credentials work on 153 and 151, which is exactly how a testnet script ends up pointed at mainnet.
+2. The deployer passes `permission.isAllowed` on the target chain, read through the bootstrap registry. That is the network's own gate; it replaces the "verifier address matches" check you might expect, because there is no network-wide verifier. Any of Anvil's ten default accounts as deployer is a warning whatever `isAllowed` says, since two of them pass and their keys are public (question 30).
+3. On 151 the admin holds a SafeProxy on the canonical 1.4.1 singleton or L2 singleton, whose code hashes to the release bytes read from both chains, with `getThreshold()` at least 2. On 153 an EOA or a low threshold is a warning: put the Safe in place now so mainnet changes nothing.
+4. `solc_version` 0.8.30 and `evm_version` prague, in `foundry.toml` or `hardhat.config`.
+5. No secret-shaped line anywhere in `git log -p --all`, and no tracked `.env`. A key that was committed and later deleted still fails; history is what gets cloned.
+6. The RBNT balance covers the gas at the latest base fee and feed price plus 25 percent, because the balance you need moves with the RBNT price even though the fee in dollars does not.
+7. A Slither report that describes the current sources: the hash the scaffold writes beside it matches every source, or, without one, the report is newer than every source by commit time inside git.
+
+The read-only run against the real testnet on 12 September 2026, from `packages/preflight/reports/`:
+
+<Sample id="preflight-report" wrap={true} />
+
+Fifty-seven tests in the package spawn anvil on 151 and 153, plant the registry, permission and price-feed contracts at the recorded addresses and the real Safe 1.4.1 code at the canonical ones, and cover every branch, including the keystore path with a wallet `cast` creates for the test.
+
+## The ship report
+
+<StatusPill variant="verified" label="Generator built 14 Sep 2026; proven on a local chain 151" /> <StatusPill variant="pending" label="No report for a real network yet" tipKey="ship-report-real" /> The end of the path is a generated document, and it's the gate to mainnet, the first thing an auditor asks for, and most of a grant application's evidence section. It records: tests passed, with all five credential states covered on every gated function; static analysis (Slither, Aderyn) clean, with written reasoning for every ignored finding; admin is a Safe, with its threshold; contracts verified on Routescan, with addresses, commit and compiler settings; monitoring rules live; `security.txt` published.
+
+`redbelly ship` writes it. One command, in the scaffold `npm run ship -- --chain 151 --account <keystore-name> --admin <safe>`: it runs the gas report first (the deployment row is the gas the balance check prices, in RBNT and US cents at the chain's feed price), then pre-flight's seven checks with the keystore's address, checks the verifier (`VERIFIER` in `.env` or `--verifier`; required on 151), runs `forge test` and counts the suites that inherit `GatedTest`, reads the admin (Safe version, singleton, threshold, owners, `isAllowed`), and writes `contracts/deployments/ship-<chain>-<date>.md`: every check with its result, the deployer and admin readings, each contract from the deployment records with its constructor arguments already encoded and the exact `forge verify-contract` command, the gas table, the tests, the Slither line, the compiler pins, and the two items it cannot prove (monitoring live, `security.txt`) for a person to tick under the line. It refuses to write when any check fails and exits 1 naming them. The deploy script refuses to broadcast on chain 151 without a report dated today in UTC (a dry run says so and continues); on 153 it warns. Run `ship` again after the deploy and the contract section fills in.
+
+Proven on 14 September 2026 on a local chain 151 with the mocked registry, the real Safe 1.4.1 bytecode and a keystore `cast wallet new` created for the test: a 2-of-3 Safe wrote the report and the deploy script then accepted the broadcast; a Safe at threshold 1 was refused with nothing written; the same broadcast without the report was refused with `no ship report dated today for chain 151`. Nothing has been signed against a real network, so no report exists for one yet.
+
+## Threats specific to this network
+
+The generic EVM list still applies and you can get it elsewhere. These are the ones that come from Redbelly's own properties, and they go in your threat model by name.
+
+A wallet compromise is an identity impersonation. A stolen key carries a verified identity with it. Admin roles sit behind a Safe; user-facing flows prompt hardware wallets for high-value actions; rotation is rehearsed.
+
+Credential expiry and revocation races. A transfer approved at block N against a credential revoked at N+1. Decide freeze, custody or leave in place, write it down, and test it. Whether the network itself freezes transfers on revocation is open (question 24), so your contract has to be explicit either way.
+
+The verifier is a dependency you did not write. Each dApp deploys its own, a `VCVerifierBaseContract` or Iden3 `ZKPVerifier` child, so there is no network address to pin; there is still a contract to monitor for changes and an upgrade policy to have in writing. The same goes for the network's own permission, registry and price feed contracts: Redbelly told me on 17 September 2026 that changes to them are not announced and that builders monitor for themselves.
+
+RPC trust. One official endpoint per network, plus Ankr and Uniblock on mainnet. A lying or compromised RPC is a realistic scenario; front ends cross-check critical reads against a second provider, and templates rotate across three.
+
+No reorgs, so no safety margin. Off-chain systems treat inclusion as final and get their idempotency from transaction hash and log index, not from waiting.
+
+Fixed-dollar gas removes fee-market griefing and priority games. It does not remove gas-limit denial of service inside a single transaction. Unbounded loops are still fatal. Ordering inside a super block changes in Q4 2026, so nothing depends on it.
+
+Cross-environment replay. Chains 153 and 151 share your deployer key and credentials. Every signature scheme, EIP-712 and permits included, binds the chain ID, with a test proving a testnet signature fails on mainnet.
+
+## Build, test, review
+
+Rules the templates will bake in: Solidity 0.8.30 for Prague with `evm_version` pinned, warnings as errors, checks-effects-interactions, reentrancy guards on anything that moves value (transient storage is available for the lock), custom errors, events on every state change a monitor cares about, no `tx.origin`, no `selfdestruct`, no inline assembly without a comment and a test.
+
+Invariants that ship with the gated ERC-20 (`packages/contract-kit`, two suites at 64 runs of depth 32): total supply equals the sum of balances and equals mints minus burns; nobody ever receives tokens while ineligible, by any path; paused means no balance changes except through unpause; every forced transfer carries a non-zero justification hash; the issuer never exceeds its allowance; and, in the suite where credentials never lapse after receipt, no ineligible wallet ever holds a balance. The last one needs that qualifier because the kit's policy freezes a lapsed holder's balance rather than moving it, so a revoked wallet with tokens is by design.
+
+Review means Slither and Aderyn reports triaged in writing, a second person's code review, and for anything holding real value an external audit. Hashlock already knows the network (they audited it in 2023 and host its bug bounty); list them and two or three others. Quarterly afterwards: rotate what can be rotated, re-run static analysis on the pinned compiler, check the verifier for changes, review who holds admin roles.
+
+<Aside type="note" title="What exists today">
+The pre-flight CLI, `redbelly-doctor`, `redbelly gas`, `redbelly ship`, the scaffold's deploy gate, the gated ERC-20 kit with its invariant suite, and the MCP tools that run them (`preflight`, `doctor`, `gas_report`, `ship_report`, `status`). The audit-prep page is still to be written. A report for a real network waits on the first real deploy.
+</Aside>

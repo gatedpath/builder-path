@@ -1,0 +1,103 @@
+# Redbelly Network rules for coding agents
+
+> Redbelly Network is an EVM chain (151 mainnet, 153 testnet) where every wallet is identity-verified before it can transact, gas is priced in US dollars, and blocks are produced on demand. These rules give an AI coding agent the facts and the limits it needs to build a dApp here without inventing a chain ID, leaking a key or shipping to mainnet early. Vine and docs.redbelly.network are the reference; this file adds only the consequence for your code.
+
+Facts verified 2026-09-12. This index links to Redbelly's own reference pages and lists the rules an agent must hold. The full text is in llms-full.txt.
+
+- Mainnet is chain 151. RPC https://governors.mainnet.redbelly.network. Explorer https://redbelly.routescan.io.
+- Testnet is chain 153. RPC https://governors.testnet.redbelly.network. Explorer https://redbelly.testnet.routescan.io.
+- Routescan's Etherscan-style API is at https://api.routescan.io/v2/network/mainnet/evm/151/etherscan/api and https://api.routescan.io/v2/network/testnet/evm/153/etherscan/api. Keyless calls get 2 requests a second. Use it for contract verification and indexing.
+- Other mainnet RPCs Vine lists: Ankr at https://rpc.ankr.com/redbelly_mainnet (keyless) and Uniblock at https://api.uniblock.dev/uni/v1/json-rpc?chainId=151 with the key on the x-api-key header. Vine lists no third-party RPC for testnet.
+- Redbelly's devnet is deprecated. Don't target any chain ID except 151 and 153.
+- The native coin is RBNT with 18 decimals.
+- The EVM is Prague on both networks. Compile with solc 0.8.30 and evm_version prague. If a dependency cannot build for Prague, cancun is the lowest acceptable target.
+- PUSH0, transient storage, MCOPY and the Prague precompiles all work. Use transient storage for reentrancy locks.
+- Blocks are produced on demand. No traffic, no block. A transaction lands within seconds or not at all, so poll for the receipt and never sleep for a block time.
+- Finality is deterministic (DBFT, no forks). Don't write confirmation-count or reorg handling; make off-chain consumers idempotent instead.
+- The governors RPC doesn't serve debug_*, trace_* or net_version. Don't plan on traces. eth_getLogs, eth_feeHistory and txpool_status do work.
+- The block gas limit reports as 60,000,000,000. No per-transaction limit is documented.
+- There is no local node. For local work fork testnet with anvil and mock the identity layer, and say so in the README.
+- A 21,000-gas transfer costs US$0.01. The base fee is converted to RBNT at execution from an on-chain price feed, so the fee in RBNT moves with the RBNT price and the fee in USD does not.
+- The priority fee is always zero. eth_maxPriorityFeePerGas returns 0 and eth_feeHistory rewards are 0. There is nothing to buy position with.
+- eth_gasPrice returns the base fee plus ten percent of headroom.
+- In wagmi, viem and ethers, leave the fee fields unset and let the client estimate. If you must set them, use maxPriorityFeePerGas 0 with a maxFeePerGas at or above the latest base fee, or take gasPrice straight from eth_gasPrice.
+- Never hardcode a gas price in wei in config or code. It changes with the RBNT price.
+- In tests, assert gas used, never a fee in wei or RBNT. When a number is needed, price it in USD with gasCostUsd from @gatedpath/chains. On an anvil fork the base fee does not follow the oracle, so fee assertions there mean nothing.
+- Vine warns that most wallets show gas information wrongly on Redbelly. Show the USD cost in your own UI from the price feed.
+- The price feed is the contract the bootstrap registry names pricefeed: mainnet 0x0CD42d829F88fe539f710E9b7692C70b94aaEad4, testnet 0xBf207257412D3672F9C772ef263583611B98039a. getLatestPrice() returns USD per RBNT with six decimals.
+- The gate is permission.isAllowed(address) on the contract the bootstrap registry names permission. The registry is 0xDAFEA492D9c6733ae3d56b7Ed1ADB60692c98Bc5 on both chains; permission is 0xcb385cD90ca6b219798F57B4a7958897e91A9163 on mainnet and 0x519ba1b48D571FD92FAF6FE4D20fe74Ca435B690 on testnet.
+- Read isAllowed for the deployer before every deploy and for the user before every send. False means the wallet has not been verified at https://access.redbelly.network. Send the person there. Don't retry, and don't switch to another wallet without telling them.
+- Verification is a passport plus a biometric check, done once. Credentials issued on testnet carry over to mainnet.
+- There is no network-wide verifier contract. Each dApp deploys its own: a VCVerifierBaseContract child (npm package @redbellynetwork/receptor-standardvc-sc on GitHub Packages) or an Iden3 ZKPVerifier child for Proof by Query. On-chain verification supports a single query today.
+- The accredited issuer registry is 0x2d68f1C50a057a310EeF28DF3199F95A65cE4ac5 on mainnet and 0x6aEe06F4052ff6d01Ed7E13Fa5Ab53675756A057 on testnet. Issuers verify people; the dApp only names the credentials an action requires.
+- The Eligibility SDK (@redbellynetwork/eligibility-sdk, React 18, wagmi v2, viem v2) is on GitHub Packages. Installing it needs a GitHub token with read:packages; running it needs a verifier API key from Redbelly support. An agent cannot obtain either. When one is missing, stop and tell the person where it comes from. Don't stub the SDK to get past it.
+- Point the @redbellynetwork scope at npm.pkg.github.com in .npmrc and read the token from an environment variable. Never commit the token or the verifier key.
+- Keep revocation checks on in production. Off-chain queries use credentialAtomicQuerySigV2; on-chain queries use credentialAtomicQuerySigV2OnChain.
+- Seven schemas are queryable today: AMLCTF, AUSophisticatedWholesaleInvestor, DriversLicence, EssentialId, NationalId, Passport, ProofOfAddress. Don't invent others.
+- Test every gated function in five credential states: valid, expired, revoked, wrong-jurisdiction, never-issued. A gate with fewer than five tests is untested.
+- Businesses verify through an accredited issuer (Averer). A BusinessIdentifier contract is deployed and its delegate wallets get write access as sub-accounts of the business without their own KYC. When a business identity exists, deploy from a delegate wallet, not a person's.
+- Ignore the addresses on https://docs.redbelly.network/pages/general/rb-env/. They hold no code on either network and the page labels mainnet as chain 154.
+- Testnet first, always. Scaffold, gate one function, deploy to 153, try it with an unverified wallet. That fits in an afternoon.
+- Get testnet RBNT from FAUCETME at https://redbelly.faucetme.pro/ (sign in with Discord). A nominal amount also arrives at verification. The faucet pays 500 RBNT per claim, one claim per 24 hours (its front page, read 2026-09-15).
+- Deploy to 151 only after pre-flight passes and a ship report exists: tests green in all five credential states, static analysis clean or triaged, admin behind a Safe with a threshold of two or more, contracts verified on Routescan, monitoring live.
+- Pre-flight means at least: the deployer passes isAllowed on the target chain, the configured chain ID matches what the RPC reports, the issuer registry address matches the target chain, no secret is in git history, and the RBNT balance covers deployment with margin.
+- Never promise mainnet in an afternoon for anything that holds value. Not in copy, comments, commit messages or chat.
+- Safe 1.4.1, Multicall3 and the deterministic deployers sit at their canonical addresses on both networks. Put admin roles behind a Safe from the first testnet deploy so mainnet changes nothing.
+- No private key in files, environment variables, chat or agent context. Not in .env, not in foundry.toml, not in hardhat.config, not in a test fixture.
+- Sign with a Foundry keystore account (forge script --account NAME, cast send --account NAME) or a hardware wallet path (--ledger, --trezor). forge and cast sign locally.
+- On the Hardhat path use its encrypted keystore or a hardware signer. Never a key in the config file.
+- Never ask the person for a key, a seed phrase or a keystore password. When a step needs a signature, print the exact command and let them run it.
+- Keep .env.example free of secrets, with a comment on every line saying what the value is for.
+- Faucet and eligibility checks only need a public address. Never escalate a read-only step into one that signs.
+- Never: Store personal data on-chain. Credentials stay with the holder; the chain sees a proof or a boolean.
+- Never: Hardcode a chain ID, RPC URL or contract address. Import them from @gatedpath/chains.
+- Never: Use tx.origin for authorisation. Use msg.sender.
+- Never: Write a loop whose bound a caller can grow without limit.
+- Never: Weaken, skip or mock a Gated check to make a test pass. Fix the credential state in the test instead.
+- Never: Deploy to chain 151 without pre-flight passing.
+- Never: Sleep for a block time. Poll for the receipt.
+- Never: Assume Foundry is installed. Check for forge, and offer the Hardhat config when it is missing.
+
+## Chain facts
+
+- [Environments](https://vine.redbelly.network/environments/): chain IDs, RPCs, explorers
+- [EVM compatibility](https://vine.redbelly.network/consensus/evm-compatibility/): Prague, solc 0.8.30
+- [Consensus](https://vine.redbelly.network/consensus/): DBFT, finality
+
+## Gas model
+
+- [Network fees](https://vine.redbelly.network/network-fees/): US$0.01 per transfer, the price oracle, registry ABI
+- [Fee distribution](https://vine.redbelly.network/network-fees/distribution/)
+
+## Identity and eligibility
+
+- [User access](https://vine.redbelly.network/identity/user-access/): how a wallet gets write access
+- [Access dApp](https://access.redbelly.network): where a person verifies a wallet
+- [Accredited issuers](https://vine.redbelly.network/identity/accredited-issuers/)
+- [Eligibility SDK](https://docs.redbelly.network/pages/eligibility-sdk/getting-started/): token and API key requirements
+- [Configure eligibility criteria](https://docs.redbelly.network/pages/eligibility-sdk/configure-eligibility-criteria/): the seven schemas, query operators
+- [Proof by Query](https://docs.redbelly.network/pages/methods/proof-by-query/): Iden3 on-chain path
+- [Business verification](https://vine.redbelly.network/business-verification/verify-business/)
+- [BusinessIdentifier contract](https://vine.redbelly.network/business-verification/identifier-contract/)
+
+## Two speeds
+
+- [Testing coins](https://vine.redbelly.network/native-currency/testing-coins/): faucet
+
+## Where to look
+
+- [Vine](https://vine.redbelly.network/): network reference
+- [Redbelly docs](https://docs.redbelly.network/): Receptor and the Eligibility SDK
+- [Routescan mainnet](https://redbelly.routescan.io)
+- [Routescan testnet](https://redbelly.testnet.routescan.io)
+- [Access dApp](https://access.redbelly.network)
+- [FAUCETME](https://redbelly.faucetme.pro/)
+- [receptor-schema](https://github.com/redbellynetwork/receptor-schema)
+- [@gatedpath/chains](https://www.npmjs.com/package/@gatedpath/chains)
+
+## Rules files
+
+- [Rendered samples](https://www.npmjs.com/package/@gatedpath/agent-rules?activeTab=code): CLAUDE.md, AGENTS.md, Cursor, Copilot, Gemini
+- [Generator](https://www.npmjs.com/package/@gatedpath/agent-rules): @gatedpath/agent-rules, run `npx -y @gatedpath/agent-rules --out .`
+
+<!-- TODO(site): the builder site does not exist yet. When it does, add these site-relative links here: /agents (rules files, MCP install, llms.txt); /start (golden path); /recipes (eligibility recipes); /tutorials (prompt cards). -->

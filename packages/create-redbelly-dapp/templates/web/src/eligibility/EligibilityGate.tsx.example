@@ -1,0 +1,27 @@
+"use client";
+
+// Integration point for @redbellynetwork/eligibility-sdk. Not compiled until you rename it
+// to EligibilityGate.tsx after the steps in README.md. Shape is indicative: check the SDK's
+// exported names against its own README for the version you installed.
+//
+// import { EligibilityProvider, useEligibility } from "@redbellynetwork/eligibility-sdk";
+//
+// const query = {
+//   // Pick one of the seven queryable schemas and the operator you need; see
+//   // docs.redbelly.network/pages/eligibility-sdk/configure-eligibility-criteria/
+//   schema: "AUSophisticatedWholesaleInvestor",
+//   field: "status",
+//   operator: "$eq",
+//   value: "verified",
+//   revocationCheck: true,
+// };
+//
+// export function EligibilityGate({ children }: { children: React.ReactNode }) {
+//   // The verifier API key is read server-side by a route handler you write; the client
+//   // calls that handler. It never appears in NEXT_PUBLIC_ or in this file.
+//   const { status } = useEligibility(query);
+//   if (status === "eligible") return <>{children}</>;
+//   return <p>Your credential does not satisfy this action&apos;s rule: {status}</p>;
+// }
+
+export {};

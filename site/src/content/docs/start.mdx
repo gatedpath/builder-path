@@ -1,0 +1,364 @@
+---
+title: 'Start: the golden path'
+description: One path from a verified wallet to a contract on Redbelly testnet, with the whole local loop in one command and Foundry only by default; I ran it end to end on a fresh scaffold twice on 14 September 2026, and the steps that need a real wallet say so.
+status: testnet
+statusLabel: Testnet, chain 153
+lastVerified: '2026-09-14'
+verifiedWith: ['Foundry 1.7.1', 'Anvil fork of 153', 'Next.js dev server', 'Chromium via Playwright']
+verifiedSource:
+  label: 'golden-path transcripts'
+  href: 'https://github.com/gatedpath/builder-path/tree/main/packages/create-redbelly-dapp/reports'
+---
+
+import { Tabs, TabItem, Aside } from '@astrojs/starlight/components';
+import ForAgents from '../../components/ForAgents.astro';
+import TwoSpeed from '../../components/TwoSpeed.astro';
+import StepList from '../../components/StepList.astro';
+import Sample from '../../components/Sample.astro';
+import StatusPill from '../../components/StatusPill.astro';
+import Ext from '../../components/Ext.astro';
+import VineAside from '../../components/VineAside.astro';
+import CardGrid from '../../components/CardGrid.astro';
+import { warmUpCards } from '../../data/cards';
+
+<ForAgents
+  page="Start"
+  facts={[
+    'Target chain 153 (testnet). RPC https://governors.testnet.redbelly.network. Explorer https://redbelly.testnet.routescan.io.',
+    'Compile with solc 0.8.30 and evm_version prague. Cancun is the lowest acceptable target.',
+    'The local loop is one command in a scaffold: npm run dev. It forks 153 on Anvil as chain 31337, deploys a ReceptorMock and the contract, seeds Anvil accounts 2 to 6 into the five credential states (NeverIssued, Valid, Expired, Revoked, WrongJurisdiction, in that order), starts the web app with a dev state panel, and writes deployments/local.json. npm run dev -- --json prints that file and nothing else on stdout. Exit 2 means it is already running; exit 3 means forge or anvil is missing.',
+    'Before any real deploy, read permission.isAllowed(deployer) on 153. False means the person must verify at https://access.redbelly.network. Send them there; do not retry and do not switch wallets without saying so.',
+    'Sign with a Foundry keystore account (--account NAME) or a hardware wallet. Never ask for a key, a seed phrase or a keystore password. On the local loop, Anvil signs for its own accounts; nothing imports a key.',
+    'Poll for the receipt. Blocks are produced on demand, so never sleep for a block time.',
+    'Never deploy from an Anvil or Hardhat default account on a real network. Their keys are public, and accounts 0 and 1 pass isAllowed on both real networks (question 30). npm run dev never uses 0 or 1.',
+    'The default scaffold is Foundry only since wave 8; --hardhat adds a Hardhat 3 view of the same sources in hardhat/. Do not look for hardhat/ in a default scaffold.',
+    'After scaffolding, run npm run doctor (works on the bare scaffold: Node 22, git, forge, anvil and cast at one version and as real binaries rather than the exit-0 npm shim, slither and aderyn optional, no .env tracked, vendor/ against the record), then npm install and npm run contracts:install before npm run dev or forge build. A bare forge build on a fresh scaffold fails.',
+    'npm run gas -- --chain 153 prices the gas snapshot or forge gas report in RBNT and US cents at the chain\'s base fee and feed price. npm run ship -- --chain <151|153> --account <keystore-name> [--admin <safe>] writes contracts/deployments/ship-<chain>-<date>.md when pre-flight, Slither, the five-state tests and the gas report all pass; the deploy script refuses to broadcast on 151 without today\'s report and warns on 153.',
+    'Every step on this page was run on 2026-09-14 on a fresh Foundry-only scaffold, the local loop against an Anvil fork of testnet, the switcher in a real browser, the gas report against the real testnet feed. The keystore import, the deploy to the real testnet, the Routescan submission and a ship report for a real network were not run, because that needs a wallet this project does not yet use. Do not report them as done.',
+  ]}
+  block={`chain 153, rpc https://governors.testnet.redbelly.network, explorer https://redbelly.testnet.routescan.io
+permission contract 0x519ba1b48D571FD92FAF6FE4D20fe74Ca435B690, isAllowed(address) selector 0xbabcc539
+solc 0.8.30, evm prague, priority fee 0, transfer costs US$0.01 at 21,000 gas
+scaffold default request id 18 (over-18 recipe); AU wholesale investor is 708
+local loop: npm run dev (Anvil chain 31337, wallets = Anvil accounts 2..6 in enum order, deployer = account 7, record = deployments/local.json)`}
+/>
+
+This is one path, and it does not branch. At the end of it you have a verified wallet, testnet coins, a project compiled for Prague, one function gated behind a credential, and the whole thing running locally with five wallets in five credential states and a switch to move between them. I ran the path twice on 14 September 2026 on fresh scaffolds, the local loop against an Anvil fork of testnet and the switcher in a real browser; both transcripts, with every command and wall time, are in the scaffolder's `reports/` folder. The evening run, on the Foundry-only default this page now describes and with the `doctor` and gas steps added, took 1 minute 47 seconds of tool time (`golden-path-dev-2026-09-14b.md`). The morning run took 1 minute 13 seconds without those two steps and with a warmer npm cache; the one line that moved was `npm install`, at 42.6 s against 30 s. The 12 September run took nineteen minutes and six commands in two shells for the same loop, and that transcript is beside the others. Every step says whether it has been run, and where.
+
+<TwoSpeed />
+
+<Aside type="caution" title="Before step one">
+<StatusPill variant="neutral" label="Your step: GitHub token" tipKey="github-token" /> <StatusPill variant="neutral" label="Your step: verifier API key" tipKey="verifier-key" />
+
+The Eligibility SDK is on GitHub Packages, and it needs a GitHub token with `read:packages` to install and a verifier API key from Redbelly support to run. An agent cannot obtain either. Nothing on this page needs them; the golden path stops before the SDK on purpose. Where they come from: [Eligibility SDK, getting started](https://docs.redbelly.network/pages/eligibility-sdk/getting-started/).
+</Aside>
+
+## The path
+
+<StepList>
+1. ### Verify your wallet
+
+   <StatusPill variant="neutral" label="Your step: only you can do this" tipKey="verify-wallet" />
+
+   Every wallet on Redbelly is identity-verified before it can send anything. Verification is a passport plus a biometric check, done once, at the Access dApp. A credential issued on testnet carries over to mainnet.
+
+   <VineAside href="https://vine.redbelly.network/identity/user-access/" label="Vine: user access">
+   Claim an access credential from an accredited issuer, then self-enable write access through a network contract. That is the whole flow; Vine has the screenshots.
+   </VineAside>
+
+   Go to [access.redbelly.network](https://access.redbelly.network). Once you are done, the network's permission contract answers true for your address. Every later tool relies on this read, and it needs nothing from Redbelly:
+
+   <Sample id="helpers-is-allowed" title="test/unit.test.mjs (the isAllowed read, replayed against measured values)" />
+
+   The same read from the command line, once Foundry is installed in step 3:
+
+   ```sh title="Is this wallet allowed on 153?"
+   cast call 0x519ba1b48D571FD92FAF6FE4D20fe74Ca435B690 "isAllowed(address)(bool)" 0xYourWallet --rpc-url https://governors.testnet.redbelly.network
+   ```
+
+   <StatusPill variant="verified" label="Run 14 Sep 2026 against the real testnet" /> This exact `cast` call answered `true` for the known allowed address and `false` for the zero address, read-only, in 2.0 s and 1.2 s each.
+
+2. ### Get testnet RBNT
+
+   <StatusPill variant="neutral" label="Your step: claim from the faucet" tipKey="faucet" />
+
+   Testnet coins come from FAUCETME, with a Discord login. A nominal amount also arrives when your wallet is verified. FAUCETME's front page, read on 15 September 2026, gives 500 RBNT per claim and one claim per 24 hours. You do not need any for the local loop in step 6, because Anvil funds its own accounts.
+
+   <VineAside href="https://vine.redbelly.network/native-currency/testing-coins/" label="Vine: testing coins">
+   The faucet is [redbelly.faucetme.pro](https://redbelly.faucetme.pro/). It is no longer a Discord slash command.
+   </VineAside>
+
+3. ### Install a toolchain
+
+   Vine's own material is Hardhat, Waffle and Remix. I have kept this path to Foundry only, because `forge`, `cast` and `anvil` are what the local loop, the gas report, the ship report and the deploy step are built on: `anvil` runs the fork, `forge` deploys and tests, and both sign locally from a keystore when the time comes. A second toolchain doubles what can drift, and the one compilation fault in the 12 September runs was Hardhat's, so since wave 8 the scaffold is Foundry only unless you pass `--hardhat`, which adds a Hardhat 3 view of the same sources for a team that also uses it; its steps were run on 12 September and its compile is re-run in the scaffolder's tests.
+
+   <Tabs syncKey="toolchain">
+     <TabItem label="Foundry">
+       Install per the [Foundry book](https://getfoundry.sh/), then import your verified wallet as a keystore account. The key never touches a file or a chat:
+
+       ```sh title="Keystore account, once"
+       cast wallet import rbn-dev --interactive
+       ```
+
+       <StatusPill variant="pending" label="Keystore import not run here" tipKey="keystore-import" /> The sessions that build this site hold no key, so nobody has run the import in a recorded session. If `foundryup` is blocked where you work, the `@foundry-rs/forge`, `anvil` and `cast` npm packages carry the same binaries; this run used 1.7.1 from there. One thing to know about those packages: their 1.7.1 wrapper exits 0 whatever the binary returned, so a failed `forge build` looks like success to anything reading the exit code. `npm run doctor` in step 5 detects the wrapper and prints the line that links the real binary over it.
+     </TabItem>
+     <TabItem label="Hardhat (with --hardhat)">
+       Install per the [Hardhat docs](https://hardhat.org/docs). With `--hardhat` the scaffold's Hardhat 3 config reads the deployer from Hardhat's encrypted keystore, never from the config file:
+
+       ```sh title="Keystore entry, once"
+       npx hardhat keystore set REDBELLY_DEPLOYER_KEY
+       ```
+
+       <StatusPill variant="pending" label="Keystore entry not run here" tipKey="keystore-entry" /> Same reason: no key in any recorded session. Foundry is still needed for the local loop; `npm run dev` runs Anvil and `forge`.
+     </TabItem>
+   </Tabs>
+
+4. ### Get the project
+
+   `create-redbelly-dapp` writes a monorepo: Foundry contracts on the `Gated` base with five-state, fuzz and invariant tests, a Next.js web app with the verify-your-wallet interstitial, one gated action and the dev state panel, pinned CI, the five rules files, `npm run dev`, `npm run doctor`, `gas` and `ship` through a vendored copy of the pre-flight package, and a deploy script that refuses chain 151 without a Safe 1.4.1, a verified deployer and a ship report dated today. It is on npm, first published on 18 September 2026 and at version 0.2.0 since 19 September, so nothing needs cloning:
+
+   ```sh title="Scaffold with the defaults: gated-erc20, npm, web app, Foundry only"
+   npm create redbelly-dapp@latest my-app -- --yes
+   npm create redbelly-dapp@latest my-app -- --yes --hardhat   # plus a Hardhat 3 view in hardhat/
+   ```
+
+   <StatusPill variant="verified" label="Run from npm, 19 Sep 2026, version 0.2.0" /> I ran the first line in an empty folder against the public registry the evening 0.2.0 was published: with the install, the 68 contract tests and a build of the web app it took 43 seconds. Versions 0.1.0 and 0.1.1 are superseded and deprecated; 0.2.0 is the security release that followed the audit of 19 September, and `@latest` selects it. Templates `gated-erc20` and `empty` ship. Choosing `gated-erc721` or `gated-vault` exits with the list of what each still needs and writes nothing. Nothing in the scaffolder makes a network call unless you pass `--install`, and nothing reads or asks for a key. The scaffold's gate is bound to request id 18, the over-18 recipe; the four warm-up cards at the end of this page start from there.
+
+   If you would rather deploy the smallest possible thing by hand first, the first-contract project in `phase-0/` is one state variable, one write and one event, with the same pins the scaffold uses in its `contracts/foundry.toml` (plus `[profile.testnet]` 153 and `[profile.mainnet]` 151 there):
+
+   <Tabs syncKey="toolchain">
+     <TabItem label="Foundry">
+       <Sample id="foundry-toml" wrap={true} />
+       <Sample id="hello-sol" />
+     </TabItem>
+     <TabItem label="Hardhat (with --hardhat)">
+       The scaffold's Hardhat config, as the template stands before the project name and RPC URLs are filled in. The same pins, networks 153 and 151, the signer from the keystore, a local fork entry, and Routescan declared as the explorer for `hardhat verify`:
+
+       <Sample id="hardhat-config" wrap={true} />
+     </TabItem>
+   </Tabs>
+
+5. ### Check the machine, then install
+
+   First the machine. `npm run doctor` works on the bare scaffold, before anything is installed: Node 22 or later; `forge`, `anvil` and `cast` on PATH, one version, and the real binaries rather than the npm wrapper that drops exit codes; `slither` and `aderyn` (optional, a warning when missing); git; no `.env` tracked; and `vendor/` against the versions the scaffolder recorded in `package.json`. One line per check with the fix on the same line; exit 0 only when every required check passes. Hackathon participants lose their first hour to this list, so it runs in under a second.
+
+   ```sh title="From my-app/"
+   npm run doctor
+   ```
+
+   <StatusPill variant="verified" label="Run 14 Sep 2026: 0.9 s, ten pass, one warning" /> Every required check passed on the build machine; the one warning was Aderyn, which is optional and whose npm wrapper cannot fetch its binary behind this environment's proxy. A pasted `doctor` line means the same thing to the MCP server's `explain_failure`, because both read one failure table.
+
+   Then install. A fresh scaffold has nothing installed, and `npm run dev` or `forge build` straight away stops with the two commands you skipped. The scaffolder prints the same two as its next steps.
+
+   ```sh title="From my-app/"
+   npm install                  # the web app and the vendored packages
+   npm run contracts:install    # OpenZeppelin 5.6.1 from npm, forge-std v1.16.2 with forge install --no-git
+   ```
+
+   <StatusPill variant="verified" label="Run 14 Sep 2026: 42.6 s and 3.3 s" /> Most of the first command is Next.js and wagmi; the morning run the same day measured 30 s with a warmer npm cache and the 12 September run 72 s cold. The second is one package plus a git clone under `contracts/`. With `--hardhat`, the Hardhat view is an npm workspace of the root and the first command installs it too.
+
+6. ### Run the local loop
+
+   One command. It forks testnet on Anvil as chain 31337, deploys a `ReceptorMock` and your contract through the project's own deploy script, seeds Anvil accounts 2 to 6 into the five credential states in enum order, opens subscriptions, starts the web app, and prints a table with the impersonation command beside each wallet. Ctrl-C stops Anvil and the web app together.
+
+   ```sh title="From my-app/"
+   npm run dev
+   ```
+
+   <StatusPill variant="verified" label="Run 14 Sep 2026: table in 17.9 s, web app answering 11.2 s later" /> This is what it printed in the morning run, on a fork at block 3035484 (the evening run, on the Foundry-only default, printed the same table at block 3035539 with the same addresses, in 17.9 s):
+
+   ```text title="What npm run dev printed (stdout)"
+   > dev
+   > node scripts/dev.mjs
+
+   Local loop ready: Anvil chain 31337 (fork of 153 at block 3035484) at http://127.0.0.1:8545
+   GatedERC20 0x07AF11e412ed7C343603c0F4b35645f7870686Eb   verifier (ReceptorMock) 0x37cA242a94945CdC3d3F155452a82Af6374bebD7   request id 18
+   deployer and admin: Anvil account 7 0x14dC79964da2C08b23698B3D3cc7Ca32193d9955 (accounts 0 and 1 are never used)
+
+   Wallet  State              Address                                     Impersonate (cast)
+   ------  -----------------  ------------------------------------------  ------------------------------------------------------------------------------------------------------------
+   2       NeverIssued        0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC  cast rpc anvil_impersonateAccount 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC --rpc-url http://127.0.0.1:8545
+   3       Valid              0x90F79bf6EB2c4f870365E785982E1f101E93b906  cast rpc anvil_impersonateAccount 0x90F79bf6EB2c4f870365E785982E1f101E93b906 --rpc-url http://127.0.0.1:8545
+   4       Expired            0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65  cast rpc anvil_impersonateAccount 0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65 --rpc-url http://127.0.0.1:8545
+   5       Revoked            0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc  cast rpc anvil_impersonateAccount 0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc --rpc-url http://127.0.0.1:8545
+   6       WrongJurisdiction  0x976EA74026E726554dB657fA54763abd0C3a0aa9  cast rpc anvil_impersonateAccount 0x976EA74026E726554dB657fA54763abd0C3a0aa9 --rpc-url http://127.0.0.1:8545
+
+   States are per request id 18; change one with: cast send 0x37cA242a94945CdC3d3F155452a82Af6374bebD7 "setStatus(address,uint64,uint8)" <wallet> 18 <0-4> --unlocked --from 0x14dC79964da2C08b23698B3D3cc7Ca32193d9955 --rpc-url http://127.0.0.1:8545
+   Record: deployments/local.json (account indices, never a key). Web app with the dev state panel: http://localhost:3000
+   Ctrl-C stops Anvil and the web app.
+   ```
+
+   What it did, in order, from its own log: started Anvil and waited for it (1.9 s), compiled the contracts (4.2 s), replaced the permission gate on the local chain with the test mock and allowed the deployer and the five wallets, ran `script/Deploy.s.sol` as Anvil account 7 with a `ReceptorMock` as verifier (2.7 s), opened subscriptions, and wrote each wallet's state with `setStatus` and read it back. The record it writes is `deployments/local.json`: chain id, fork source, verifier, contract, request id, the deployer and the five wallets by Anvil account index. No key is involved at any point; Anvil signs for its own accounts.
+
+   <Sample id="local-deployment" />
+
+   There are two things to know about that chain. It is 31337, not 153, on purpose: nothing local can be mistaken for the real network, the deploy script's identity check is skipped there, and the dev state panel renders only on 31337. The permission gate on it is the test mock, so the five wallets count as verified locally; on the real 153 they are not, and the fork you get from `npm run anvil:fork` (chain id 153, gate untouched) still refuses them, which is how the deploy refusal on the 12 September transcript was recorded.
+
+   Accounts 0 and 1 are never used, for anything. Their keys are printed by every Anvil start, and both pass `isAllowed` on the real networks ([question 30](/research/)); the deployer is account 7, the wallets are 2 to 6.
+
+   Now open the web app. On `/eligibility` the page carries the dev state panel: the five wallets, a Connect button beside each (Anvil signs; nothing is imported into a wallet extension), and five buttons that move the connected wallet between the states by calling `setStatus` on the mock as the impersonated deployer. The eligibility hook refetches when the transaction lands, so the page moves into the new state without a reload.
+
+   <StatusPill variant="verified" label="Run 14 Sep 2026 in Chromium, twice" /> Connect wallet 3 (Valid): the gate showed **Eligible** 0.1 s after the click (0.2 s in the evening run). Press **Expired**: the panel reported the new state and the gate showed **Not eligible for this action** with no page load, 0.4 s later in the morning and 4.4 s in the evening, when the machine was also compiling the web app's remaining routes. Press **Valid**: back to **Eligible**. No browser errors either time. The screenshots are beside the transcripts.
+
+   The panel belongs to the dev server alone. It is imported behind a build-time constant that `next.config.ts` sets only in the dev server when `deployments/local.json` exists, so a production build carries nothing of it (the scaffolder's test builds one with the file present and checks), and the component itself renders nothing unless the connected chain is 31337 (the same test opens the app against 153 with the file present and finds no panel):
+
+   <Sample id="dev-state-gate" />
+
+   Break it from the shell too, with the addresses from the table. The contract's gate answers, exactly as it will on the real network:
+
+   ```sh title="Wallet 2 (NeverIssued) and wallet 3 (Valid) call subscribe()"
+   cast send --unlocked --from <wallet 2> <contract> "subscribe()" --rpc-url http://127.0.0.1:8545
+   cast send --unlocked --from <wallet 3> <contract> "subscribe()" --rpc-url http://127.0.0.1:8545
+   cast call <contract> "balanceOf(address)(uint256)" <wallet 3> --rpc-url http://127.0.0.1:8545
+   ```
+
+   ```text title="What the first one printed"
+   Error: Failed to estimate gas: server returned an error response: error code 3: execution reverted: custom error 0x879342fb: 0000000000000000000000003c44cdddb6a900fa2b585dd299e03d12fa4293bc0000000000000000000000000000000000000000000000000000000000000012, data: "0x879342fb0000000000000000000000003c44cdddb6a900fa2b585dd299e03d12fa4293bc0000000000000000000000000000000000000000000000000000000000000012": NotEligible(0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC, 18)
+   ```
+
+   <StatusPill variant="verified" label="Run 14 Sep 2026" /> The second succeeded and the balance read 100000000000000000000, the 100-token subscription amount. The table's footer line flips a wallet from the shell the same way the panel does (`setStatus` from the deployer); the transcript does that for wallet 4. A second `npm run dev` while the first is running says so and exits 2. For an agent, `npm run dev -- --json` prints the record and nothing else on stdout. Flags: `--chain 151` (a read-only fork of mainnet, with a warning), `--port`, `--web-port`, `--no-web`, `--no-fork` (plain Anvil, offline), `--request-id 708` (the AU wholesale investor recipe).
+
+7. ### Give your agent the rules
+
+   If an AI coding agent is doing the typing, put the rules file in the project root before it writes a line. It holds the chain facts, the gas model, the identity gate, the two-speed rule, the key-handling rule and a never-do list, all rendered from one source. The scaffold already wrote all five; the [agents page](/agents/) has every format and a copy button for a project that did not start from the scaffold.
+
+   ```sh title="All formats at once (outside a scaffold)"
+   npx redbelly-agent-rules --out .
+   ```
+
+   ```sh title="Inside a scaffold: check they haven't drifted"
+   npm run rules:check
+   ```
+
+   <StatusPill variant="verified" label="Run 14 Sep 2026: five files, all ok" />
+
+8. ### Gate one function, and prove it
+
+   In the scaffold this is already done: `GatedERC20` checks both parties of every movement and its tests run every gated function through the five states. For your own contract, inherit `Gated` from `@gatedpath/receptor-mock`, put `gated` on the function (and `gatedFor(address)` on a counterparty), point it at a verifier through `IRedbellyVerifier`, and wire `_authorizeVerifierChange` to your owner check. Forgetting the hook is a compile error, on purpose.
+
+   <Sample id="gated-modifiers" />
+
+   Then prove the gate. `GatedTest` puts the wallet into each non-valid state on `ReceptorMock`, asserts the exact `NotEligible(wallet, requestId)` revert, then sets `Valid` and asserts success. The panel in step 6 is the same five states with a wallet attached; the tests are the version that runs in CI.
+
+   <Sample id="five-state-test" />
+
+   ```sh title="From my-app/"
+   npm test        # forge test in contracts/
+   ```
+
+   <StatusPill variant="verified" label="Run 19 Sep 2026, scaffold 0.2.0: 68 tests, 7 suites" /> Fifteen deploy pre-flight cases (the mainnet refusals, a chain id that must be the network's own, a Safe recognised by its code, the ship-report gate and the UTC date it looks for), twenty-three on the token, seven on the issuer registry, seven on the admin pattern, four fuzz properties at 512 runs and twelve invariants at 64 runs of depth 32; the contract kit's suite, copied into every scaffold. `forge fmt --check` clean. There are no Hardhat-only tests; with `--hardhat`, `npx hardhat compile` in `hardhat/` compiles the same sources with the same pins (re-run in the scaffolder's tests on 14 September).
+
+   What the tests cost is the next thing a Redbelly builder asks, because the chain prices gas in dollars. `npm run gas -- --chain 153` prices the gas snapshot `forge test` wrote (one row per test; `--report` runs `forge test --gas-report --json` and prices each function and the deployment) at testnet's latest base fee and feed price, read-only, and prints gas, RBNT and US cents per row; `--diff <file>` compares two snapshots.
+
+   ```sh title="From my-app/"
+   npm run snapshot && npm run gas -- --chain 153
+   ```
+
+   <StatusPill variant="verified" label="Run 14 Sep 2026 against the real testnet feed: 51 rows, 9.6 s including the snapshot" /> At block 3035539 the base fee was 202,118 gwei and the feed said US$0.002356 per RBNT, so 21,000 gas, a plain transfer, came to 1.000 US cents exactly, and the heaviest test (1,743,385 gas) to 83 cents. The recorded `--report` run the same evening priced the `GatedERC20` deployment at 1,898,391 gas, 383.7 RBNT, 90.4 cents, and the same snapshot priced on mainnet's feed, read-only, came to the same cents row for row, both feeds standing at US$0.002356 (`packages/preflight/reports/gas-153-2026-09-14.md` and `gas-151-2026-09-14.md`). The cents column is the stable one; the RBNT column moves with the price.
+
+   Which credential the request id stands for is a recipe. The scaffold binds 18, the over-18 recipe; card 1 below swaps it for 708, the AU wholesale investor recipe, and proves it through the panel. Four recipes exist as drafts in `recipes/` with `verify` markers where Redbelly's docs are silent; none has met a live verifier yet. [Identity for builders](/identity/) has the whole picture.
+
+9. ### Check before you sign
+
+   There are three checks, none of which signs anything, and I ran all three on this page's date on the scaffold the local loop had just run in. The first is static analysis: `npm run lint:slither` runs Slither the way CI does and writes the report plus a hash of the sources beside it, so pre-flight can tell whether the report describes the code as it is.
+
+   ```sh title="From my-app/"
+   npm run lint:slither
+   ```
+
+   <StatusPill variant="verified" label="Run 14 Sep 2026: 17 contracts, 81 detectors, 3 results, none at the fail level" /> The three are the same low-impact `timestamp` notes on `IssuerRegistry` that the contract kit triaged when it landed (an issuer window compared against `block.timestamp`, which is the intent); Slither exits 0 on them and pre-flight accepts the report.
+
+   Then the two pre-flights. Both read the real testnet with a public address and nothing else: chain id, `isAllowed`, the balance, the Safe when there is one.
+
+   ```sh title="From my-app/: the scaffold's own script, then the seven-check CLI"
+   DEPLOYER=0xYourWallet npm run preflight
+   cd contracts && redbelly-preflight --chain 153 --address 0xYourWallet
+   ```
+
+   <StatusPill variant="verified" label="Run 14 Sep 2026 read-only against 153 with the known allowed address, twice" /> The scaffold's script passed 10 of 10 checks. The CLI passed chain id, deployer verified, compiler pins and the Slither report, skipped the Safe and git history (none given, no repository yet), and failed the balance check: the known allowed address holds 380.5 RBNT and the CLI wants 757.9 RBNT for a 3,000,000-gas deploy with a 25% margin at that evening's feed price (768.4 RBNT in the morning; US$1.43 either way), which is the fee rule doing its job on a wallet that isn't ours, not a fault. Your own wallet needs that much, or pass `--gas` with the measured figure from the gas report, 1,898,391, which brings it to about 480 RBNT; `ship` does that for you. Rehearse the mainnet refusal offline with `npm run preflight -- --chain 151 --offline`: it fails on the missing Safe and verifier before it touches a network, which is the point.
+
+   The last check before signing writes the document you want anyway. `npm run ship -- --chain 153 --account <keystore-name>` runs the gas report, pre-flight with the keystore's address, the verifier check, `forge test` with the five-state suites counted, and the admin reading, and writes `contracts/deployments/ship-153-<today>.md` with every check, the readings, the gas table, and, once the deploy has happened, the contract's address, its constructor arguments already encoded and the exact verify command. It refuses to write when any check fails. On 153 the deploy script only warns without it; on 151 it refuses to broadcast without a report dated today, so `ship` is the mainnet gate as well as the report.
+
+   <StatusPill variant="pending" label="Not run on the real network: needs a keystore" tipKey="ship-real" /> <StatusPill variant="verified" label="Proven 14 Sep 2026 on a local chain 151 with the real Safe 1.4.1 bytecode" /> The [review page](/review/) has what the proof covered. No report exists for a real network yet.
+
+10. ### Deploy to testnet
+
+    <StatusPill variant="pending" label="Not executed on the real network" tipKey="deploy-real" /> The rehearsal is step 6: the same deploy script, the same pre-flight, on a fork. The real thing needs a verified, funded wallet, and I have not run it on the real network yet. The keystore in the commands is named for a business delegate wallet (a sub-account of a verified business, which gets write access without its own KYC), which is the clean place for a deploy key. These are the exact commands, in order; nothing has run them yet:
+
+    <Tabs syncKey="toolchain">
+      <TabItem label="Foundry">
+        ```sh title="Once, on the owner's machine: the delegate wallet as a keystore account"
+        cast wallet import rbn-delegate --interactive
+        ```
+
+        ```sh title="From my-app/: pre-flight, the ship report, then deploy, then keep the record"
+        DEPLOYER=$(cast wallet address --account rbn-delegate) npm run preflight
+        npm run ship -- --chain 153 --account rbn-delegate
+        cd contracts
+        forge script script/Deploy.s.sol --rpc-url redbelly_testnet --account rbn-delegate --broadcast
+        cat deployments/153-GatedERC20.json
+        cd .. && npm run ship -- --chain 153 --account rbn-delegate    # fills in the address, the constructor arguments and the verify command
+        ```
+      </TabItem>
+      <TabItem label="Hardhat (with --hardhat)">
+        ```sh title="From my-app/hardhat/: the keystore entry once, then deploy"
+        npx hardhat keystore set REDBELLY_DEPLOYER_KEY
+        npm run deploy:testnet      # hardhat run scripts/deploy.ts --network redbellyTestnet
+        ```
+
+        Run `npm run preflight` from the project root first, as on the Foundry tab; the checks are the same.
+      </TabItem>
+    </Tabs>
+
+    The deploy script runs its own pre-flight before broadcasting: it reads the chain from the RPC, resolves the permission contract through the registry, and refuses a deployer that fails `isAllowed`; on 151 it also refuses unless the admin is a Safe 1.4.1 with a threshold of at least two and `deployments/ship-151-<today>.md` exists (a dry run without it says so and continues; 153 warns). On the local loop's chain 31337 the identity check is skipped, and the transcript's log line says so. The record it writes carries the constructor signature and the encoded arguments, so the verify command in step 11 needs no retyping.
+
+    <Sample id="deploy-preflight" />
+
+    What to expect on the real network: a block is produced when there are transactions, so your transaction lands within seconds or it is not coming. Poll for the receipt. A wallet may show the gas wrongly, and Vine says most do on Redbelly. The fee for a plain transfer is US$0.01 whatever the wallet displays.
+
+11. ### Verify on Routescan
+
+    Routescan's own Foundry article gives the recipe. The dry run below compiles the `GatedERC20` the local loop deployed and prints the standard JSON input it would send (Solidity, Prague, optimizer at 200 runs) without sending it. Nothing has been submitted, because nothing of ours is on the real network yet (question 28, partial).
+
+    <Tabs syncKey="toolchain">
+      <TabItem label="Foundry">
+        ```sh title="Testnet, 153. Drop --show-standard-json-input and add --watch to submit"
+        forge verify-contract <address> src/GatedERC20.sol:GatedERC20 \
+          --verifier-url 'https://api.routescan.io/v2/network/testnet/evm/153/etherscan' \
+          --etherscan-api-key verifyContract --compiler-version 0.8.30 --evm-version prague --num-of-optimizations 200 \
+          --constructor-args $(cast abi-encode "constructor(string,string,(address,address,address,address),address,uint64,uint256)" "Gated Token" GTOK "(<admin>,<admin>,<admin>,<admin>)" <verifier> 18 100000000000000000000) \
+          --show-standard-json-input
+        ```
+
+        ```sh title="Mainnet, 151: the same, one path segment apart"
+        forge verify-contract <address> src/GatedERC20.sol:GatedERC20 \
+          --verifier-url 'https://api.routescan.io/v2/network/mainnet/evm/151/etherscan' \
+          --etherscan-api-key verifyContract --compiler-version 0.8.30 --evm-version prague --num-of-optimizations 200 \
+          --constructor-args <the same encoding> --watch
+        ```
+
+        <StatusPill variant="verified" label="Dry run 14 Sep 2026: 66,741 bytes of standard JSON input" /> <StatusPill variant="pending" label="Submission not made" tipKey="verify-submit" /> The `verifyContract` key is a placeholder Routescan documents as accepted; it is not a secret. The constructor takes the four roles as one tuple; on the local loop all four are the deployer. `forge verify-check` against both URLs answered `Verification not found` for a dummy guid on 12 September, which is the Etherscan-shaped reply forge expects and proves the URL form. The MCP server's `verify_routescan` tool builds the same command and dry-runs by default.
+      </TabItem>
+      <TabItem label="Hardhat (with --hardhat)">
+        The scaffold's config declares Routescan as the Etherscan-style explorer for 153 and 151 (`chainDescriptors`, with the same placeholder key), so Hardhat 3's verify task knows where to post:
+
+        ```sh title="Testnet, 153, from my-app/hardhat/"
+        npx hardhat verify etherscan --network redbellyTestnet <address> "Gated Token" GTOK <admin> <verifier> 18 100000000000000000000
+        ```
+
+        <StatusPill variant="pending" label="Not run: the task has no dry-run flag" tipKey="verify-hardhat" /> The config loads and `npx hardhat verify etherscan --help` renders with it, checked on 12 September. Routescan's web form takes the standard JSON input from the Foundry dry run as a fallback.
+      </TabItem>
+    </Tabs>
+
+12. ### See it, then break it for real
+
+    Open `https://redbelly.testnet.routescan.io/address/<address>` once the real deploy exists. Then send the same write from a wallet that is not verified and keep the exact error the RPC returns.
+
+    <StatusPill variant="pending" label="Real RPC error reported, not yet seen by us" tipKey="rpc-error" tipPlacement="top" /> On the local loop, only the contract's own gate answers (step 6 shows it). A fork and a local Anvil don't enforce the node-level permission map, so I have not seen the error the real network returns to a wallet without write access. A DAO developer has: `Sender not authorised to write transactions`, on a first transaction from a wallet not yet enabled on testnet (<Ext href="https://dev.to/rahmandefi/redbelly-network-troubleshooting-fixes-for-the-21-most-common-developer-errors-17i">Rahman's troubleshooting write-up</Ext>, error 21, 9 July 2026). His reading of the cause matches Vine: hold the access credential, fund the account, then enable it on that network, and mainnet and testnet are enabled separately. [When something fails](/errors/#node-rejects-unverified-wallet) recognises the wording.
+</StepList>
+
+## Next: say this to your agent
+
+Four warm-up prompts that modify the contract you just built. Each names what to build, who may use it, where it runs and how to show it works; that shape is the point. I ran card 1 again on 14 September 2026 with the new wording, which asks the agent to prove the swap through the dev state panel, and I ran cards 2 to 4 on 12 September. Each compiled, passed the five-state tests and cleared pre-flight, and the badge on each card links to the run record with the prompt, the diff, the test output and the wall time. The plan asks for two agents before a card counts as verified, so a second run is pending. The [full grid of twelve](/tutorials/) is on the tutorials page.
+
+<CardGrid cards={warmUpCards} filters={false} id="warm-up-cards" />

@@ -1,0 +1,40 @@
+---
+// Two-speed banner. The copy is fixed here so PLAN section 12.3's promise lives in one place.
+import StatusPill from './StatusPill.astro';
+---
+
+<div class="rb-twospeed not-content" role="group" aria-label="Two speeds">
+  <div class="rb-twospeed__pane rb-twospeed__pane--testnet">
+    <StatusPill variant="testnet" label="Testnet, chain 153" />
+    <p><strong>Fast lane.</strong> Scaffold, deploy, try it with an ineligible wallet. An afternoon.</p>
+    <a href="/start/">Start on testnet</a>
+  </div>
+  <div class="rb-twospeed__pane rb-twospeed__pane--mainnet">
+    <StatusPill variant="mainnet" label="Mainnet, chain 151" />
+    <p><strong>Gated.</strong> Pre-flight and the ship report first. Never promised in an afternoon for anything that holds value.</p>
+    <a href="/review/">What the gate checks</a>
+  </div>
+</div>
+
+<style>
+  .rb-twospeed {
+    display: grid;
+    gap: 0.75rem;
+    margin-block: 1.25rem;
+  }
+  @media (min-width: 50em) { .rb-twospeed { grid-template-columns: 1fr 1fr; } }
+  .rb-twospeed__pane {
+    border-radius: var(--rb-radius-lg);
+    padding: 1rem 1.25rem;
+    border-inline-start: 4px solid;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+  }
+  .rb-twospeed__pane p { margin: 0.625rem 0 0.25rem; }
+  .rb-twospeed__pane a { color: inherit; font-weight: 600; text-decoration: underline; text-underline-offset: 0.2em; }
+  .rb-twospeed__pane--testnet { background: var(--rb-color-testnet-bg); color: var(--rb-color-testnet-text); border-color: #166534; }
+  .rb-twospeed__pane--mainnet { background: var(--rb-color-mainnet-bg); color: var(--rb-color-mainnet-text); border-color: #991B1B; }
+  :root:not([data-theme='light']) .rb-twospeed__pane--testnet { border-color: #BBF7D0; }
+  :root:not([data-theme='light']) .rb-twospeed__pane--mainnet { border-color: #FECACA; }
+  @media (pointer: coarse) { .rb-twospeed__pane a { display: inline-block; padding-block: 0.5rem; } }
+</style>

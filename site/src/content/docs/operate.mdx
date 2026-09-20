@@ -1,0 +1,106 @@
+---
+title: Operate
+description: 'The week after the deploy: alerts on the events that matter, Routescan for what happened, a subgraph when you outgrow it, an RPC that fails over, and the runbook for three in the morning.'
+status: mainnet
+statusLabel: Mainnet, chain 151
+lastVerified: '2026-09-12'
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import ForAgents from '../../components/ForAgents.astro';
+import StatusPill from '../../components/StatusPill.astro';
+import Sample from '../../components/Sample.astro';
+import VineAside from '../../components/VineAside.astro';
+import { LINKS, REPO } from '../../data/site';
+
+<ForAgents
+  page="Operate"
+  facts={[
+    'The operations kit is packages/ops-kit. Read-only; it never signs and never needs a key. The Uniblock API key and the webhook URL come from UNIBLOCK_API_KEY and ALERT_WEBHOOK_URL and are never printed.',
+    'Redbelly does not announce changes to its permission, registry, price feed or gas fee contracts (their answer, 2026-09-17). node packages/ops-kit/scripts/system-watch.mjs --network mainnet keeps a baseline of what the bootstrap registry answers and of the permission proxy implementation, proxy admin and admin owner, and posts every later difference, plus role and upgrade events, to ALERT_WEBHOOK_URL. Read-only, no key.',
+    'Alert on Paused, Unpaused, ForcedTransfer, RoleGranted, RoleRevoked, RoleAdminChanged, VerifierChanged and RequestIdChanged (critical); IssuerPermissionSet and IssuerPermissionRevoked (warning); EligibilityDenied (info). node packages/ops-kit/scripts/alert.mjs --contract 0x… --network mainnet.',
+    'Routescan is the indexing route until Goldsky approves your project for Redbelly; the three scripts in packages/ops-kit/scripts cover transfers, holders and verified source. Keyless, paced at two requests a second.',
+    'Read the RPC through createFallbackRpc from @gatedpath/ops-kit/rpc-fallback: governors, then Ankr, then Uniblock with a key. Testnet has one public RPC.',
+    'A forced transfer nobody can match to a document within the hour is an incident. The runbook is packages/ops-kit/runbook/INCIDENT-RUNBOOK.md; fill in its table before mainnet and run the drill on testnet.',
+  ]}
+/>
+
+Section 6 of the plan ends with "Operate": monitoring on the events the contract kit emits, an on-call contact, a published `security.txt`, a disclosure address and a rehearsed pause procedure. This page is the tooling for the first and last of those. The kit is `packages/ops-kit`. I ran everything on this page on 12 September 2026 against a local anvil or the public Routescan API; nothing has yet run against a contract of ours on either network, because none is deployed.
+
+## What to watch
+
+The contract kit's `GatedERC20` emits an event on every state change a monitor cares about (the plan's build rule). Eleven of them are worth a person's attention, and the kit names each with its topic hash and a decoder:
+
+<Sample id="ops-events" />
+
+The severity is the kit's opinion, and the runbook says what to do with each. Plain `Transfer`, `Approval` and issuer mints are not alerts; they are what the token is for.
+
+## The alert recipe
+
+This is one script. It needs no service and no account with anyone. It polls `eth_blockNumber` every fifteen seconds, and when the head has moved it asks `eth_getLogs` for the contract's watched topics since the last block it saw, decodes each log and POSTs it as JSON to the webhook URL in the environment. The last block lives in a small state file, so a restart neither re-alerts nor misses anything; there are no reorgs on this network, so a block seen is final and the file only moves forward.
+
+```sh
+export ALERT_WEBHOOK_URL=https://hooks.example/…    # Slack, Discord, PagerDuty, or your own receiver
+node packages/ops-kit/scripts/alert.mjs --contract 0xYourToken --network mainnet --state /var/lib/redbelly-alert/state.json
+```
+
+`--once` makes it a cron job; `--dry-run` prints instead of posting; `--min-severity info` includes skipped distributions; `--rpc` pins one URL (a private node, or the anvil the test uses). On mainnet the reads go through the fallback helper below. Blocks on Redbelly are produced on demand, so a quiet contract costs one small call per poll and nothing else.
+
+<StatusPill variant="verified" label="Tested on anvil, 12 Sep 2026" /> The kit's `alert.test.mjs` deploys the real `GatedERC20` and a `ReceptorMock` on anvil, produces every watched event on-chain, and checks the poller decodes them in order with their arguments, filters by severity, posts to a local webhook with `--once`, keeps its place in the state file and refuses to run with no webhook and no `--dry-run`. <StatusPill variant="pending" label="No live contract yet" /> Nothing of ours is on 151 or 153, so no alert has fired for a real event.
+
+## The network's own contracts
+
+Your dApp depends on four contracts that are not yours. The permission contract decides whether your users can transact at all, the price feed and the gas fee contract set what they pay, and the bootstrap registry says where the other three are. I asked Redbelly on 12 September 2026 how changes to them are announced. The answer, on 17 September, was that the code becomes source-available between Q4 2026 and Q1 2027 and that builders monitor for themselves. So the kit now does that.
+
+```sh
+export ALERT_WEBHOOK_URL=https://hooks.example/…
+node packages/ops-kit/scripts/system-watch.mjs --network mainnet --state /var/lib/redbelly-alert/system-mainnet.json
+```
+
+It looks in two ways, because neither is enough alone. On every pass it takes a snapshot: the address the registry answers for `permission`, `pricefeed` and `gasfees`, a fingerprint of the code at each, and for the permission contract, which is an upgradeable proxy on both networks, the implementation behind it, the proxy admin, and the admin's owner. Comparing two snapshots catches a change even when nothing was emitted. It also reads the logs of the permission proxy and its admin since the last block it saw, 100 blocks at a time because the governors RPC refuses wider requests, which catches what a snapshot cannot: a role granted or revoked, and the transaction an upgrade happened in.
+
+The first run keeps a baseline and posts nothing. After that each change is posted once, in the same JSON shape as the alert recipe, so one webhook serves both. If the webhook refuses an alert, the state file stays where it was and the next pass tries again. The default interval is five minutes and a pass costs about a dozen calls. `--show` prints the current snapshot and touches nothing; `--once` and `--dry-run` work as they do above.
+
+<StatusPill variant="verified" label="Run against both networks, 17 Sep 2026" /> Read-only, from my own machine: a baseline and then silence on 151 and on 153. I then replayed the log reader over the previous 6,000 mainnet blocks. It found three events that nobody announced: at 04:05:25 UTC on 14 September 2026 the permission contract's `DEFAULT_ADMIN_ROLE` was revoked from one address and granted to another, and at 04:30:35 UTC the ownership of its proxy admin moved to that same address. The record is `packages/ops-kit/reports/system-watch-2026-09-17.md`. Ten tests cover it against a scripted chain, with no network and no Foundry.
+
+An alert from this watcher is not your incident to fix. It is a reason to re-run pre-flight and the five-state tests against a fork at the new block, to check that `isAllowed` still answers for a wallet you know, and to read Redbelly's channels. If a gated call now behaves differently, pause and tell your users why. Role names other than `DEFAULT_ADMIN_ROLE` show as their hash, because the contract's source is not published.
+
+## Routescan for what happened
+
+Routescan indexes both networks and its API answers keyless at two requests a second (measured on 15 September 2026; see SOURCES.md in the repository). Three scripts in the kit wrap the calls an operator makes most: the transfers of a token, its holders, and whether the source at an address is verified and is what you deployed.
+
+```sh
+node packages/ops-kit/scripts/routescan-transfers.mjs 0xToken --network mainnet --limit 50
+node packages/ops-kit/scripts/routescan-holders.mjs   0xToken --network mainnet
+node packages/ops-kit/scripts/routescan-verified.mjs  0xToken --network mainnet --expect-name GatedERC20 --expect-compiler 0.8.30
+```
+
+<StatusPill variant="verified" label="Run against mainnet, 12 Sep 2026" /> The recorded run in `packages/ops-kit/reports/` is against WRBNT, the busiest ERC-20 on 151 that day, because none of ours exists yet; the verified-source check on Multicall3 is in the same file. A holder list from an explorer is a snapshot of the `Transfer` events it indexed; for a gated token the on-chain truth is `balanceOf`, and eligibility is a separate read, `isEligible`.
+
+## A subgraph, when Routescan is not enough
+
+<StatusPill variant="pending" label="Needs Redbelly's approval on Goldsky" tipKey="goldsky-approval" /> Goldsky supports subgraphs on 151 and 153 as a partner-sponsored product, "if approved by the Redbelly team", and offers neither Edge RPC nor Mirror for Redbelly (docs.goldsky.com/chains/redbelly, read 12 September 2026). The kit carries a template for the gated ERC-20, with a `Token`, a `Holder` per wallet whose balance is kept from `Transfer` events, and one entity per operator event including the forced transfer's justification hash. Until the approval exists it is a template; `graph codegen` and `graph build` have not been run in a recorded session.
+
+<Sample id="ops-subgraph" />
+
+## An RPC that fails over
+
+Vine lists three public mainnet RPCs: the governors endpoint, Ankr, and Uniblock with a key on the `x-api-key` header. The kit's helper tries them in that order and moves on from a network error, an HTTP error, a timeout or a non-revert JSON-RPC error; a revert comes back from the first provider that answers, because every provider would say the same. Without a Uniblock key the provider is left out rather than tried, so nothing keyless ever goes to the keyed endpoint on your behalf.
+
+<Sample id="ops-fallback" />
+
+<VineAside href={LINKS.vineEnvironments} label="Environments on Vine">
+The three URLs and the Uniblock header are on this page; the kit reads them from `@gatedpath/chains`. Vine lists no third-party RPC for testnet, so on 153 the helper retries the one URL.
+</VineAside>
+
+## The runbook
+
+`packages/ops-kit/runbook/INCIDENT-RUNBOOK.md` is written for the on-call person at three in the morning: what each alert means and whether it is an incident, five steps (confirm in ten minutes, pause, contain, tell people, recover and record), the `cast` and script commands they need, the quarterly drill, and a table to fill in once. It assumes the contract kit's Safe plus timelock layout, where pausing is one Safe transaction and unpausing waits out the timelock.
+
+<Sample id="ops-runbook" />
+
+Next to it is a filled-in record from a drill on 12 September 2026: a forced transfer with a hash nobody could match, paused ninety seconds after the alert, unpaused eleven minutes later, and what the drill found (the hash-to-document step had no owner at night). It ran on a local anvil, not on a network, and says so in its first paragraph.
+
+<Aside type="caution" title="What stays unverified">
+No alert has fired for a real event on 151 or 153. No subgraph has been built, and the webhook receiver in the test is local; the Routescan runs are against a third party's token. Each of those becomes a verified line the day a contract of ours is deployed, which waits on the wallet policy in the project's `CLAUDE.md`.
+</Aside>

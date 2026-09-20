@@ -1,0 +1,30 @@
+---
+// A landing-page door: one link, the whole card clickable, no nested links.
+interface Props { href: string; eyebrow: string; title: string; text: string }
+const { href, eyebrow, title, text } = Astro.props;
+---
+
+<a class="rb-door" href={href}>
+  <span class="rb-eyebrow">{eyebrow}</span>
+  <span class="rb-door__title">{title}</span>
+  <span class="rb-door__text">{text}</span>
+</a>
+
+<style>
+  .rb-door {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1.5rem;
+    border: 1px solid var(--rb-color-hairline);
+    border-radius: var(--rb-radius-lg);
+    background: var(--rb-color-bg);
+    color: var(--rb-color-text);
+    text-decoration: none;
+    transition: border-color var(--rb-duration-base) var(--rb-ease-standard), box-shadow var(--rb-duration-base) var(--rb-ease-standard);
+  }
+  .rb-door:hover { border-color: var(--rb-color-hairline-strong); box-shadow: var(--rb-shadow-sm); }
+  .rb-door:hover .rb-door__title { color: var(--rb-color-accent-high); text-decoration: underline; text-underline-offset: 0.2em; }
+  .rb-door__title { font-size: var(--sl-text-xl); font-weight: 600; line-height: 1.25; color: var(--rb-color-accent); }
+  .rb-door__text { font-size: var(--sl-text-sm); line-height: 1.5; color: var(--rb-color-text-muted); }
+</style>

@@ -1,0 +1,29 @@
+---
+// Step 1 of every project (PLAN.md section 19): the same fresh scaffold, run for the record on
+// 17 September 2026 (cards/runs/2026-09-17/card-01-solidity.md). Written once so twelve pages cannot
+// disagree about it. `folder` is the project folder's name in the commands.
+import { Code } from '@astrojs/starlight/components';
+import StepCard from './StepCard.astro';
+import StepPart from './StepPart.astro';
+import SaveYourWork from './SaveYourWork.astro';
+interface Props { folder?: string; reuse?: boolean }
+const { folder = 'gate-demo', reuse = false } = Astro.props;
+---
+
+<StepCard n={1} title="Make the project">
+  <StepPart kind="gets">
+    <p>A working gated token on your machine, with its tests, a web app and an agent rules file, and nothing yet changed.</p>
+  </StepPart>
+  <StepPart kind="do">
+    {reuse && <p>If you already made this folder for an earlier warm-up and its tests are green, keep it and go to step 2.</p>}
+    <p>If you have not done <a href="/start/">Start here</a>, do that first; it checks your machine and explains each command. The scaffolder is on npm, so this works in any empty folder:</p>
+    <Code lang="sh" code={`npm create redbelly-dapp@latest ${folder} -- --yes\ncd ${folder}\nnpm install\nnpm run contracts:install\nnpm run test`} />
+  </StepPart>
+  <StepPart kind="worked">
+    <p>The last line reads <code>68 tests passed, 0 failed</code> across 7 test suites, with scaffolder 0.2.0; version 0.1.1 has 63. On my machine the install took 45 seconds and the tests 3.</p>
+  </StepPart>
+  <StepPart kind="ifnot">
+    <p><code>forge not found</code> means Foundry is missing: run <code>npm run doctor</code>, which says exactly what the machine lacks. Anything else is on <a href="/errors/">When something fails</a>.</p>
+  </StepPart>
+  <SaveYourWork when="first" />
+</StepCard>

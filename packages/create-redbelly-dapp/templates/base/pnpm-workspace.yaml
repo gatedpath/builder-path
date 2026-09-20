@@ -1,0 +1,14 @@
+{{#if pnpm}}
+# pnpm keeps each package's node_modules separate, so contracts/ can be a workspace member and
+# Foundry's node_modules remapping still resolves inside it. (npm and yarn hoist, so there
+# contracts/ stays outside the workspaces and `contracts:install` installs it on its own.)
+packages:
+  - contracts
+{{#if hardhat}}
+  - hardhat
+{{/if}}
+{{#if web}}
+  - web
+{{/if}}
+  - vendor/*
+{{/if}}

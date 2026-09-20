@@ -1,0 +1,42 @@
+{
+  "name": "redbelly-development-tool-site",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Builder site for Redbelly Network: Astro Starlight. An independent builder site, not affiliated with Redbelly Network Pty Ltd.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "samples": "node scripts/extract-samples.mjs",
+    "check:samples": "node scripts/check-samples.mjs",
+    "check:errors": "node scripts/check-errors.mjs",
+    "dev": "npm run samples && astro dev",
+    "build": "npm run check:samples && astro build",
+    "check": "astro check",
+    "preview": "astro preview",
+    "show": "node scripts/show.mjs",
+    "quality": "node scripts/quality.mjs",
+    "budget": "node scripts/budget.mjs",
+    "text:extract": "node scripts/extract-text.mjs",
+    "text:apply": "node scripts/apply-text.mjs",
+    "test:text": "node --test scripts/text-merge.test.mjs scripts/text-apply.test.mjs",
+    "check:editor": "node scripts/check-editor.mjs",
+    "offline": "node scripts/build-offline.mjs",
+    "check:tips": "node scripts/check-tips.mjs"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "0.42.0",
+    "astro": "7.3.2"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.6",
+    "@astrojs/markdown-remark": "^7.3.1",
+    "@axe-core/playwright": "^4.13.0",
+    "lighthouse": "^13.4.1",
+    "playwright": "^1.63.0",
+    "solc": "^0.8.30",
+    "typescript": "^5.9.3"
+  }
+}

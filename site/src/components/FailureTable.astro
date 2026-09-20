@@ -1,0 +1,98 @@
+---
+import Ext from './Ext.astro';
+// The /errors page body, rendered at build time from the one table in packages/agent-rules
+// (src/failures.ts). Nothing here is typed by hand: the MCP server's explain_failure and the
+// frontend kit's explainError read the same file, and scripts/check-errors.mjs fails the quality
+// run if a kind in the source has no section in the built page.
+import { failures } from '../../../packages/agent-rules/src/failures';
+import type { FailureEntry, FailureGroup } from '../../../packages/agent-rules/src/failures';
+import StatusPill from './StatusPill.astro';
+
+const groups: Array<{ id: FailureGroup; heading: string; intro: string }> = [
+  { id: 'contract', heading: 'The contract refused', intro: 'Custom errors from the Gated base. The selector is the first four bytes of the revert data; cast prints it, viem decodes it.' },
+  { id: 'deploy-script', heading: 'The deploy script refused', intro: 'RedbellyDeployScript.sol reverts with a string before anything is broadcast. Each string below is the exact one.' },
+  { id: 'preflight', heading: 'Pre-flight said fail', intro: 'One entry per check id in redbelly-preflight. The line on the terminal starts with fail and the id.' },
+  { id: 'network', heading: "The network's gate", intro: "permission.isAllowed is the one gate every wallet passes before it can send. Read it before you sign." },
+  { id: 'wallet', heading: 'The wallet or the browser', intro: 'What viem and wagmi raise in a page, and the words the frontend kit shows instead.' },
+  { id: 'forge', heading: 'forge', intro: '' },
+  { id: 'cast', heading: 'cast and keystores', intro: 'Nothing here ever holds a key. A keystore name is a file under ~/.foundry/keystores that cast decrypts at the prompt.' },
+  { id: 'anvil', heading: 'anvil and the local loop', intro: '' },
+  { id: 'tooling', heading: 'Missing tools', intro: '' },
+  { id: 'doctor', heading: 'What redbelly-doctor checks', intro: 'The machine before the first command: Node 22, the three Foundry binaries as one version and the real ones rather than the npm shim, git, no .env tracked, and vendor/ matching what the scaffolder shipped. One line per check, the fix on the same line, exit 0 only when every required check passes.' },
+];
+
+const byGroup = (id: FailureGroup): FailureEntry[] => failures.filter((f) => f.group === id);
+const recognisedBy = (f: FailureEntry): string[] =>
+  f.match.map((m) => {
+    if (m.type === 'selector') return `revert selector ${m.value}`;
+    if (m.type === 'preflight') return `pre-flight check id ${m.id}`;
+    if (m.type === 'doctor') return `doctor check id ${m.id}`;
+    if (m.type === 'error-name') return `viem ${m.value}`;
+    return `text matching /${m.value}/i`;
+  });
+const total = failures.length;
+const pending = failures.filter((f) => f.status === 'pending').length;
+const reported = failures.filter((f) => f.status === 'reported').length;
+---
+
+<p class="rb-failures-count">{total} entries: {total - pending - reported} with the exact shape captured from a run of ours, {reported} reported by someone else and not yet seen by us, and {pending} still pending. Each one is a <code>kind</code> that <code>explain_failure</code> and <code>explainError</code> return.</p>
+
+{groups.map((g) => (
+  <section class="rb-failure-group" aria-labelledby={`group-${g.id}`}>
+    <h2 id={`group-${g.id}`}>{g.heading}</h2>
+    {g.intro && <p>{g.intro}</p>}
+    {byGroup(g.id).map((f) => (
+      <article class="rb-failure not-content" id={f.kind} data-kind={f.kind}>
+        <h3 class="rb-failure__title">
+          <a href={`#${f.kind}`}><code>{f.kind}</code></a> {f.title}
+          {f.status === 'pending' && <StatusPill variant="pending" label="Shape not yet seen" />}
+          {f.status === 'reported' && <StatusPill variant="pending" label="Reported by a third party, not yet seen by us" />}
+        </h3>
+        <p class="rb-failure__what">{f.plainWords}</p>
+        <p class="rb-failure__why">{f.cause}</p>
+        {f.fix.command && (
+          <pre class="rb-failure__cmd" tabindex="0"><code>{f.fix.command}</code></pre>
+        )}
+        <p class="rb-failure__meta">
+          {f.fix.link && <span>Read: <Ext href={f.fix.link}>{f.fix.link.replace(/^https:\/\//, '')}</Ext>. </span>}
+          <span>On this site: <a href={f.docsPage}>{f.docsPage}</a>. </span>
+          <span>Recognised by {recognisedBy(f).length ? recognisedBy(f).join('; ') : 'the verifier\'s eligibilityStatus read, after a NotEligible revert'}. </span>
+          <span>{f.status === 'measured' ? 'Seen: ' : f.status === 'reported' ? 'Reported: ' : 'Pending: '}{f.measured}</span>
+          {f.reportedBy && <span> Source: <Ext href={f.reportedBy.url}>{f.reportedBy.who}</Ext>, {f.reportedBy.date}.</span>}
+        </p>
+      </article>
+    ))}
+  </section>
+))}
+
+<style>
+  .rb-failures-count { color: var(--rb-color-text-muted); }
+  .rb-failure {
+    margin-block: 1.25rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: var(--rb-radius-lg);
+    background: var(--sl-color-bg-nav);
+  }
+  .rb-failure__title { margin: 0 0 0.5rem; font-size: var(--sl-text-lg); line-height: 1.35; }
+  .rb-failure__title a { color: inherit; text-decoration: none; }
+  .rb-failure__title a:hover { text-decoration: underline; }
+  .rb-failure__title code { font-size: 0.85em; }
+  .rb-failure__what { margin: 0 0 0.5rem; font-weight: 600; }
+  .rb-failure__why { margin: 0 0 0.75rem; }
+  .rb-failure__cmd {
+    margin: 0 0 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: var(--rb-radius-md);
+    background: var(--rb-color-code-block-bg);
+    color: #EFF3F6;
+    font-family: var(--sl-font-mono);
+    font-size: var(--sl-text-xs);
+    line-height: 1.6;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .rb-failure__cmd code { background: none; padding: 0; color: inherit; font-size: inherit; }
+  .rb-failure__meta { margin: 0; font-size: var(--sl-text-xs); line-height: 1.5; color: var(--rb-color-text-muted); overflow-wrap: anywhere; }
+  .rb-failure__meta a { color: inherit; }
+</style>

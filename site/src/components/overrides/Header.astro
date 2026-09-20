@@ -1,0 +1,113 @@
+---
+import Ext from '../Ext.astro';
+// Header override: text site name, search, flat links, theme toggle, one filled Start button,
+// and the independence strip. The strip is first in the DOM so a screen reader hears it right
+// after the skip link, and it is drawn below the bar. It is part of this override so no page
+// can lose it.
+import Search from '@astrojs/starlight/components/Search.astro';
+import ThemeSelect from '@astrojs/starlight/components/ThemeSelect.astro';
+import SiteTitle from './SiteTitle.astro';
+import { INDEPENDENCE_LINE, INDEPENDENCE_LINE_SHORT, LINKS } from '../../data/site';
+---
+
+<div class="rb-header">
+  <p class="rb-strip">
+    <span class="rb-strip__full">{INDEPENDENCE_LINE}</span>
+    <span class="rb-strip__short">{INDEPENDENCE_LINE_SHORT}</span>
+  </p>
+  <div class="rb-bar">
+    <div class="rb-bar__title"><SiteTitle /></div>
+    <div class="rb-bar__search print:hidden"><Search /></div>
+    <nav class="rb-bar__nav sl-hidden md:sl-flex print:hidden" aria-label="Site links">
+      <Ext class="rb-bar__link" href={LINKS.vine}>Vine</Ext>
+      <Ext class="rb-bar__link" href={LINKS.repo}>GitHub</Ext>
+      <ThemeSelect />
+      <a class="rb-button rb-button--primary" href="/start/">Start building</a>
+    </nav>
+  </div>
+</div>
+
+<style>
+  .rb-header {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  .rb-bar {
+    order: 1;
+    height: var(--rb-bar-height);
+    display: flex;
+    align-items: center;
+    gap: var(--sl-nav-gap);
+  }
+  .rb-bar__title {
+    min-width: 0;
+    padding: 0.25rem;
+    margin: -0.25rem;
+    overflow: clip;
+  }
+  .rb-bar__search {
+    display: flex;
+    margin-inline-start: auto;
+  }
+  .rb-bar__nav {
+    align-items: center;
+    gap: 1.25rem;
+  }
+  .rb-bar__link {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--rb-color-text);
+    text-decoration: none;
+    text-underline-offset: 4px;
+    transition: color var(--rb-duration-fast) var(--rb-ease-standard);
+  }
+  .rb-bar__link:hover { color: var(--rb-color-accent); text-decoration: underline; }
+  .rb-strip {
+    order: 2;
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    height: var(--rb-strip-height);
+    margin: 0;
+    padding: 0.25rem var(--sl-nav-pad-x);
+    display: flex;
+    align-items: center;
+    background: var(--rb-color-surface);
+    border-top: 1px solid var(--rb-color-hairline);
+    font-size: var(--sl-text-2xs);
+    line-height: 1.35;
+    color: var(--rb-color-text-muted);
+  }
+  .rb-strip__full { display: none; }
+  @media (min-width: 50em) {
+    .rb-strip__full { display: inline; }
+    .rb-strip__short { display: none; }
+    .rb-bar__search { margin-inline-start: 0; flex: 1 1 auto; justify-content: center; }
+    .rb-bar__nav { margin-inline-start: auto; }
+    .rb-strip { justify-content: center; text-align: center; }
+  }
+  /* Starlight's search button: match the flat header. */
+  .rb-bar__search :global(button[data-open-modal]) {
+    border-radius: var(--rb-radius-sm);
+    border-color: var(--rb-color-hairline-strong);
+    color: var(--rb-color-text-muted);
+    background: var(--rb-color-bg);
+  }
+  .rb-bar__search :global(button[data-open-modal]:hover) {
+    border-color: var(--rb-color-accent);
+    color: var(--rb-color-text);
+  }
+  .rb-bar__search :global(button[data-open-modal] > kbd) {
+    background: var(--rb-color-surface);
+    color: var(--rb-color-text-muted);
+  }
+  @media (max-width: 49.99em) {
+    .rb-bar__search :global(button[data-open-modal]) { min-width: 2.75rem; min-height: 2.75rem; justify-content: center; }
+  }
+  /* Starlight's theme select: flat. */
+  .rb-bar__nav :global(select) {
+    border-radius: var(--rb-radius-sm);
+    color: var(--rb-color-text);
+  }
+</style>

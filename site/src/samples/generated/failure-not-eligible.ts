@@ -1,0 +1,13 @@
+  {
+    kind: 'not-eligible',
+    group: 'contract',
+    title: 'NotEligible(wallet, requestId)',
+    plainWords: "The contract refused this wallet: its verifier doesn't hold an accepted credential for the request id the gate is bound to.",
+    cause: "Every function behind `gated` asks `verifier.isEligible(wallet, requestId)` and reverts with `NotEligible` on false. The wallet may hold no credential, an expired one, a revoked one, or one that doesn't satisfy the query; a real verifier only answers yes or no, so the reason isn't in the revert.",
+    fix: { command: notEligibleFix('on ReceptorMock the answer names the state; a real verifier answers Valid or NeverIssued only'), link: docs('methods/proof-by-query/') },
+    docsPage: '/concepts/identity-gate/',
+    topic: 'verifier-contract',
+    status: 'measured',
+    measured: 'Local loop, 14 September 2026: `cast send` from the NeverIssued wallet answered `custom error 0x879342fb` with the wallet and 18 encoded, decoded by cast as NotEligible(wallet, 18).',
+    match: [{ type: 'selector', value: NOT_ELIGIBLE_SELECTOR }, { type: 'text', value: 'NotEligible\\(' }],
+  },

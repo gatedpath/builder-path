@@ -1,0 +1,103 @@
+---
+// The body of a project page made from its card (PLAN.md section 19), for every project that does
+// not yet have a hand-written page. It shows only what is proven: the scaffold, the card's prompt,
+// the checks every project must pass, pre-flight and saving your work. What nobody has run is said
+// to be unrun; no step, count or output is invented for it.
+import { Tabs, TabItem, Aside, Code } from '@astrojs/starlight/components';
+import ProjectSteps from './ProjectSteps.astro';
+import StepCard from './StepCard.astro';
+import StepPart from './StepPart.astro';
+import ProjectStepMake from './ProjectStepMake.astro';
+import ProjectStepPreflight from './ProjectStepPreflight.astro';
+import ProjectPrompt from './ProjectPrompt.astro';
+import StatusPill from './StatusPill.astro';
+import Ext from './Ext.astro';
+import { cards, levelLabels, recipeLabels, RUNS_BASE, type PromptCardData } from '../data/cards';
+import { formatDate } from '../data/site';
+interface Props { card: PromptCardData }
+const { card } = Astro.props;
+const run = Boolean(card.lastVerified);
+const warmUp = card.level === 'warm-up';
+const others = cards.filter((c) => c.slug);
+const at = others.findIndex((c) => c.n === card.n);
+const prev = others[at - 1];
+const next = others[at + 1];
+---
+
+<p class="rb-gen__lead">{card.outcome}</p>
+<p class="rb-gen__meta not-content">
+  <span>{levelLabels[card.level]}</span><span>{card.time}</span>
+  {card.recipes.map((r) => <span>{recipeLabels[r]}</span>)}
+</p>
+
+{run ? (
+  <p>I ran this project's agent track on a fresh scaffold before publishing it; the record is linked in step 2. The Solidity track has not been done by hand yet, and its tab says so.</p>
+) : (
+  <Aside type="caution" title="Nobody has run this project yet">
+    <p>That includes me. The prompt below is the plan's, and the first run may show that it needs rewording, as the runs of projects 1 and 2 did. Steps 1, 3 and 4 are proven, because they are the same for every project. Step 2 is yours to try, and the page will carry real steps once a run is recorded.</p>
+  </Aside>
+)}
+
+{!warmUp && (
+  <p>This one is a contract of your own. It still starts from the scaffold, because the scaffold carries the gate, the mock verifier, the five-state test helper and pre-flight, and its token is the worked example to read beside yours.</p>
+)}
+
+<ProjectSteps slug={card.slug!} title={`Project ${card.n}: ${card.title}`}>
+  <ProjectStepMake reuse={warmUp} />
+
+  <StepCard n={2} title={card.title} track="differs">
+    <StepPart kind="gets">
+      <p>{card.outcome}</p>
+    </StepPart>
+    <StepPart kind="do">
+      <Tabs syncKey="track">
+        <TabItem label="Directing an agent">
+          <p>Open your agent in the project folder. It reads the rules file the scaffold wrote, which is what keeps it on this network's rules; <a href="/agents/">Bring your own agent</a> explains how. Then give it the card's prompt:</p>
+          <ProjectPrompt n={card.n} />
+          <p>Read the diff before you accept it. Ask the agent to explain any change you did not expect, and to commit at each green test so that every step is one you can return to.</p>
+          {run ? (
+            <p><StatusPill variant="verified" label={`Run ${formatDate(card.lastVerified!)}, ${card.verifiedWith.join(', ')}`} /> The full transcript, with the diff and the timings, is in the <Ext href={RUNS_BASE + card.run}>run record</Ext>.{card.secondAgentPending && ' One agent so far; the plan asks for two.'}</p>
+          ) : (
+            <p><StatusPill variant="pending" label="Not yet run" /> No agent has been given this prompt on a fresh scaffold yet.</p>
+          )}
+        </TabItem>
+        <TabItem label="Writing Solidity">
+          <p><StatusPill variant="pending" label="Not yet done by hand" /> I have not built this one by hand, so there are no steps here to follow. The prompt in the other tab is the specification, and <a href="/tutorials/change-the-gate/">Project 1</a> shows the shape a hand-written track takes once it has been run.</p>
+        </TabItem>
+      </Tabs>
+    </StepPart>
+    <StepPart kind="worked">
+      <p>You can point at the thing the first line of this page promises. What that looks like is in step 3.</p>
+    </StepPart>
+  </StepCard>
+
+  <StepCard n={3} title="Check the result">
+    <StepPart kind="gets">
+      <p>The three things every project here must pass before it counts as done: it compiles, its tests pass in all five credential states, and the formatting is clean.</p>
+    </StepPart>
+    <StepPart kind="do">
+      <Code lang="sh" code={`npm run test\ncd contracts && forge fmt --check`} />
+    </StepPart>
+    <StepPart kind="worked">
+      <p>The test run ends with <code>0 failed</code>. A fresh scaffold has 68 tests; a project that adds a gate adds tests for it, in the five states: never issued, expired, revoked, wrong jurisdiction and valid. <code>forge fmt --check</code> prints nothing.</p>
+    </StepPart>
+    <StepPart kind="ifnot">
+      <p>A revert named <code>NotEligible</code> in a test you expected to pass is the most common one; <a href="/errors/#not-eligible">the failure table</a> explains it and its neighbours.</p>
+    </StepPart>
+  </StepCard>
+
+  <ProjectStepPreflight n={4} message={`Project ${card.n}: ${card.title}`} />
+</ProjectSteps>
+
+<nav class="rb-gen__pager not-content" aria-label="Other projects">
+  {prev ? <a href={`/tutorials/${prev.slug}/`}>&larr; Project {prev.n}: {prev.title}</a> : <span />}
+  {next ? <a href={`/tutorials/${next.slug}/`}>Project {next.n}: {next.title} &rarr;</a> : <span />}
+</nav>
+
+<style>
+  .rb-gen__lead { font-size: var(--sl-text-lg); line-height: 1.5; }
+  .rb-gen__meta { display: flex; flex-wrap: wrap; gap: 0.375rem; margin: 0.75rem 0 1.25rem; font-size: var(--sl-text-xs); }
+  .rb-gen__meta span { padding: 0.2rem 0.6rem; border: 1px solid var(--rb-color-hairline-strong); border-radius: 999px; color: var(--rb-color-text-muted); }
+  .rb-gen__pager { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-top: 1.25rem; font-size: var(--sl-text-sm); }
+  .rb-gen__pager a { color: var(--rb-color-accent); font-weight: 600; text-decoration: underline; text-underline-offset: 0.2em; }
+</style>

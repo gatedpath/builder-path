@@ -1,0 +1,110 @@
+{
+  "env": "testnet",
+  "rpc": "https://governors.testnet.redbelly.network",
+  "checkedAt": "2026-09-12T08:31:55.732Z",
+  "opcodes": {
+    "CHAINID (Istanbul)": {
+      "status": "supported",
+      "returned": "0x"
+    },
+    "SELFBALANCE (Istanbul)": {
+      "status": "supported",
+      "returned": "0x"
+    },
+    "BASEFEE (London)": {
+      "status": "supported",
+      "returned": "0x"
+    },
+    "PREVRANDAO (Paris)": {
+      "status": "supported",
+      "returned": "0x"
+    },
+    "PUSH0 (Shanghai)": {
+      "status": "supported",
+      "returned": "0x"
+    },
+    "TSTORE/TLOAD (Cancun)": {
+      "status": "supported",
+      "returned": "0x"
+    },
+    "MCOPY (Cancun)": {
+      "status": "supported",
+      "returned": "0x"
+    },
+    "BLOBHASH (Cancun)": {
+      "status": "supported",
+      "returned": "0x"
+    },
+    "BLOBBASEFEE (Cancun)": {
+      "status": "supported",
+      "returned": "0x"
+    }
+  },
+  "precompiles": {
+    "0x01 ecrecover": {
+      "status": "present",
+      "returned": "0x",
+      "matches": true
+    },
+    "0x02 sha256": {
+      "status": "present",
+      "returned": "0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matches": true
+    },
+    "0x03 ripemd160": {
+      "status": "present",
+      "returned": "0x0000000000000000000000009c1185a5c5e9fc54612808977ee8f548b2258d31",
+      "matches": true
+    },
+    "0x04 identity": {
+      "status": "present",
+      "returned": "0xdeadbeef",
+      "matches": true
+    },
+    "0x05 modexp": {
+      "status": "present",
+      "returned": "0x03",
+      "matches": true
+    },
+    "0x06 ecAdd": {
+      "status": "present",
+      "returned": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "matches": true
+    },
+    "0x07 ecMul": {
+      "status": "present",
+      "returned": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "matches": true
+    },
+    "0x08 ecPairing": {
+      "status": "present",
+      "returned": "0x0000000000000000000000000000000000000000000000000000000000000001",
+      "matches": true
+    },
+    "0x09 blake2f": {
+      "status": "present",
+      "returned": "0x08c9bcf367e6096a3ba7ca8485ae67bb2bf894fe72f36e3cf1361d5f3af54fa5d182e6ad7f520e511f6c3e2b8c68059b6bbd41fbabd9831f79217e1319cde05b",
+      "matches": null
+    },
+    "0x0a kzg point eval (Cancun)": {
+      "status": "present (rejected input)",
+      "error": "mismatched versioned hash"
+    },
+    "0x0b bls12 G1ADD (Prague)": {
+      "status": "present",
+      "returned": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "matches": true
+    },
+    "0x10 bls12 MAP_FP_TO_G1 (Prague)": {
+      "status": "present",
+      "returned": "0x0000000000000000000000000000000011a9a0372b8f332d5c30de9ad14e50372a73fa4c45d5f2fa5097f2d6fb93bcac592f2e1711ac43db0519870c7d0ea41500000000000000000000000000000000092c0f994164a0719f51c24ba3788de240ff926b55f58c445116e8bc6a47cd63392fd4e8e22bdf9feaa96ee773222133",
+      "matches": null
+    }
+  },
+  "historyContract": {
+    "address": "0x0000F90827F1C53a10cb7A02335B175320002935",
+    "codeBytes": 83
+  },
+  "inferredFork": "Prague",
+  "compilerAdvice": "evmVersion \"prague\" is safe; \"cancun\" is the conservative pin"
+}

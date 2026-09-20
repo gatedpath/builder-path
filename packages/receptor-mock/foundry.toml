@@ -1,0 +1,23 @@
+# Redbelly Network pins: EVM Prague, solc 0.8.30 (RESEARCH.md question 1, verified 2026-09-12).
+[profile.default]
+src = "src"
+test = "test"
+out = "out"
+libs = ["lib"]
+solc_version = "0.8.30"
+evm_version = "prague"
+optimizer = true
+optimizer_runs = 200
+deny = "warnings"
+gas_reports = ["Gated", "GatedCounter", "ReceptorMock", "Iden3VerifierAdapter", "VCVerifierAdapter"]
+
+[profile.default.fuzz]
+runs = 512
+
+[rpc_endpoints]
+redbelly_testnet = "https://governors.testnet.redbelly.network"
+redbelly_mainnet = "https://governors.mainnet.redbelly.network"
+
+[lint]
+# `target()` and `surface()` are public getters; a screaming-case name would read as a constant.
+exclude_lints = ["screaming-snake-case-immutable"]

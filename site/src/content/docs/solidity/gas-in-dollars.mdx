@@ -1,0 +1,111 @@
+---
+title: '6. Price it in dollars'
+description: 'Gas on Redbelly is priced in US dollars, so you can say what your contract costs to deploy and to use, in cents, before anyone pays it. One command does it.'
+lastVerified: '2026-09-17'
+tableOfContents: false
+prev: false
+next: false
+---
+
+import ForAgents from '../../../components/ForAgents.astro';
+import StatusPill from '../../../components/StatusPill.astro';
+import Sample from '../../../components/Sample.astro';
+import VineAside from '../../../components/VineAside.astro';
+import ProjectSteps from '../../../components/ProjectSteps.astro';
+import StepCard from '../../../components/StepCard.astro';
+import StepPart from '../../../components/StepPart.astro';
+
+<ForAgents
+  page="Writing Solidity 6: Price it in dollars"
+  facts={[
+    'npm run gas in a scaffolded project runs redbelly gas: it takes gas figures from forge test --gas-report (or a committed .gas-snapshot), reads the base fee and the RBNT price feed read-only from the chain, and prints gas, RBNT and US cents per function.',
+    'Measured 2026-09-17 on a fresh scaffold against chain 153: GatedERC20 deployment 1,898,391 gas = 90.399 US cents; transfer 32,978 gas = 1.570 cents; subscribe 48,051 = 2.288; mint 42,760 = 2.036; forceTransfer 36,486 = 1.737; pause 39,117 = 1.862. RBNT was US/bin/zsh.002429 at the feed.',
+    'The cents column is the stable one: gas is priced in US dollars and converted to RBNT at execution, so the RBNT column moves with the price. There is no priority fee. Pre-flight adds 25% to the deployment figure for its balance check.',
+  ]}
+/>
+
+On most chains the honest answer to "what will this cost my users" is "it depends on the day". Here gas is priced in US dollars and converted to RBNT when the transaction runs, so the cost of a function in cents is a property of your code. That makes it something you can budget, put in a proposal, and watch for regressions.
+
+<ProjectSteps slug="solidity-gas-in-dollars" title="6. Price it in dollars" backHref="/solidity/" backLabel="Writing Solidity">
+
+<StepCard n={1} title="Know why the cents column is the stable one">
+<StepPart kind="gets">
+The one fact about fees on this network that changes how you design.
+</StepPart>
+<StepPart kind="do">
+A plain transfer of 21,000 gas costs one US cent. The network reads a USD price for RBNT from an on-chain feed at execution and charges the RBNT that comes to. The priority fee is always zero, so nobody can pay to go first and nobody's cost rises because the chain is busy. Your contract's cost in RBNT moves with the token's price; its cost in cents moves only when you change the code.
+</StepPart>
+<StepPart kind="worked">
+You can say which number goes in a business case (cents) and which goes in a wallet-balance check (RBNT, with a margin).
+</StepPart>
+
+<VineAside href="https://vine.redbelly.network/network-fees/" label="Vine: network fees">
+The fee model, the oracle and how fees are distributed are Redbelly's to explain. [The gas model](/concepts/gas-model/) has what I measured and what it means for your code.
+</VineAside>
+</StepCard>
+
+<StepCard n={2} title="Price the token you already have">
+<StepPart kind="gets">
+A table of every function in your contract, in gas, RBNT and US cents.
+</StepPart>
+<StepPart kind="do">
+In a scaffolded project (step 1 of [any project](/tutorials/change-the-gate/) makes one):
+
+```sh
+npm run gas
+```
+
+It runs the tests with Foundry's gas report, reads the current base fee and the price feed from testnet, and does the arithmetic. It reads only; it needs no wallet.
+</StepPart>
+<StepPart kind="worked">
+It took 2 seconds on my machine. The header names the chain, the block, the base fee and the feed price with its time. On 17 September 2026 the first row read `GatedERC20:deployment 1,898,391` gas, `372.167853` RBNT, `90.399` US cents, with RBNT at US$0.002429. Your cents should match mine to the third decimal place if you have not changed the contract; your RBNT will not.
+</StepPart>
+<StepPart kind="ifnot">
+If the feed cannot be reached, check [Status](/status/). The gas figures come from your own tests and do not need the network; only the prices do.
+</StepPart>
+</StepCard>
+
+<StepCard n={3} title="Read the table like a product owner">
+<StepPart kind="gets">
+A year of operations as a number you can defend.
+</StepPart>
+<StepPart kind="do">
+From that run: a `transfer` is 1.570 cents, a `subscribe` 2.288, a `mint` 2.036, a `forceTransfer` 1.737, a `pause` 1.862, and deploying the token 90.4 cents. Multiply by what you expect. Ten thousand transfers a month is US$157. A thousand subscriptions is US$22.88. The deployment is under a dollar, once.
+
+Then look for the row that surprises you. `distribute` was 3.484 cents in my run, but it pays a list, so its cost grows with the list; a function whose gas depends on input length is the one to bound, because the block's gas limit is generous and a single transaction's is not something I have been able to measure without a wallet.
+</StepPart>
+<StepPart kind="worked">
+You can state your product's monthly gas bill in dollars and say which function dominates it.
+</StepPart>
+</StepCard>
+
+<StepCard n={4} title="Catch a regression before it ships">
+<StepPart kind="gets">
+A way to see, in cents, that a change made a function dearer.
+</StepPart>
+<StepPart kind="do">
+Take a snapshot and keep a copy of it as the "before". Then change the code, snapshot again, and compare:
+
+```sh
+npm run snapshot
+git add contracts/.gas-snapshot && git commit -m "Gas snapshot"
+cp contracts/.gas-snapshot /tmp/before.gas-snapshot
+
+# ...change the contract, then:
+npm run snapshot
+npm run gas -- --diff /tmp/before.gas-snapshot
+```
+
+`--diff` takes a file: the earlier snapshot to compare against. Once a project has a `.gas-snapshot`, `npm run gas` prices that file, one row per test; add `--report` when you want the per-function table of step 2 again. The scaffold's CI runs `forge snapshot --diff` against the same committed file.
+</StepPart>
+<StepPart kind="worked">
+Compared with an identical snapshot, the two right-hand columns read `0` and `0.000` on every row. I then tried a real regression: one new stored counter, incremented inside `subscribe`. Every test that subscribes showed `+22,217` gas and `+1.058` cents, and the fuzz test `+6,054` and `+0.288`. One storage write, about a cent per call, visible before the change was committed. I reverted it.
+</StepPart>
+<StepPart kind="ifnot">
+`--diff needs a value` means the file path is missing after `--diff`.
+</StepPart>
+</StepCard>
+
+</ProjectSteps>
+
+Next on [the path](/solidity/) is verifying on Routescan, which waits for a deploy I have not made, and then [Operate](/operate/).

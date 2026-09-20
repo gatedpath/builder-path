@@ -1,0 +1,40 @@
+---
+title: Consensus and finality
+description: 'Leaderless DBFT, super blocks and deterministic finality: what to delete from a ported dApp and what to design instead.'
+lastVerified: '2026-09-17'
+---
+
+import ForAgents from '../../../components/ForAgents.astro';
+import VineAside from '../../../components/VineAside.astro';
+
+<ForAgents
+  page="Consensus and finality"
+  facts={[
+    'Finality is deterministic (DBFT, no forks). Do not write confirmation-count waits or reorg handling.',
+    'A receipt is final. Make off-chain consumers idempotent against your own retries, not against reorgs.',
+    'Blocks are super blocks: proposals from all governors combined. The 2021 paper documents an ordering rule for its UTXO design, and Redbelly has said the rule changes in Q4 2026 (told to us 2026-09-17); do not depend on transaction order within a block.',
+    'The priority fee is always zero (measured 2026-09-12). There is nothing to buy position with.',
+  ]}
+/>
+
+<VineAside href="https://vine.redbelly.network/consensus/" label="Vine: consensus">
+DBFT is leaderless. Every governor proposes, the proposals are combined into a super block, and transactions are "finalised in seconds". Vine's page has the diagram; the [DBFT and Red Belly papers](/research/) have the proofs.
+</VineAside>
+
+What I checked: the consensus page and the EVM compatibility page on Vine, read 12 September 2026; the Red Belly paper, read in full on 17 September 2026, and Redbelly's answer on ordering the same day; `eth_maxPriorityFeePerGas` and `eth_feeHistory` measured on both networks the same day, which both returned zero rewards; and two ten-minute block samples in which no block was empty. Source rows are in the research log under questions 4, 5 and 38.
+
+## What this means for your code
+
+Delete the waiting. A ported dApp usually carries "wait for N confirmations" logic, a reorg handler in the indexer, and a UI state for "pending, might be dropped", and none of that has a job here. A transaction that is in a block is final, so keep the pending state only for the seconds between send and receipt.
+
+Idempotency moves from the chain to you. With no reorgs, the only way an event gets processed twice is your own retry, a restarted worker, or a duplicated webhook. Key your off-chain writes on the transaction hash and log index, and make every handler safe to run twice. That is the whole of "reorg safety" on this network, and it is easier than what you had.
+
+Finality cuts both ways. There is no confirmation window in which to notice a mistake, and a bad transaction that lands has landed. I would test on a fork first, then on testnet with an unverified and an ineligible wallet, before the real one.
+
+Do not build on order within a block. The Red Belly paper does document a rule (Section V.C.1): each governor batches its oldest transactions first, the super block takes the accepted batches starting from a governor that rotates with every block, each batch keeps its own order, and a transaction that conflicts with one already taken is discarded. Two things stop me from building on it. The paper's chain is a UTXO payment system with no EVM, so it does not say how two contract calls that touch the same storage are ordered. And Redbelly told me on 17 September 2026 that the ordering changes in Q4 2026 and will be described in the next yellow paper (open questions 5 and 38). So a contract must not assume that transaction A in a block ran before transaction B, and a front end must not assume that its two sends land in send order.
+
+There is no priority auction. The measured priority fee is zero on both networks, and the base fee is set by a price oracle rather than by demand, so there is no fee-market griefing and no priority-fee front-running. What remains sits with the governors, who are identified and staked: a governor chooses the order inside its own batch. The paper proves that a correctly submitted transaction is eventually included; it does not prove that the order is fair. Gas-limit denial of service inside a single transaction is unchanged, and an unbounded loop is still fatal.
+
+## Where it comes from
+
+DBFT (Crain, Gramoli, Larrea, Raynal, IEEE NCA 2018) is the leaderless consensus; Red Belly (Crain, Natoli, Gramoli, IEEE S&P 2021) adds the super block and the fairness argument. Both are summarised on the [research page](/research/).

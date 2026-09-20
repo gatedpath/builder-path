@@ -1,0 +1,41 @@
+diff --git a/.env.example b/.env.example
+index ea1a35d..382b6ba 100644
+--- a/.env.example
++++ b/.env.example
+@@ -10,9 +10,9 @@ ADMIN_SAFE=
+ # child). Required on 151. Leave empty on 153 to deploy a ReceptorMock for the first run.
+ VERIFIER=
+ 
+-# The eligibility request id your verifier answers for. 18 is the over-18 recipe
+-# (recipes/over-18/), 708 the AU wholesale investor recipe; any uint64 works on the mock.
+-REQUEST_ID=18
++# The eligibility request id your verifier answers for. 708 is the AU wholesale investor
++# recipe (recipes/au-wholesale-investor/), 18 the over-18 recipe; any uint64 works on the mock.
++REQUEST_ID=708
+ 
+ # Public address of the wallet you deploy from, used by `npm run preflight` to check
+ # permission.isAllowed and the RBNT balance before you sign anything.
+diff --git a/contracts/script/Deploy.s.sol b/contracts/script/Deploy.s.sol
+index fff7b87..cd8c3d0 100644
+--- a/contracts/script/Deploy.s.sol
++++ b/contracts/script/Deploy.s.sol
+@@ -15,8 +15,8 @@ import { ReceptorMock } from "@gatedpath/receptor-mock/ReceptorMock.sol";
+ ///   VERIFIER     Your dApp's verifier contract. Required on 151. On 153 and local chains a
+ ///                ReceptorMock is deployed when unset, so the first deploy works before you
+ ///                have a real verifier; the log says so in capitals.
+-///   REQUEST_ID   The eligibility request id your verifier answers for. Default 18, the
+-///                over-18 recipe (recipes/over-18); the AU wholesale recipe is 708.
++///   REQUEST_ID   The eligibility request id your verifier answers for. Default 708, the AU
++///                wholesale investor recipe (recipes/au-wholesale-investor); over-18 is 18.
+ ///
+ /// Sign with a keystore or hardware wallet; the key never touches this file or the shell:
+ ///   forge script script/Deploy.s.sol --rpc-url redbelly_testnet --account <keystore-name> --broadcast
+@@ -26,7 +26,7 @@ contract Deploy is RedbellyDeployScript {
+         Preflight memory p = preflight();
+ 
+         address verifier = optionalEnvAddress("VERIFIER");
+-        uint64 requestId = uint64(vm.envOr("REQUEST_ID", uint256(18)));
++        uint64 requestId = uint64(vm.envOr("REQUEST_ID", uint256(708)));
+         if (verifier == address(0)) {
+             if (p.chainId == Redbelly.MAINNET_CHAIN_ID) {
+                 revert("VERIFIER is not set; mainnet never deploys a mock verifier");

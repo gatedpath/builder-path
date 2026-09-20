@@ -1,0 +1,121 @@
+---
+title: '4. Deploy, and be refused'
+description: 'The deploy script checks the network, the wallet and the admin before it spends anything. Run it with no wallet at all, read-only, and watch each refusal, so that you recognise them when they are real.'
+lastVerified: '2026-09-17'
+tableOfContents: false
+prev: false
+next: false
+---
+
+import ForAgents from '../../../components/ForAgents.astro';
+import StatusPill from '../../../components/StatusPill.astro';
+import Sample from '../../../components/Sample.astro';
+import VineAside from '../../../components/VineAside.astro';
+import ProjectSteps from '../../../components/ProjectSteps.astro';
+import StepCard from '../../../components/StepCard.astro';
+import StepPart from '../../../components/StepPart.astro';
+
+<ForAgents
+  page="Writing Solidity 4: Deploy, and be refused"
+  facts={[
+    'contracts/script/Deploy.s.sol inherits RedbellyDeployScript, whose preflight() reads the chain id from the RPC, requires the deployer to pass permission.isAllowed, and on chain 151 requires ADMIN_SAFE to be a Safe 1.4.1 with a threshold of at least 2 and VERIFIER to be set. It refuses by reverting before anything is deployed.',
+    'forge script without --broadcast and without --account signs nothing and sends nothing: it simulates against the RPC with Foundry default sender 0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38, which is not verified, so the script reverts with "deployer fails permission.isAllowed".',
+    'npm run preflight -- --chain 151 rehearses the mainnet refusal offline plus one RPC read: on a fresh scaffold 6 of 9 pass, failing DEPLOYER, ADMIN_SAFE and VERIFIER (2026-09-17). Never sign with a raw private key; use --account <keystore-name> or --ledger.',
+  ]}
+/>
+
+On this network a deploy can fail for a reason no other chain has: the wallet is not a verified person. The deploy script in every scaffold checks that, and several other things, before it deploys anything, because a failed deploy that has already spent gas is the expensive way to find out. This tutorial makes it refuse on purpose. Nothing here needs a wallet, and nothing is signed or sent: every command only reads.
+
+<ProjectSteps slug="solidity-deploy-and-refusals" title="4. Deploy, and be refused" backHref="/solidity/" backLabel="Writing Solidity">
+
+<StepCard n={1} title="Read what the script checks first">
+<StepPart kind="gets">
+The list of things that must be true before your contract exists.
+</StepPart>
+<StepPart kind="do">
+You need a scaffolded project; step 1 of [any project](/tutorials/change-the-gate/) makes one. Open `contracts/script/RedbellyDeployScript.sol` and read `preflight()`.
+
+<Sample id="deploy-preflight" />
+
+The chain id comes from the RPC and not from a flag, so a mistyped network name cannot send a testnet deploy to mainnet. The deployer must pass the network's own `permission.isAllowed`. On mainnet the admin must be a Safe, and the verifier must be a real one.
+</StepPart>
+<StepPart kind="worked">
+You can say which of these checks exist on every chain, and which exist only because this network knows who its users are.
+</StepPart>
+
+<VineAside href="https://vine.redbelly.network/identity/user-access/" label="Vine: user access">
+How a wallet becomes allowed is Redbelly's process, at access.redbelly.network. For your script the consequence is one read, `isAllowed(deployer)`, made before anything else.
+</VineAside>
+</StepCard>
+
+<StepCard n={2} title="Be refused on testnet">
+<StepPart kind="gets">
+The refusal a new builder is most likely to meet, seen safely.
+</StepPart>
+<StepPart kind="do">
+From the project folder. There is no `--broadcast` and no `--account`, so Foundry simulates with its built-in default sender, signs nothing and sends nothing:
+
+```sh
+cd contracts
+forge script script/Deploy.s.sol --rpc-url redbelly_testnet
+```
+</StepPart>
+<StepPart kind="worked">
+The logs read `chain id (from the RPC): 153`, then `deployer: 0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38`, then `deployer fails permission.isAllowed. Verify the wallet at https://access.redbelly.network and try again.`, and the run ends `Error: script failed: deployer fails permission.isAllowed`. That address is Foundry's default sender, which nobody has verified, so the refusal is correct.
+</StepPart>
+<StepPart kind="ifnot">
+If it cannot reach the RPC, check the two endpoints at the foot of `contracts/foundry.toml` against [Status](/status/).
+</StepPart>
+</StepCard>
+
+<StepCard n={3} title="Be refused on mainnet">
+<StepPart kind="gets">
+Proof that the same script, pointed at the real network by mistake, stops.
+</StepPart>
+<StepPart kind="do">
+This reads mainnet and does nothing else. It is the same command with the other endpoint:
+
+```sh
+forge script script/Deploy.s.sol --rpc-url redbelly_mainnet
+```
+</StepPart>
+<StepPart kind="worked">
+`chain id (from the RPC): 151` and the same refusal. The script never reaches the Safe check, because the deployer fails first. The order matters: the cheapest, most likely failure is tested first.
+</StepPart>
+</StepCard>
+
+<StepCard n={4} title="Rehearse the whole mainnet list">
+<StepPart kind="gets">
+Every mainnet requirement at once, without the script stopping at the first.
+</StepPart>
+<StepPart kind="do">
+```sh
+cd ..
+npm run preflight -- --chain 151
+```
+</StepPart>
+<StepPart kind="worked">
+`6 of 9 checks passed`, and the last line is `Mainnet deploy would be refused. Fix the failures above; the deploy script checks the same things.` The three failures on a fresh project are `DEPLOYER is a public address`, `ADMIN_SAFE is set (mainnet refuses without a Safe)` and `VERIFIER is set (mainnet never deploys a mock verifier)`. The six that pass include the three that protect you from yourself: no `.env` or keystore tracked by git, none ever committed, and nothing shaped like a private key in a tracked file.
+</StepPart>
+<StepPart kind="ifnot">
+If one of those three secret checks fails, stop. Remove the secret from the repository and its history, and treat the key as compromised: move whatever it controls before you do anything else.
+</StepPart>
+</StepCard>
+
+<StepCard n={5} title="Know how a real deploy signs">
+<StepPart kind="gets">
+The only two ways this project will let you sign, before you need either.
+</StepPart>
+<StepPart kind="do">
+A real deploy adds `--broadcast` and one of two signers: `--account <keystore-name>`, a Foundry keystore you created with `cast wallet import` and unlock with a password each time, or `--ledger`. There is no third way in the scaffold. No script reads a private key from a file or from the environment, and none should: a key in `.env` is one careless commit from public.
+</StepPart>
+<StepPart kind="worked">
+You can say where your deploy key will live, and that the answer is not a file in the project.
+</StepPart>
+
+<StatusPill variant="pending" label="A real testnet deploy: not run" /> I have not made a real testnet deploy yet. [Start here](/start/) marks where that step will go.
+</StepCard>
+
+</ProjectSteps>
+
+Next: [5. Put the admin behind a Safe and a timelock](/solidity/admin-safe-and-timelock/).

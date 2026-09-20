@@ -1,0 +1,130 @@
+---
+title: 'Project 1: Change the gate'
+description: 'Switch a gated token from the over-18 recipe to the AU wholesale investor recipe and prove it, step by step, by directing an agent or by writing the Solidity yourself.'
+lastVerified: '2026-09-17'
+tableOfContents: false
+prev: false
+next: false
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import ForAgents from '../../../components/ForAgents.astro';
+import StatusPill from '../../../components/StatusPill.astro';
+import Sample from '../../../components/Sample.astro';
+import VineAside from '../../../components/VineAside.astro';
+import ProjectSteps from '../../../components/ProjectSteps.astro';
+import StepCard from '../../../components/StepCard.astro';
+import StepPart from '../../../components/StepPart.astro';
+import ProjectStepMake from '../../../components/ProjectStepMake.astro';
+import ProjectStepPreflight from '../../../components/ProjectStepPreflight.astro';
+import ProjectPrompt from '../../../components/ProjectPrompt.astro';
+import ProjectPager from '../../../components/ProjectPager.astro';
+
+<ForAgents
+  page="Project 1: Change the gate"
+  facts={[
+    'The recipe a gated contract enforces is its requestId, a constructor argument passed to Gated(verifier, requestId). Changing recipe changes no code in contracts/src/. Over-18 is request id 18; AU wholesale investor is 708.',
+    'The default lives in contracts/script/Deploy.s.sol (vm.envOr("REQUEST_ID", ...)) and in .env.example. Change both, then prove it with tests in all five credential states, including a wallet that is Valid for 18 and must revert with NotEligible(wallet, 708).',
+    'A fresh scaffold has 63 tests in 7 suites (2026-09-17). After this project it has 67 in 8. Commit at every green test.',
+    'Stop at the fork. No testnet deploy is part of this project; npm run preflight will fail only on DEPLOYER until a wallet is configured.',
+  ]}
+/>
+
+A warm-up, fifteen to thirty minutes. You start from a fresh project whose token lets in anyone over 18, and you finish with the same token letting in only an AU wholesale investor, with tests that prove the gate moved. It is the smallest change that teaches the most important thing about building here: **the eligibility rule is not code in your contract; it is a number you hand the contract when you deploy it.**
+
+I ran both tracks on a fresh scaffold before writing this page: the agent track on 12 and 14 September 2026, the Solidity track by hand on 17 September 2026. Every count and output below comes from those runs.
+
+<ProjectSteps slug="change-the-gate" title="Project 1: Change the gate">
+
+<ProjectStepMake />
+
+<StepCard n={2} title="Understand what you are about to change">
+<StepPart kind="gets">
+The one idea this project exists to teach, before you touch anything.
+</StepPart>
+<StepPart kind="do">
+Open `contracts/src/GatedERC20.sol` and find the constructor. The token takes a `verifier` and a `requestId` and passes them to `Gated`. Every gated function then asks the verifier one question: is this wallet eligible for this request id. Request id 18 is the over-18 recipe and 708 is the AU wholesale investor recipe; both are written up in the repository's `recipes/` folder and on [Identity for builders](/identity/).
+
+So changing who may use the token does not mean editing the token. It means deploying it with a different number, and proving the number does what you think.
+</StepPart>
+<StepPart kind="worked">
+You can say where the 18 comes from. One search finds it: `grep -rn "REQUEST_ID" contracts/script .env.example` shows the default in `contracts/script/Deploy.s.sol` and the example in `.env.example`.
+</StepPart>
+
+<VineAside href="https://vine.redbelly.network/identity/eligibility/" label="Vine: eligibility">
+What a credential is, who issues it and how a proof is checked is Redbelly's to explain. What matters for this step is only that your contract never sees the credential, only the verifier's answer.
+</VineAside>
+</StepCard>
+
+<StepCard n={3} title="Change the gate" track="differs">
+<StepPart kind="gets">
+The project now deploys with request id 708, and new tests prove the gate asks about 708 and nothing else.
+</StepPart>
+<StepPart kind="do">
+<Tabs syncKey="track">
+<TabItem label="Directing an agent">
+Open your agent in the project folder. It reads the rules file the scaffold wrote (`CLAUDE.md`, `AGENTS.md` and the others), which is what keeps it on this network's rules; [Bring your own agent](/agents/) explains how. Then give it the card's prompt:
+
+<ProjectPrompt n={1} />
+
+Read the diff before you accept it. A good one touches the deploy script's default, `.env.example` and the README, and adds or adjusts tests. It does not rewrite `GatedERC20.sol`; if yours did, ask why, because step 2 says it should not need to.
+
+<StatusPill variant="verified" label="Run 12 and 14 Sep 2026, Claude Code" /> One agent so far; the plan asks for two.
+</TabItem>
+<TabItem label="Writing Solidity">
+Two edits and one new file.
+
+In `contracts/script/Deploy.s.sol`, change the default from 18 to 708 and the comment that describes it. After the change that part of the file reads:
+
+<Sample id="project-gate-default" />
+
+In `.env.example`, set `REQUEST_ID=708` and swap the two recipe names in the comment above it.
+
+Then add `contracts/test/WholesaleGate.t.sol`. The test that earns its place is the second one: a wallet with a valid over-18 credential must be refused, because an adult is not a wholesale investor.
+
+<Sample id="project-gate-test" />
+
+<StatusPill variant="verified" label="Run by hand, 17 Sep 2026" /> No agent was involved in this track's run.
+</TabItem>
+</Tabs>
+</StepPart>
+<StepPart kind="worked">
+`cd contracts && forge fmt --check` prints nothing, and `npm run test` ends with `72 tests passed, 0 failed` across 8 test suites: the 68 you started with and four new ones. If you directed an agent, its count may differ by a test or two; what must be true is that nothing failed and that a test names request id 708.
+</StepPart>
+<StepPart kind="ifnot">
+A revert that reads `NotEligible(0x…, 18)` in a test you expected to pass means something still deploys with 18; search for it again. The failure table explains [`NotEligible`](/errors/#not-eligible) and its neighbours.
+</StepPart>
+</StepCard>
+
+<StepCard n={4} title="See it on a local copy of testnet">
+<StepPart kind="gets">
+The contract deployed on your own machine against a fork of testnet, answering for itself which recipe it enforces.
+</StepPart>
+<StepPart kind="do">
+```sh
+npm run dev
+```
+
+This forks testnet onto a local chain, deploys the token, puts five wallets into the five credential states and starts the web app with its state panel. It holds no key of yours and sends nothing to the real network. In a second terminal, ask the contract directly, with the address the table printed:
+
+```sh
+cast call <token-address> 'requestId()(uint64)' --rpc-url http://127.0.0.1:8545
+```
+</StepPart>
+<StepPart kind="worked">
+The table's first line ends `request id 708` and the `cast call` prints `708`. In the panel, wallet 3 (Valid) can subscribe; switch it to Revoked and the same button is refused. Ctrl-C stops everything.
+</StepPart>
+<StepPart kind="ifnot">
+[`already running`](/errors/#dev-already-running) means an earlier `npm run dev` is still up; stop it first. If the fork cannot reach the RPC, `npm run dev -- --no-fork` runs on a plain local chain, offline.
+</StepPart>
+</StepCard>
+
+<ProjectStepPreflight n={5} message="Gate on the AU wholesale investor recipe (708) instead of over-18" />
+
+</ProjectSteps>
+
+## What you learned
+
+Recipes are swappable, because the rule is a deploy-time argument and not contract code. Tests are the contract: the change was twelve lines, and the proof was seventy-four. And the local loop shows the gate move before any network sees it. The next project, [Prove the pause](/tutorials/prove-the-pause/), uses the same project folder.
+
+<ProjectPager n={1} />

@@ -1,0 +1,37 @@
+---
+import Ext from './Ext.astro';
+// A code sample pulled from a file the repository's own tooling compiles or tests. Never a
+// literal: the id names an entry in samples.config.mjs, the text comes from
+// src/samples/generated/, and scripts/check-samples.mjs fails the build on drift. The line
+// under the block says where it came from and what compiles it.
+import { Code } from '@astrojs/starlight/components';
+import manifest from '../samples/generated/manifest.json';
+interface Props { id: string; title?: string; lang?: string; wrap?: boolean; mark?: string | number | (string | number)[] }
+const { id, title, lang, wrap = false, mark } = Astro.props;
+const entry = manifest.samples.find((s) => s.id === id);
+if (!entry) throw new Error(`<Sample id="${id}">: not in samples.config.mjs`);
+const modules = import.meta.glob('../samples/generated/*', { query: '?raw', import: 'default', eager: true }) as Record<string, string>;
+const code = modules[`../samples/generated/${entry.file}`];
+if (typeof code !== 'string') throw new Error(`<Sample id="${id}">: run npm run samples`);
+const region = entry.region ? `lines ${entry.lines}, cut at the ${JSON.stringify(entry.region.from)} block` : 'whole file';
+---
+
+<div class="rb-sample not-content">
+  <Code code={code} lang={lang ?? entry.lang} title={title ?? entry.title} wrap={wrap} mark={mark} />
+  <p class="rb-sample__source">
+    From <Ext href={`https://github.com/gatedpath/builder-path/blob/main/${entry.source}`}><code>{entry.source}</code></Ext> ({region}), compiled by {entry.compiledBy}. Checked against the source at build.
+  </p>
+</div>
+
+<style>
+  .rb-sample { margin-block: 1.25rem; }
+  .rb-sample :global(.expressive-code) { margin-block: 0; }
+  .rb-sample__source {
+    margin: 0.375rem 0 0;
+    font-size: var(--sl-text-2xs);
+    line-height: 1.4;
+    color: var(--rb-color-text-muted);
+  }
+  .rb-sample__source a { color: inherit; }
+  .rb-sample__source code { font-size: inherit; background: none; padding: 0; color: inherit; }
+</style>

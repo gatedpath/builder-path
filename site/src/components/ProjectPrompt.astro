@@ -1,0 +1,38 @@
+---
+// The prompt of a card, shown on its project page. Read from cards.ts, never retyped, so the page
+// and the card cannot say different things; wrapped, so a long prompt reads on a phone.
+import CopyButton from './CopyButton.astro';
+import { cards } from '../data/cards';
+interface Props { n: number }
+const { n } = Astro.props;
+const card = cards.find((c) => c.n === n);
+if (!card) throw new Error(`ProjectPrompt: no card ${n} in cards.ts`);
+const id = `project-prompt-${n}`;
+---
+
+<div class="rb-pprompt not-content">
+  <p class="rb-eyebrow">Say to your agent</p>
+  <pre id={id} tabindex="0">{card.prompt}</pre>
+  <CopyButton target={id} label={`Copy the prompt for project ${n}: ${card.title}`} short="Copy prompt" class="rb-pprompt__copy" />
+</div>
+
+<style>
+  /* The same block the card on /tutorials shows, so the prompt looks like the thing it is. */
+  .rb-pprompt { position: relative; margin-block: 1rem; }
+  .rb-pprompt .rb-eyebrow { margin: 0 0 0.375rem; }
+  .rb-pprompt pre {
+    margin: 0;
+    padding: 0.875rem 1rem 3rem;
+    border-radius: var(--rb-radius-md);
+    background: var(--rb-color-code-block-bg);
+    color: var(--rb-color-code-block-text);
+    font-family: var(--sl-font-mono);
+    font-size: var(--sl-text-sm);
+    line-height: 1.6;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .rb-pprompt :global(.rb-pprompt__copy) { position: absolute; right: 0.625rem; bottom: 0.625rem; background: #283A46; color: #EFF3F6; border-color: #395060; }
+  .rb-pprompt :global(.rb-pprompt__copy:hover) { color: #5EEAD4; border-color: #5EEAD4; }
+  .rb-pprompt :global(.rb-pprompt__copy[data-copied]) { background: #134E4A; color: #CCFBF1; border-color: #5EEAD4; }
+</style>

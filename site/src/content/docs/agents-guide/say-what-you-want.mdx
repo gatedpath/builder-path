@@ -1,0 +1,100 @@
+---
+title: 'Say what you want'
+description: 'How to phrase a request to a coding agent so that it fits the code it will be run against: name the thing, say what stays, say what proves it, ask for the diff. Drawn from the four project runs on record.'
+lastVerified: '2026-09-17'
+tableOfContents: false
+prev: false
+next: false
+---
+
+import ForAgents from '../../../components/ForAgents.astro';
+import StatusPill from '../../../components/StatusPill.astro';
+import ProjectSteps from '../../../components/ProjectSteps.astro';
+import StepCard from '../../../components/StepCard.astro';
+import StepPart from '../../../components/StepPart.astro';
+import ProjectPrompt from '../../../components/ProjectPrompt.astro';
+
+<ForAgents
+  page="Directing an agent: Say what you want"
+  facts={[
+    'A prompt on this site has four parts: the outcome named by its identifier (a request id, a role, a function), what must stay unchanged, the proof (which tests or command), and the evidence to hand back (the diff, the output).',
+    'Two of the four prompts run so far had to be reworded after their first run (cards/runs/2026-09-12/card-01.md and card-02.md): one named a recipe the scaffold did not yet bind, one asked to add a pause that already existed.',
+    'If a prompt asks you to add something that exists, say so and prove the existing thing; do not duplicate a mechanism.',
+  ]}
+/>
+
+You do not have to write Solidity to build here, but you do have to say clearly what you want, to something that will take you at your word. I have run four of this site's prompts with an agent and recorded each run. Two of the four had to be reworded afterwards, and both rewordings teach the same thing: a good prompt fits the code it is run against. This page is that lesson as a checklist.
+
+<ProjectSteps slug="agents-say-what-you-want" title="Say what you want" backHref="/agents/" backLabel="Directing an agent">
+
+<StepCard n={1} title="Name the thing by its identifier">
+<StepPart kind="gets">
+A request the agent cannot misread.
+</StepPart>
+<StepPart kind="do">
+Project 1 first said "switch the gated function from the over-18 recipe to the AU wholesale investor recipe". When I ran it, the scaffold's gate was bound to request id 1, which stood for no recipe at all, so the prompt referred to something that was not there. The scaffold now binds id 18 by default, and the prompt names both numbers:
+
+<ProjectPrompt n={1} />
+
+"The over-18 recipe" is a description. "Request id 18" is a thing the agent can search for. Wherever you can, give the identifier: the request id, the role name, the function, the file.
+</StepPart>
+<StepPart kind="worked">
+Every noun in your prompt that matters can be found with a search of the project.
+</StepPart>
+</StepCard>
+
+<StepCard n={2} title="Describe the outcome, and let the agent read first">
+<StepPart kind="gets">
+An agent that tells you when your request does not fit, in place of one that obeys it anyway.
+</StepPart>
+<StepPart kind="do">
+Project 2 first said "add an emergency pause controlled by the admin Safe". The token already had one. The agent read the contract before writing anything, found the pause, its role and its events, and concluded that adding a second would be wrong; it proved the existing one and strengthened the tests. That was the right call, and a less careful agent would have duplicated the mechanism. The prompt now says what is true:
+
+<ProjectPrompt n={2} />
+
+Ask for an outcome ("prove that only the admin can flip the pause"), not an implementation ("add a modifier"). And leave room for the answer "this already exists": tell the agent to read the code first and to say so if the request does not fit.
+</StepPart>
+<StepPart kind="worked">
+Your prompt would still make sense if the feature turned out to be half built already.
+</StepPart>
+</StepCard>
+
+<StepCard n={3} title="Say what stays">
+<StepPart kind="gets">
+A small diff.
+</StepPart>
+<StepPart kind="do">
+"Keep everything else" is four words in project 1's prompt and it is why that run's diff was six files and touched no gate. Without it, an agent asked to change a recipe may tidy the contract, rename a test or upgrade a dependency on the way, and every one of those is a change you now have to review. On a contract that holds value, the smallest diff that does the job is the safest one.
+</StepPart>
+<StepPart kind="worked">
+You have told the agent what it must not touch: the gate, the roles, the dependencies, anything you did not ask about.
+</StepPart>
+</StepCard>
+
+<StepCard n={4} title="Say what proves it, and ask for the evidence">
+<StepPart kind="gets">
+A result you can check without trusting anyone.
+</StepPart>
+<StepPart kind="do">
+Every prompt here ends by naming the proof and the evidence: "run the five-state tests", "use the dev state panel to show wallet 3 passing and then failing once it is Revoked", "show me the diff". A project ships on this site only if the result compiles, passes its tests in all five credential states and clears pre-flight, so ask for exactly those. "Show me the diff" matters most: it turns "I did it" into something you read, and [Read what comes back](/agents-guide/read-what-comes-back/) is about reading it.
+</StepPart>
+<StepPart kind="worked">
+The last sentence of your prompt asks for something you can look at: a diff, a test count, an output.
+</StepPart>
+</StepCard>
+
+<StepCard n={5} title="Ask for a commit at every green test">
+<StepPart kind="gets">
+A way back from anything the agent does next.
+</StepPart>
+<StepPart kind="do">
+Add one sentence to any long request: "Commit each time the tests pass, with a message that says what changed." An agent that works for ten minutes and then breaks something has lost nothing if its last green state is a commit. Every project page has a [save your work](/tutorials/change-the-gate/) card with the commands, and they are the same ones the agent runs.
+</StepPart>
+<StepPart kind="worked">
+`git log --oneline` after the session reads like the steps of the work.
+</StepPart>
+</StepCard>
+
+</ProjectSteps>
+
+Next: [Read what comes back](/agents-guide/read-what-comes-back/).

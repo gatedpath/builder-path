@@ -1,0 +1,45 @@
+---
+title: Gas model
+description: Fees are priced in US dollars and paid in RBNT through an on-chain price feed, the priority fee is zero, and this is what that does to your config, tests and UI.
+lastVerified: '2026-09-12'
+---
+
+import ForAgents from '../../../components/ForAgents.astro';
+import VineAside from '../../../components/VineAside.astro';
+import Sample from '../../../components/Sample.astro';
+
+<ForAgents
+  page="Gas model"
+  facts={[
+    'A 21,000-gas transfer costs US$0.01. The base fee is converted to RBNT at execution from an on-chain price feed, so the RBNT fee moves with the RBNT price and the USD fee does not.',
+    'The priority fee is always zero. eth_gasPrice returns the base fee plus ten percent.',
+    'In wagmi, viem and ethers leave the fee fields unset. Never hardcode a gas price in wei.',
+    'In tests assert gas used, never a fee in wei or RBNT. On an anvil fork the base fee does not follow the oracle.',
+    'Price feed: bootstrap registry 0xDAFEA492D9c6733ae3d56b7Ed1ADB60692c98Bc5 (both chains) names it "pricefeed"; mainnet 0x0CD42d829F88fe539f710E9b7692C70b94aaEad4, testnet 0xBf207257412D3672F9C772ef263583611B98039a. getLatestPrice() returns USD per RBNT with six decimals.',
+    'Show the USD cost in your own UI. Vine warns that most wallets show gas information wrongly on Redbelly.',
+  ]}
+/>
+
+<VineAside href="https://vine.redbelly.network/network-fees/" label="Vine: network fees">
+The unit price, the oracle, the registry ABI and the fee distribution are all on Vine. Fee split at 100k transactions a day: 30% Redbelly, 30% issuers, 40% operators; a 5% burn above 1M a day while supply exceeds 5B RBNT ([distribution page](https://vine.redbelly.network/network-fees/distribution/)).
+</VineAside>
+
+What I measured, 12 September 2026: `getLatestPrice()` returned 2427 on mainnet at 08:25 UTC, which reads as US$0.002427 per RBNT once `decimals()` on the feed answered 6. The base fee at that moment was 196,205,387,799,948 wei; times 21,000 gas that is 4.12 RBNT, which is US$0.01 at that price. `eth_gasPrice` was the base fee plus ten percent, and `eth_maxPriorityFeePerGas` was 0. How often the oracle updates is not stated anywhere I read (question 6, partial on cadence). The helper that does this arithmetic reproduces the measured transfer within one percent, and its test replays the exact values:
+
+<Sample id="helpers-gas-cost" />
+
+## What this means for your code
+
+Leave the fee fields alone. wagmi, viem and ethers will read `eth_gasPrice` or the base fee and get it right. If you must set them, use `maxPriorityFeePerGas: 0` with a `maxFeePerGas` at or above the latest base fee. A gas price copied from a config file written last month will be wrong, because it was denominated in RBNT.
+
+Test gas, not fees. `forge snapshot` and gas-used assertions are stable; a fee assertion in wei changes with the RBNT price and, on an anvil fork, does not follow the oracle at all. When you need a number for a human, price it in USD with `gasCostUsd` from `@gatedpath/chains`.
+
+Budget in dollars. A year of operations is gas used times US$0.000000476 per gas unit. No token price forecast is needed, which is the point of the model. The RBNT balance you need to hold does move with the price, so keep a margin; pre-flight will check it.
+
+Show the number yourself. Vine's own warning is that most wallets mishandle gas information on Redbelly. Read the feed and print the USD cost in your interface rather than trusting what the wallet shows.
+
+There is nothing to bid with. With a zero priority fee and an oracle-set base fee there is no fee auction, and therefore no fee-market griefing and no priority-fee games. Gas-limit denial of service inside one transaction still exists.
+
+## Where it comes from
+
+Vine's network-fees and distribution pages; `eth_call` against the registry and the feed; `eth_gasPrice`, `eth_maxPriorityFeePerGas` and `eth_feeHistory` on both networks, all on 12 September 2026 (research log, questions 5 and 6, and the chain-definitions rows).

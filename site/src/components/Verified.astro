@@ -1,0 +1,48 @@
+---
+import Ext from './Ext.astro';
+// Last-verified badge. Rendered from data, never typed: a date and optional tools, with a
+// link to the source. No date means "Verification pending". A date older than 90 days at
+// build time flips to the amber "Re-verify" state.
+import { daysSince, formatDate, RESEARCH_SOURCE } from '../data/site';
+interface Props {
+  date?: string | null;
+  with?: string[];
+  source?: { label: string; href: string };
+  pendingText?: string;
+}
+const { date, with: tools = [], source = RESEARCH_SOURCE, pendingText = 'Verification pending' } = Astro.props;
+const stale = date ? daysSince(date) > 90 : false;
+---
+
+{
+  date ? (
+    <span class:list={['rb-verified', { 'rb-verified--stale': stale }]}>
+      <svg aria-hidden="true" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6.5l2.5 2.5L10 3.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>{stale ? 'Re-verify' : 'Verified'} {formatDate(date)}{tools.length ? ` · ${tools.join(', ')}` : ''}</span>
+      <Ext href={source.href}>{source.label}</Ext>
+    </span>
+  ) : (
+    <span class="rb-verified rb-verified--pending"><span>{pendingText}</span></span>
+  )
+}
+
+<style>
+  .rb-verified {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-family: var(--sl-font);
+    font-size: var(--sl-text-2xs);
+    font-weight: 600;
+    line-height: 1;
+    padding: 0.3125rem 0.625rem;
+    border-radius: var(--rb-radius-pill);
+    background: var(--rb-color-verified-bg);
+    color: var(--rb-color-verified-text);
+    white-space: nowrap;
+  }
+  .rb-verified--stale { background: var(--rb-color-stale-bg); color: var(--rb-color-stale-text); }
+  .rb-verified--pending { background: var(--rb-color-surface); color: var(--rb-color-text-muted); border: 1px solid var(--rb-color-hairline-strong); }
+  .rb-verified a { color: inherit; text-decoration: underline; text-underline-offset: 0.15em; }
+  .rb-verified a::before { content: '·'; margin-inline-end: 0.375rem; text-decoration: none; display: inline-block; }
+</style>

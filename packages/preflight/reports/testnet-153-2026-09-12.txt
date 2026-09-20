@@ -1,0 +1,12 @@
+redbelly-preflight 0.1.0  project <repo>/packages/receptor-mock
+chain 153 (testnet) via https://governors.testnet.redbelly.network  deployer 0xA2c6a3fC1E12dF79B9e3D099FaA2Ffe860450F76  admin 0xA2c6a3fC1E12dF79B9e3D099FaA2Ffe860450F76
+
+pass  chain-id           --chain says chain 153 and the RPC reports 153.
+pass  deployer-verified  0xA2c6a3fC1E12dF79B9e3D099FaA2Ffe860450F76 (--address) passes permission.isAllowed on chain 153.
+warn  admin-safe         Admin 0xA2c6a3fC1E12dF79B9e3D099FaA2Ffe860450F76 is an externally owned account; fine on testnet, but mainnet pre-flight will refuse it, so put a Safe in place now.
+pass  compiler-pins      <repo>/packages/receptor-mock/foundry.toml (profile default) pins solc 0.8.30 and EVM prague.
+pass  git-secrets        No secret-shaped line added in 1 commits, and no .env file is tracked.
+pass  balance            0xA2c6a3fC1E12dF79B9e3D099FaA2Ffe860450F76 holds 380.5286 RBNT; 1,000,000 gas costs about 195.9631 RBNT (US$0.4762) and 244.9539 RBNT covers it with 25% margin.
+pass  slither-report     reports/slither.json (2026-09-12T12:01:33.000Z) is newer than the newest source src/Gated.sol (2026-09-12T12:01:33.000Z).
+
+ok: no check failed (1 warning).

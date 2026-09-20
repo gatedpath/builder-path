@@ -1,0 +1,48 @@
+---
+title: Writing Solidity
+description: 'The path for someone who writes the contract themselves: gate a function, test it in all five credential states, read the gated token, deploy and be refused, in that order.'
+lastVerified: '2026-09-17'
+---
+
+import ForAgents from '../../../components/ForAgents.astro';
+import StatusPill from '../../../components/StatusPill.astro';
+
+<ForAgents
+  page="Writing Solidity"
+  facts={[
+    'The Solidity path has six written tutorials: /solidity/gate-a-function/, /solidity/test-five-states/, /solidity/the-gated-token/, /solidity/deploy-and-refusals/, /solidity/admin-safe-and-timelock/, /solidity/gas-in-dollars/. Each was run on 2026-09-17 with Foundry 1.7.1, solc 0.8.30, EVM Prague.',
+    'The gate is the Gated base in packages/receptor-mock/src/Gated.sol: modifiers gated and gatedFor(account), error NotEligible(wallet, requestId), and an abstract _authorizeVerifierChange() the child must implement.',
+    'Test every gated function in five credential states (NeverIssued, Expired, Revoked, WrongJurisdiction, Valid) with GatedTest.assertRevertsForAllInvalidStates and assertGatedPair.',
+  ]}
+/>
+
+This is the path for the person who writes the contract. If you would rather describe what you want and review what comes back, the other section, [Directing an agent](/agents/), is yours, and every [project](/tutorials/) has a track for each. The two meet at the same proof: the same tests, the same pre-flight, the same refusals.
+
+I wrote these in the order a dApp gets made. Each one is short, each is built on code that compiles in this repository, and I ran every command on 17 September 2026 before writing it down. They are step cards with a checklist, like the projects, and your ticks stay in your own browser.
+
+## The path
+
+| Stage | What you come away with | |
+|---|---|---|
+| [1. Gate a function](/solidity/gate-a-function/) | A contract of your own with one function only an eligible wallet can call | <StatusPill variant="verified" label="Run 17 Sep 2026" /> |
+| [2. Test all five states](/solidity/test-five-states/) | A test that cannot forget a credential state | <StatusPill variant="verified" label="Run 17 Sep 2026" /> |
+| [3. Read the gated token](/solidity/the-gated-token/) | The token the scaffold gives you, understood well enough to change it | <StatusPill variant="verified" label="Run 17 Sep 2026" /> |
+| [4. Deploy, and be refused](/solidity/deploy-and-refusals/) | The deploy script's checks, seen failing on purpose | <StatusPill variant="verified" label="Run 17 Sep 2026" /> |
+| [5. Put the admin behind a Safe and a timelock](/solidity/admin-safe-and-timelock/) | Roles no single key can use | <StatusPill variant="verified" label="Run 17 Sep 2026" /> |
+| [6. Price it in dollars](/solidity/gas-in-dollars/) | A year of gas for your contract, in US cents | <StatusPill variant="verified" label="Run 17 Sep 2026" /> |
+| 7. Verify on Routescan | Source anyone can read beside the address | <StatusPill variant="pending" label="Needs a testnet deploy" /> |
+| 8. Operate | Alerts, the network's own contracts, the runbook | [Operate](/operate/) has it |
+
+Stage 7 waits for a deploy I have not made, and I would rather leave that gap than fill it with something I have not walked through.
+
+## Before you start
+
+You need a clone of the repository, Node 22 or later and Foundry. [Start here](/start/) checks the machine. Tutorials 1 and 2 run inside `packages/receptor-mock`, 3 and 5 inside `packages/contract-kit`, and 4 and 6 inside a project the scaffolder makes. Each package needs one command the first time, which fetches the pinned libraries:
+
+```sh
+npm run setup
+```
+
+## Then pick a project
+
+When the stages make sense, the [projects](/tutorials/) are where you use them. [Project 1](/tutorials/change-the-gate/) has a full "Writing Solidity" track that was done by hand; the others will gain theirs as each is run.

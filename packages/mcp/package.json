@@ -1,0 +1,51 @@
+{
+  "name": "@gatedpath/mcp",
+  "version": "0.2.0",
+  "description": "Local stdio MCP server for Redbelly Network builders: chain facts, isAllowed, gas in USD, pre-flight, five-state tests, rules-file drift, testnet deploy and Routescan verification through forge with keystore names, docs lookup, status (the one next command) and explain_failure (plain words for a revert, a transaction or a pasted stderr). Never holds a key.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gatedpath/builder-path.git",
+    "directory": "packages/mcp"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "redbelly-mcp": "dist/main.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "node scripts/ensure-deps-built.mjs && tsc -p tsconfig.json && node -e \"require('fs').chmodSync('dist/main.js',0o755)\"",
+    "test": "npm run build && node --test --test-reporter=spec --test-concurrency=1 test/server.test.mjs test/stdio.test.mjs test/forge.test.mjs test/explain.test.mjs test/status.test.mjs",
+    "start": "node dist/main.js",
+    "prepack": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.30.0",
+    "@gatedpath/agent-rules": "file:../agent-rules",
+    "@gatedpath/chains": "file:../chain-definitions",
+    "@gatedpath/preflight": "file:../preflight",
+    "zod": "4.6.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.2",
+    "typescript": "^5.9.3"
+  }
+}

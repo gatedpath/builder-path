@@ -1,0 +1,106 @@
+{
+  "tool": "redbelly-preflight",
+  "version": "0.1.0",
+  "generatedAt": "2026-09-12T12:24:50.311Z",
+  "project": "<repo>/packages/receptor-mock",
+  "config": {
+    "kind": "foundry",
+    "file": "<repo>/packages/receptor-mock/foundry.toml",
+    "profile": "default"
+  },
+  "chain": {
+    "expected": 153,
+    "reported": 153,
+    "rpc": "https://governors.testnet.redbelly.network",
+    "network": "testnet"
+  },
+  "deployer": "0xA2c6a3fC1E12dF79B9e3D099FaA2Ffe860450F76",
+  "admin": "0xA2c6a3fC1E12dF79B9e3D099FaA2Ffe860450F76",
+  "checks": [
+    {
+      "id": "chain-id",
+      "status": "pass",
+      "reason": "--chain says chain 153 and the RPC reports 153.",
+      "data": {
+        "expected": 153,
+        "reported": 153
+      }
+    },
+    {
+      "id": "deployer-verified",
+      "status": "pass",
+      "reason": "0xA2c6a3fC1E12dF79B9e3D099FaA2Ffe860450F76 (--address) passes permission.isAllowed on chain 153.",
+      "data": {
+        "address": "0xA2c6a3fC1E12dF79B9e3D099FaA2Ffe860450F76",
+        "allowed": true,
+        "how": "--address"
+      }
+    },
+    {
+      "id": "admin-safe",
+      "status": "warn",
+      "reason": "Admin 0xA2c6a3fC1E12dF79B9e3D099FaA2Ffe860450F76 is an externally owned account; fine on testnet, but mainnet pre-flight will refuse it, so put a Safe in place now.",
+      "data": {
+        "address": "0xA2c6a3fC1E12dF79B9e3D099FaA2Ffe860450F76",
+        "isContract": false,
+        "singleton": null,
+        "singletonKind": null,
+        "singletonCodeMatches": null,
+        "threshold": null
+      }
+    },
+    {
+      "id": "compiler-pins",
+      "status": "pass",
+      "reason": "<repo>/packages/receptor-mock/foundry.toml (profile default) pins solc 0.8.30 and EVM prague.",
+      "data": {
+        "solc": "0.8.30",
+        "evmVersion": "prague",
+        "file": "<repo>/packages/receptor-mock/foundry.toml",
+        "profile": "default"
+      }
+    },
+    {
+      "id": "git-secrets",
+      "status": "pass",
+      "reason": "No secret-shaped line added in 1 commits, and no .env file is tracked.",
+      "data": {
+        "commits": 1,
+        "findings": [],
+        "trackedEnvFiles": []
+      }
+    },
+    {
+      "id": "balance",
+      "status": "pass",
+      "reason": "0xA2c6a3fC1E12dF79B9e3D099FaA2Ffe860450F76 holds 380.5286 RBNT; 1,000,000 gas costs about 195.9631 RBNT (US$0.4762) and 244.9539 RBNT covers it with 25% margin.",
+      "data": {
+        "deployer": "0xA2c6a3fC1E12dF79B9e3D099FaA2Ffe860450F76",
+        "gas": "1000000",
+        "gasPriceWei": "195963158926121",
+        "costWei": "195963158926121000000",
+        "costRbnt": "195.963158926121",
+        "costUsd": 0.476190476,
+        "usdPerRbnt": 0.00243,
+        "requiredWei": "244953948657651250000",
+        "requiredRbnt": "244.95394865765125",
+        "balanceWei": "380528661255879942432",
+        "balanceRbnt": "380.528661255879942432",
+        "marginPercent": 25
+      }
+    },
+    {
+      "id": "slither-report",
+      "status": "pass",
+      "reason": "reports/slither.json (2026-09-12T12:01:33.000Z) is newer than the newest source src/Gated.sol (2026-09-12T12:01:33.000Z).",
+      "data": {
+        "report": "reports/slither.json",
+        "reportTime": "2026-09-12T12:01:33.000Z",
+        "newestSource": "src/Gated.sol",
+        "newestSourceTime": "2026-09-12T12:01:33.000Z",
+        "sources": 5
+      }
+    }
+  ],
+  "ok": true
+}

@@ -1,0 +1,160 @@
+# Publishes the nine @gatedpath packages (and create-redbelly-dapp) from packages
+# to npm with trusted publishing: npm recognises this repository and this workflow's filename through
+# GitHub's OIDC token, so no npm token exists anywhere. No provenance while the repository is private: npm
+# does not generate it from a private source (see the action's header). Dependency order: chains, then agent-rules, then preflight and frontend-kit,
+# then mcp, ops-kit, receptor-mock, contract-kit, and last the scaffolder that depends on all of them.
+#
+# Triggers: a tag v<version> (the real publish, once the owner has added each package's trusted
+# publisher on npmjs.com; PUBLISHING.md has the steps) or "Run workflow" with dry-run, which defaults
+# to true and only packs. No secret is read. NODE_AUTH_TOKEN is never set.
+name: publish
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: 'Pack and print what would be published; publish nothing'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  # Trusted publishing needs npm 11.5.1 or later; Node 22's bundled npm is older, so the setup step upgrades it.
+  FOUNDRY_VERSION: v1.7.1
+  PACKAGES: packages
+
+jobs:
+  versions:
+    name: every package carries the tagged version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: actions/setup-node@v4.4.0
+        with:
+          node-version: 22
+      - name: On a tag, refuse when any package.json version differs from it
+        run: |
+          set -e
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            want="${GITHUB_REF_NAME#v}"
+            for p in "$PACKAGES"/*/package.json; do
+              have=$(node -p "require('./$p').version")
+              if [ "$have" != "$want" ]; then echo "$p is $have, tag says $want"; exit 1; fi
+            done
+            echo "every package is $want"
+          else
+            echo "manual run; versions not compared to a tag"
+          fi
+
+  chains:
+    name: '@gatedpath/chains'
+    needs: versions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: ./.github/actions/publish-package
+        with:
+          package: chain-definitions
+          dry-run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry-run || false }}
+
+  agent-rules:
+    name: '@gatedpath/agent-rules'
+    needs: chains
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: ./.github/actions/publish-package
+        with:
+          package: agent-rules
+          build-first: chain-definitions
+          dry-run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry-run || false }}
+
+  preflight:
+    name: '@gatedpath/preflight'
+    needs: agent-rules
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: ./.github/actions/publish-package
+        with:
+          package: preflight
+          build-first: chain-definitions agent-rules
+          dry-run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry-run || false }}
+
+  frontend-kit:
+    name: '@gatedpath/frontend-kit'
+    needs: agent-rules
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: ./.github/actions/publish-package
+        with:
+          package: frontend-kit
+          build-first: chain-definitions agent-rules
+          dry-run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry-run || false }}
+
+  mcp:
+    name: '@gatedpath/mcp'
+    needs: preflight
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: ./.github/actions/publish-package
+        with:
+          package: mcp
+          build-first: chain-definitions agent-rules preflight
+          dry-run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry-run || false }}
+
+  ops-kit:
+    name: '@gatedpath/ops-kit'
+    needs: chains
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: ./.github/actions/publish-package
+        with:
+          package: ops-kit
+          build-first: chain-definitions
+          dry-run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry-run || false }}
+
+  receptor-mock:
+    name: '@gatedpath/receptor-mock'
+    needs: versions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: ./.github/actions/publish-package
+        with:
+          package: receptor-mock
+          foundry: 'true'
+          dry-run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry-run || false }}
+
+  contract-kit:
+    name: '@gatedpath/contract-kit'
+    needs: receptor-mock
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: ./.github/actions/publish-package
+        with:
+          package: contract-kit
+          foundry: 'true'
+          setup-first: receptor-mock
+          dry-run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry-run || false }}
+
+  create-redbelly-dapp:
+    name: create-redbelly-dapp
+    needs: [mcp, frontend-kit, ops-kit, contract-kit]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: ./.github/actions/publish-package
+        with:
+          package: create-redbelly-dapp
+          build-first: chain-definitions agent-rules preflight frontend-kit
+          dry-run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry-run || false }}

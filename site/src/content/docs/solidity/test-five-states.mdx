@@ -1,0 +1,96 @@
+---
+title: '2. Test all five states'
+description: 'A credential is not valid or invalid; it is in one of five states. The GatedTest base walks a gated function through all of them so that you cannot forget one.'
+lastVerified: '2026-09-17'
+tableOfContents: false
+prev: false
+next: false
+---
+
+import ForAgents from '../../../components/ForAgents.astro';
+import StatusPill from '../../../components/StatusPill.astro';
+import Sample from '../../../components/Sample.astro';
+import VineAside from '../../../components/VineAside.astro';
+import ProjectSteps from '../../../components/ProjectSteps.astro';
+import StepCard from '../../../components/StepCard.astro';
+import StepPart from '../../../components/StepPart.astro';
+
+<ForAgents
+  page="Writing Solidity 2: Test all five states"
+  facts={[
+    'The five credential states are NeverIssued, Expired, Revoked, WrongJurisdiction and Valid. A gate tested in fewer than five is untested.',
+    'Inherit GatedTest from @gatedpath/receptor-mock-test/GatedTest.sol, call _deployMock() in setUp, build the contract on mock, then call assertRevertsForAllInvalidStates(target, callData, wallet, requestId) for one party or assertGatedPair(target, callData, sender, counterparty, requestId) for two. The call data must be safe to repeat.',
+    'The helpers work against the mock only: a real verifier cannot be put into Expired, Revoked or WrongJurisdiction on demand.',
+  ]}
+/>
+
+The mistake this tutorial prevents is testing a gate with one eligible wallet and one that is not, and calling it done. A wallet can fail the gate in four different ways, and a production incident is usually one of the three you did not test: the credential that expired last night, the one that was revoked, the one that is perfectly valid for a different jurisdiction.
+
+<ProjectSteps slug="solidity-test-five-states" title="2. Test all five states" backHref="/solidity/" backLabel="Writing Solidity">
+
+<StepCard n={1} title="Know the five states">
+<StepPart kind="gets">
+The vocabulary the rest of the site uses, in tests, in the web app's state panel and on the errors page.
+</StepPart>
+<StepPart kind="do">
+**NeverIssued**: the wallet has no credential for this request. **Expired**: it had one and the date has passed. **Revoked**: the issuer withdrew it. **WrongJurisdiction**: it holds a real credential that does not satisfy this query. **Valid**: the only state that opens the gate.
+
+To your contract the first four are one answer, `false`, and one revert, `NotEligible(wallet, requestId)`. To your users they are four different messages, and [Identity for builders](/identity/) covers how the front end tells them apart.
+</StepPart>
+<StepPart kind="worked">
+You can say which of the four your own product is most likely to meet first. For anything with an age or a residency rule it is usually Expired.
+</StepPart>
+</StepCard>
+
+<StepCard n={2} title="Read the helper that walks them">
+<StepPart kind="gets">
+One function call in your test in place of five hand-written cases.
+</StepPart>
+<StepPart kind="do">
+<Sample id="gatedtest-helper" />
+
+It puts the wallet into each of the four failing states in turn, calls your function as that wallet, and insists the revert is exactly `NotEligible(wallet, requestId)` and not some other failure that happens to revert. Then it sets Valid and insists the same call succeeds. Because it calls your function five times, the call must be safe to repeat.
+</StepPart>
+<StepPart kind="worked">
+You can say why the helper checks the exact revert data. A test that only checks "it reverted" passes when the function is broken for an unrelated reason.
+</StepPart>
+</StepCard>
+
+<StepCard n={3} title="Read it in use, and run it">
+<StepPart kind="gets">
+The shape of a five-state test, for one party and for two.
+</StepPart>
+<StepPart kind="do">
+<Sample id="five-state-test" />
+
+The second test is the two-party case: `nudge(to)` is guarded by `gated` and by `gatedFor(to)`, and `assertGatedPair` fails each party in each state while the other stays valid. From the repository's root:
+
+```sh
+cd packages/receptor-mock
+forge test --match-test test_incrementAcrossAllFiveStates
+forge test --match-contract GatedCounterTest
+```
+</StepPart>
+<StepPart kind="worked">
+The first command reports `1 tests passed`, the second `9 passed; 0 failed`.
+</StepPart>
+<StepPart kind="ifnot">
+If a five-state test of your own fails on the Valid leg with `AlreadySubscribed` or similar, your call is not safe to repeat. Test a function that can run twice, or reset the state between legs.
+</StepPart>
+</StepCard>
+
+<StepCard n={4} title="Know what the mock cannot tell you">
+<StepPart kind="gets">
+An honest boundary around what these tests prove.
+</StepPart>
+<StepPart kind="do">
+The helpers set states on `ReceptorMock`. A real verifier cannot be told to expire or revoke a credential, so against a real one you can test Valid and NeverIssued and nothing else. The mock refuses to deploy on chain 151, so it cannot reach mainnet by accident. What the five-state tests prove is that your contract treats every failing answer as a refusal. What they cannot prove is that the real verifier gives the answers you expect; that is the [eligibility recipes'](/identity/) job and needs a verifier key I do not have yet.
+</StepPart>
+<StepPart kind="worked">
+You can say, of any gated function you have written, which five-state helper covers it and whether its call is safe to repeat.
+</StepPart>
+</StepCard>
+
+</ProjectSteps>
+
+Next: [3. Read the gated token](/solidity/the-gated-token/).

@@ -1,0 +1,107 @@
+# Entities for a gated ERC-20. Balances are kept from Transfer events (mint from the zero
+# address, burn to it); everything an operator or auditor asks about (who moved what under
+# which justification, who may mint until when, when the token was paused, who holds which
+# role, which verifier decides) is its own entity with the block and transaction it came from.
+
+type Token @entity {
+  id: ID!                       # the contract address
+  totalSupply: BigInt!
+  holderCount: Int!
+  paused: Boolean!
+  verifier: Bytes!
+  requestId: BigInt!
+  transferCount: Int!
+  forcedTransferCount: Int!
+}
+
+type Holder @entity {
+  id: ID!                       # wallet address
+  token: Token!
+  balance: BigInt!
+  firstSeenBlock: BigInt!
+  lastActiveBlock: BigInt!
+  transfersIn: Int!
+  transfersOut: Int!
+  # Eligibility is not on the log: read isEligible(wallet) on the contract for the current answer.
+}
+
+type Transfer @entity(immutable: true) {
+  id: ID!                       # txHash-logIndex
+  token: Token!
+  from: Bytes!
+  to: Bytes!
+  amount: BigInt!
+  kind: String!                 # mint, burn or transfer
+  block: BigInt!
+  timestamp: BigInt!
+  txHash: Bytes!
+}
+
+type ForcedTransfer @entity(immutable: true) {
+  id: ID!
+  token: Token!
+  from: Bytes!
+  to: Bytes!
+  amount: BigInt!
+  justificationHash: Bytes!     # keccak256 of the authorising document; match it to your archive
+  officer: Bytes!
+  block: BigInt!
+  timestamp: BigInt!
+  txHash: Bytes!
+}
+
+type IssuerPermission @entity {
+  id: ID!                       # issuer address
+  token: Token!
+  validFrom: BigInt!
+  validUntil: BigInt!
+  allowance: BigInt!
+  active: Boolean!              # false after IssuerPermissionRevoked; the window itself is checked against block time by the reader
+  setAtBlock: BigInt!
+  txHash: Bytes!
+}
+
+type PauseEvent @entity(immutable: true) {
+  id: ID!
+  token: Token!
+  paused: Boolean!
+  account: Bytes!
+  block: BigInt!
+  timestamp: BigInt!
+  txHash: Bytes!
+}
+
+type RoleChange @entity(immutable: true) {
+  id: ID!
+  token: Token!
+  role: Bytes!
+  roleName: String!             # DEFAULT_ADMIN_ROLE, PAUSER_ROLE, COMPLIANCE_ROLE, ISSUER_ADMIN_ROLE, or the hash
+  account: Bytes!
+  sender: Bytes!
+  granted: Boolean!
+  block: BigInt!
+  timestamp: BigInt!
+  txHash: Bytes!
+}
+
+type VerifierChange @entity(immutable: true) {
+  id: ID!
+  token: Token!
+  kind: String!                 # verifier or requestId
+  previous: Bytes!
+  next: Bytes!
+  block: BigInt!
+  timestamp: BigInt!
+  txHash: Bytes!
+}
+
+type Denial @entity(immutable: true) {
+  id: ID!
+  token: Token!
+  wallet: Bytes!
+  requestId: BigInt!
+  verifier: Bytes!
+  block: BigInt!
+  timestamp: BigInt!
+  txHash: Bytes!
+}

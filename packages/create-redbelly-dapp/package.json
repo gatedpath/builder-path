@@ -1,0 +1,49 @@
+{
+  "name": "create-redbelly-dapp",
+  "version": "0.2.0",
+  "description": "Scaffold an identity-gated dApp for Redbelly Network: Foundry contracts on the Gated base, a Next.js + wagmi web app, CI, rules files for coding agents, npm run dev for the local loop, doctor, gas and ship, and a deploy script that refuses chain 151 without a Safe 1.4.1, a verified deployer and a ship report dated today. --hardhat adds a Hardhat 3 view of the same sources.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gatedpath/builder-path.git",
+    "directory": "packages/create-redbelly-dapp"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "create-redbelly-dapp": "bin/index.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "templates",
+    "README.md",
+    "recipes"
+  ],
+  "scripts": {
+    "build:siblings": "node scripts/build-siblings.mjs",
+    "test": "npm run build:siblings && node --test --test-reporter=spec --test-concurrency=1 test/integration.test.mjs test/dev.test.mjs",
+    "test:unit": "node --test --test-reporter=spec test/unit.test.mjs",
+    "test:dev": "npm run build:siblings && node --test --test-reporter=spec --test-concurrency=1 test/dev.test.mjs",
+    "test:fork": "npm run build:siblings && node scripts/fork-run.mjs",
+    "prepack": "node --check bin/index.js && npm run test:unit && node scripts/sync-recipes.mjs"
+  },
+  "exports": {
+    ".": "./src/cli.mjs",
+    "./package.json": "./package.json"
+  },
+  "dependencies": {
+    "@gatedpath/agent-rules": "file:../agent-rules",
+    "@gatedpath/chains": "file:../chain-definitions",
+    "@gatedpath/contract-kit": "file:../contract-kit",
+    "@gatedpath/frontend-kit": "file:../frontend-kit",
+    "@gatedpath/preflight": "file:../preflight",
+    "@gatedpath/receptor-mock": "file:../receptor-mock"
+  },
+  "preferUnplugged": true
+}

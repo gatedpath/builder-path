@@ -1,0 +1,80 @@
+# One package from packages to npm, with trusted publishing. Builds the
+# siblings it links to by path (their dist must exist for `npm ci` and `prepack`), installs from the
+# lockfile, rewrites the file: links to the siblings' versions, then `npm publish
+# --access public`, or `--dry-run` when asked. No `--provenance`: npm does not generate provenance from a
+# private repository, even for public packages, and the flag makes the publish fail (checked against
+# npm's trusted publishing documentation, 18 September 2026). Add it back the day the repository is public. No token: npm 11.5.1+ exchanges the job's OIDC token
+# with the registry because the repository and this workflow's filename match the trusted publisher
+# the owner configured on npmjs.com.
+name: publish one package
+description: Build, npm ci, rewrite file links to versions, npm publish (or --dry-run)
+inputs:
+  package:
+    description: Directory under packages
+    required: true
+  build-first:
+    description: Sibling directories to npm ci and build before this one, in order (space separated)
+    default: ''
+  setup-first:
+    description: Sibling Foundry directories to run scripts/setup.sh in before this one (space separated)
+    default: ''
+  foundry:
+    description: Install Foundry and run scripts/setup.sh in the package
+    default: 'false'
+  dry-run:
+    description: Pack only; publish nothing
+    default: 'true'
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4.4.0
+      with:
+        node-version: 22
+        registry-url: https://registry.npmjs.org
+    - name: npm 11.5.1 or later, which trusted publishing needs
+      shell: bash
+      run: |
+        npm install -g npm@latest
+        npm --version
+    - uses: foundry-rs/foundry-toolchain@v1.5.0
+      if: inputs.foundry == 'true' || inputs.setup-first != ''
+      with:
+        version: v1.7.1
+    - name: Build the siblings this package links to
+      if: inputs.build-first != ''
+      shell: bash
+      run: |
+        set -e
+        for d in ${{ inputs.build-first }}; do
+          echo "== $d"
+          (cd "packages/$d" && npm ci --no-audit --no-fund && npm run build)
+        done
+    - name: Set up the Foundry siblings this package links to
+      if: inputs.setup-first != ''
+      shell: bash
+      run: |
+        set -e
+        for d in ${{ inputs.setup-first }}; do
+          echo "== $d"
+          (cd "packages/$d" && bash scripts/setup.sh)
+        done
+    - name: Install this package
+      shell: bash
+      working-directory: packages/${{ inputs.package }}
+      run: |
+        set -e
+        if [ "${{ inputs.foundry }}" = "true" ]; then bash scripts/setup.sh; elif [ -f package-lock.json ]; then npm ci --no-audit --no-fund; else echo "no lockfile; nothing to install"; fi
+    - name: Point file: links at the siblings' versions
+      shell: bash
+      run: node scripts/publish/prepare.mjs packages/${{ inputs.package }}
+    - name: Publish (or dry run)
+      shell: bash
+      working-directory: packages/${{ inputs.package }}
+      run: |
+        set -e
+        if [ "${{ inputs.dry-run }}" = "true" ]; then
+          echo "dry run: packing only"
+          npm publish --access public --dry-run
+        else
+          npm publish --access public
+        fi

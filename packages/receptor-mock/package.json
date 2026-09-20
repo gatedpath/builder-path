@@ -1,0 +1,46 @@
+{
+  "name": "@gatedpath/receptor-mock",
+  "version": "0.2.0",
+  "description": "ReceptorMock, the Gated base contract, verifier adapters and the five-state Foundry test helper for Redbelly Network (151 mainnet, 153 testnet).",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gatedpath/builder-path.git",
+    "directory": "packages/receptor-mock"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "setup": "bash scripts/setup.sh",
+    "build": "forge build",
+    "test": "forge test",
+    "test:fork": "forge test --fork-url https://governors.testnet.redbelly.network",
+    "snapshot": "forge snapshot",
+    "hardhat:compile": "cd hardhat && hardhat compile",
+    "slither": "bash scripts/slither.sh",
+    "aderyn": "bash scripts/aderyn.sh",
+    "prepack": "forge build"
+  },
+  "devDependencies": {
+    "@openzeppelin/contracts": "5.6.1",
+    "hardhat": "2.29.1"
+  },
+  "files": [
+    "src",
+    "test",
+    "remappings.txt",
+    "foundry.toml",
+    "README.md",
+    ".gas-snapshot"
+  ],
+  "exports": {
+    "./package.json": "./package.json",
+    "./src/*": "./src/*",
+    "./test/*": "./test/*"
+  },
+  "preferUnplugged": true
+}

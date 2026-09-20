@@ -1,0 +1,49 @@
+{
+  "name": "@gatedpath/ops-kit",
+  "version": "0.2.0",
+  "description": "Operations kit for a gated ERC-20 on Redbelly Network: Routescan API scripts (transfers, holders, verified source), a Goldsky subgraph template, an alert poller that posts pause, forced transfer, role and verifier changes to a webhook, a watcher for the network's own system contracts (registry answers, the permission proxy's implementation, admin and roles), an RPC fallback helper across governors, Ankr and Uniblock, and an incident runbook with a filled-in example. Read-only; no key.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gatedpath/builder-path.git",
+    "directory": "packages/ops-kit"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "redbelly-alert": "scripts/alert.mjs",
+    "redbelly-system-watch": "scripts/system-watch.mjs",
+    "redbelly-routescan-transfers": "scripts/routescan-transfers.mjs",
+    "redbelly-routescan-holders": "scripts/routescan-holders.mjs",
+    "redbelly-routescan-verified": "scripts/routescan-verified.mjs"
+  },
+  "exports": {
+    ".": "./src/index.mjs",
+    "./rpc-fallback": "./src/rpc-fallback.mjs",
+    "./routescan": "./src/routescan.mjs",
+    "./events": "./src/events.mjs",
+    "./system-watch": "./src/system-watch.mjs",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "scripts",
+    "subgraph",
+    "runbook",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node --test --test-reporter=spec --test-concurrency=1 test/*.test.mjs",
+    "test:live": "OPS_KIT_LIVE=1 node --test --test-reporter=spec test/routescan.test.mjs",
+    "reports": "node scripts/record-reports.mjs",
+    "prepack": "node --check src/index.mjs && node --check src/cli.mjs && node --check scripts/alert.mjs && node --check scripts/system-watch.mjs"
+  },
+  "dependencies": {
+    "@gatedpath/chains": "file:../chain-definitions"
+  }
+}

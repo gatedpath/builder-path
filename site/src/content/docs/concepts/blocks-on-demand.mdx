@@ -1,0 +1,41 @@
+---
+title: Blocks on demand
+description: 'There is no block time: blocks are produced when there are transactions, so latency is a traffic measurement and your code polls for the receipt.'
+lastVerified: '2026-09-12'
+---
+
+import ForAgents from '../../../components/ForAgents.astro';
+import VineAside from '../../../components/VineAside.astro';
+
+<ForAgents
+  page="Blocks on demand"
+  facts={[
+    'Blocks are produced when there are transactions. No traffic, no block. Never sleep for a block time; poll for the receipt.',
+    'A transaction lands within seconds or it is not coming. Treat a receipt that has not arrived after a short timeout as a failure to diagnose, not as congestion.',
+    'Block numbers are not a clock. Use block timestamps for time.',
+    'The governors RPC serves eth_getLogs, eth_feeHistory and txpool_status; it does not serve debug_*, trace_* or net_version.',
+    'Block gas limit reports as 60,000,000,000. No per-transaction limit is documented.',
+  ]}
+/>
+
+<VineAside href="https://vine.redbelly.network/consensus/" label="Vine: consensus">
+Vine says transactions are "finalised in seconds" and does not state a block interval, because there is not one.
+</VineAside>
+
+What I measured, 12 September 2026, 08:25 to 08:35 UTC, from `phase-0/measure-blocktime.mjs`: testnet produced 6 blocks in ten minutes, mainnet 8. Every block carried at least one transaction. Gaps ran to four minutes with no traffic, and then mainnet produced three blocks two seconds apart when traffic arrived. The median gap of 90 seconds is a fact about that morning's traffic rather than about the chain, and the 37-second "average block time" some trackers list is the same kind of number. I have not yet measured time to inclusion under load, from a funded wallet (question 4, partial).
+
+## What this means for your code
+
+Poll, do not sleep. Ask for the receipt every second or so, straight after sending. A transaction either lands in the next block, within seconds, or something is wrong: an unverified wallet, a bad nonce, a rejected type. Waiting longer does not help; a diagnosis does.
+
+Do not estimate time from block numbers. Any formula of the form "blocks × seconds per block" is wrong here in both directions. Use `block.timestamp` in contracts and the block's timestamp field off-chain.
+
+Indexers see bursts and silence. Design for a backlog of several blocks arriving in a few seconds after minutes of nothing, and for idle periods that mean nothing is wrong. Health checks that alert on "no block for two minutes" will page you all night on testnet.
+
+There are no traces. Anything that needs `debug_traceTransaction` or `trace_block` cannot use the governors endpoint, and Vine lists no third-party archive node. Rely on events and `eth_getLogs`, and emit an event for every state change a monitor would care about.
+
+Gas limits are not the constraint. Blocks in the sample used 47k to 147k gas against a 60 billion limit. A per-transaction limit is not documented, and finding it needs a wallet.
+
+## Where it comes from
+
+Measured in `phase-0/results/blocktime-{testnet,mainnet}-2026-09-12T0825.json` and `chain-check-*-2026-09-12.json`. Smart Redbelly Blockchain (on Redbelly's research page) describes the on-demand block model; the [research page](/research/) lists it.

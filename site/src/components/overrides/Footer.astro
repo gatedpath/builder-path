@@ -1,0 +1,75 @@
+---
+import Ext from '../Ext.astro';
+// Footer override: three columns, the independence line in full with the three outbound
+// links, the page's last-verified date, the licence line. No edit link, no social row.
+import { INDEPENDENCE_LINE, LINKS, formatDate } from '../../data/site';
+const { entry } = Astro.locals.starlightRoute;
+const lastVerified = entry.data.lastVerified;
+---
+
+<footer class="rb-footer not-content">
+  <div class="rb-footer__cols">
+    <div>
+      <p class="rb-eyebrow">Build</p>
+      <ul>
+        <li><a href="/start/">Start here</a></li>
+        <li><a href="/agents/">Bring your own agent</a></li>
+        <li><a href="/tutorials/">Tutorials</a></li>
+        <li><a href="/tools/">Tools</a></li>
+        <li><a href="/review/">Review before mainnet</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="rb-eyebrow">Reference on Vine</p>
+      <ul>
+        <li><Ext href={LINKS.vineEnvironments}>Environments</Ext></li>
+        <li><Ext href={LINKS.vineFees}>Network fees</Ext></li>
+        <li><Ext href={LINKS.vineConsensus}>Consensus</Ext></li>
+        <li><Ext href={LINKS.vineUserAccess}>User access</Ext></li>
+        <li><Ext href={LINKS.docsSdk}>Eligibility SDK docs</Ext></li>
+      </ul>
+    </div>
+    <div>
+      <p class="rb-eyebrow">About this site</p>
+      <ul>
+        <li><a href="/research/">The research</a></li>
+        <li><a href="/status/">Network status</a></li>
+        <li><Ext href={LINKS.repo}>Source on GitHub</Ext></li>
+        <li><Ext href={LINKS.design}>Design study</Ext></li>
+        <li><a href="/llms.txt">llms.txt</a></li>
+      </ul>
+    </div>
+  </div>
+  <p class="rb-footer__line">{INDEPENDENCE_LINE}</p>
+  <p class="rb-footer__own">
+    <Ext href={LINKS.redbelly}>redbelly.network</Ext>,{' '}<Ext href={LINKS.vine}>Vine</Ext>{' '}and{' '}<Ext href={LINKS.docs}>docs.redbelly.network</Ext>{' '}are Redbelly's own.
+  </p>
+  <p class="rb-footer__meta">
+    {lastVerified ? `Facts on this page last verified ${formatDate(lastVerified)}. ` : ''}
+    Site text and code under the MIT licence. Readex Pro and JetBrains Mono under the SIL Open Font License 1.1. No analytics, no cookies, no telemetry.
+  </p>
+</footer>
+
+<style>
+  .rb-footer {
+    margin-top: 3rem;
+    padding: 1.5rem;
+    border-radius: var(--rb-radius-xl);
+    background: var(--rb-color-surface);
+    font-size: var(--sl-text-sm);
+    color: var(--rb-color-text);
+  }
+  .rb-footer__cols {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    gap: 1.5rem;
+  }
+  .rb-footer ul { list-style: none; margin: 0.5rem 0 0; padding: 0; }
+  .rb-footer li + li { margin-top: 0.375rem; }
+  .rb-footer a { color: var(--rb-color-accent); text-decoration: none; font-weight: 500; }
+  .rb-footer a:hover { color: var(--rb-color-accent-high); text-decoration: underline; text-underline-offset: 0.2em; }
+  .rb-footer__line { margin: 1.5rem 0 0; padding-top: 1rem; border-top: 1px solid var(--rb-color-hairline); }
+  .rb-footer__own { margin: 0.375rem 0 0; }
+  .rb-footer__meta { margin: 0.75rem 0 0; font-size: var(--sl-text-2xs); color: var(--rb-color-text-muted); }
+  @media (pointer: coarse) { .rb-footer li a { display: inline-block; padding-block: 0.5rem; } }
+</style>

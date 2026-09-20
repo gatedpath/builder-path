@@ -1,0 +1,44 @@
+# Keys and keystores. Foundry keystores live in ~/.foundry/keystores, Hardhat's in its own
+# encrypted store; neither belongs in a repository, and neither should ever be here.
+*.keystore
+keystore/
+keystores/
+*.pem
+*.p12
+id_rsa*
+
+# Environment files. .env.example is committed and holds no secret; everything else stays out.
+.env
+.env.*
+!.env.example
+
+# Build output
+node_modules/
+contracts/out/
+contracts/cache/
+contracts/broadcast/
+contracts/lib/forge-std/
+contracts/lib/openzeppelin-contracts/
+hardhat/artifacts/
+hardhat/cache/
+web/.next/
+web/out/
+web/next-env.d.ts
+*.tsbuildinfo
+
+# What `npm run dev` writes for the running local loop (addresses and account indices, never a key)
+deployments/local.json
+deployments/local.lock
+
+# Reports that CI and `npm run lint:slither` regenerate. The sources hash beside the Slither report
+# is a bare 64-hex value, which pre-flight's secret scanner flags if it ever lands in git history.
+contracts/reports/
+contracts/slither-report.json
+contracts/report.md
+
+# OS and editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json

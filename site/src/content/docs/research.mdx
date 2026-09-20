@@ -1,0 +1,62 @@
+---
+title: Research
+description: The four papers the concept pages rest on, each in plain language with a link to the concept that depends on it, and the rest of Redbelly's research page listed for later.
+lastVerified: '2026-09-12'
+---
+
+import ForAgents from '../../components/ForAgents.astro';
+import StatusPill from '../../components/StatusPill.astro';
+
+<ForAgents
+  page="Research"
+  facts={[
+    'Four papers matter for code: DBFT (NCA 2018) for finality, Red Belly (S&P 2021) for super blocks and throughput assumptions, Polygraph (ICDCS 2021) for accountability, Holistic Verification (DISC 2022) for what "verified consensus" covers.',
+    'Benchmark numbers in papers are benchmarks, not mainnet measurements. Cite the measured pages on this site for the live network.',
+    'The consensus is verified; your application is not. Nothing in these papers audits your contract.',
+  ]}
+/>
+
+Redbelly grew out of a decade of consensus research, and the papers are the reason some of this network's properties are stronger than the usual EVM assumptions. You can build without reading them, but you do need to know what each one guarantees and where the guarantee stops. The summaries here are plain and short; the concept pages carry the consequences.
+
+## DBFT: Efficient Leaderless Byzantine Consensus and its Application to Blockchains
+
+Crain, Gramoli, Larrea, Raynal. IEEE NCA 2018.
+
+Most Byzantine consensus protocols pick a leader who proposes the next block; if the leader is slow or malicious, everyone waits or votes them out. DBFT has no leader. Every node proposes, the protocol reduces the question "which proposals get in" to many parallel yes-or-no decisions, and a weak coordinator helps those decisions converge without being able to block them. Decisions are deterministic once made. Applied to a blockchain, that means all correct nodes agree on one block and there is no fork to resolve later.
+
+For your code: [consensus and finality](/concepts/consensus-and-finality/). A receipt is final; delete the confirmation-count waiting.
+
+## Red Belly: A Secure, Fair and Scalable Open Blockchain
+
+Crain, Natoli, Gramoli. IEEE S&P 2021.
+
+This is the paper behind the super block. Instead of one proposer's block, the block that gets committed is the union of proposals from many nodes, which is why a Redbelly block can contain transactions from every governor. The paper also shares the work of verifying transaction signatures across nodes rather than having every node verify everything, and argues fairness: a transaction that a correct sender submits is eventually included, provided the sender does not submit conflicting transactions and the network is not flooded. That is a promise of inclusion, not of order. The paper's chain is a UTXO payment system; the EVM came later and is not described in it. The evaluation ran on a thousand machines across continents; the plan uses its latency figure, about three seconds, as a benchmark reference and nothing more. Under a coalition attack by a third of the nodes, throughput in the paper fell from 5,700 to 1,900 transactions per second, which is the more honest floor.
+
+For your code: [consensus and finality](/concepts/consensus-and-finality/) for what a super block means, [blocks on demand](/concepts/blocks-on-demand/) for what "block time" means here, and the live figures on the [status page](/status/) rather than the benchmark.
+
+## Polygraph: Accountable Byzantine Agreement
+
+Civit, Gilbert, Gramoli. ICDCS 2021, with an earlier brief at DISC 2020.
+
+Consensus protocols are safe as long as fewer than a third of nodes misbehave. Polygraph asks what happens past that line. Its answer is accountability: if too many nodes collude and cause a disagreement, the correct nodes can produce cryptographic proof that identifies the ones responsible. It does not stop the disagreement; it makes it attributable, which is what lets a network punish or exclude the culprits.
+
+For your code: a dApp can assume that a consensus failure would be forensic rather than silent, but it cannot assume that it can never happen; a chain that holds real assets still wants a pause and an admin behind a Safe. The [review page](/review/) has the threat model.
+
+## Holistic Verification of Blockchain Consensus
+
+Bertrand, Gramoli, Konnov, Lazić, Tholoniat, Widder. DISC 2022, arXiv 2206.04489.
+
+"Formally verified" gets said loosely. This paper is specific: the consensus algorithm was checked by machine, with parameterised model checking (the ByMC tool), for all numbers of nodes rather than one fixed configuration, under Byzantine faults. "Holistic" means the whole protocol was checked rather than one component in isolation. The boundary matters as much as the result: what is verified is the consensus algorithm. The implementation that runs it, the EVM on top of it, and your contract are outside that proof.
+
+For your code: do not let "verified consensus" leak into "verified application". Your contract still needs tests in all five credential states, static analysis, and for anything holding value an audit. [Review before mainnet](/review/) lists them.
+
+## The rest of the research page
+
+Redbelly's [research page](https://redbelly.network/research) lists more than these four. Recorded on 12 September 2026 and not yet summarised: <StatusPill variant="draft" label="Summaries not yet written" tipKey="summaries-pending" />
+
+- Evaluating the Red Belly Blockchain, the 2018 benchmark report.
+- The Redbelly whitepaper, An accountable data layer for AI powered financial services.
+- Gramoli's OPODIS 2023 invited talk, From Consensus Research to Redbelly Network, the best single narrative of how the papers became the product.
+- Smart Redbelly Blockchain: Reducing Congestion for Web3, which describes the on-demand block model behind [blocks on demand](/concepts/blocks-on-demand/).
+- Aion, order-fair state machine replication using trusted execution, which bears on ordering inside a super block. Redbelly told me on 17 September 2026 that the ordering changes in Q4 2026 and will be described in the next yellow paper, so the yellow paper is the one to read first.
+- Stabl, ComChain, Planetary Scale Byzantine Consensus, Fair Separability, Diablo, the yellow paper and Gramoli's Springer book.

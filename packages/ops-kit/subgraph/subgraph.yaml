@@ -1,0 +1,68 @@
+# Goldsky subgraph template for a contract-kit GatedERC20 on Redbelly.
+#
+# Goldsky supports subgraphs on Redbelly mainnet and testnet as a partner-sponsored product,
+# "if approved by the Redbelly team": you need an access code from Goldsky's developer relations
+# team for the private signup form before `goldsky subgraph deploy` will accept a Redbelly
+# network (docs.goldsky.com/chains/redbelly, read 12 September 2026; RESEARCH.md question 11).
+# Edge RPC and Mirror are not offered for Redbelly. Until you have the approval, Routescan's
+# API (scripts/routescan-*.mjs) is the indexing route.
+#
+# Network slugs on that page: `redbelly` (151) and `redbelly-testnet` (153). Fill in the
+# address and the start block from your deployment record, then:
+#   goldsky login
+#   graph codegen && graph build            # @graphprotocol/graph-cli
+#   goldsky subgraph deploy gated-erc20/1.0.0 --path .
+specVersion: 1.0.0
+description: Holders, transfers, forced transfers, issuer permissions, pauses and admin changes of a gated ERC-20 on Redbelly Network
+repository: https://github.com/gatedpath/builder-path
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: GatedERC20
+    network: redbelly-testnet   # `redbelly` for mainnet (151)
+    source:
+      address: "0x0000000000000000000000000000000000000000"   # your GatedERC20; from contracts/deployments/<chainId>-GatedERC20.json
+      abi: GatedERC20
+      startBlock: 0            # the block of the deployment transaction; indexing from 0 on 151 walks 3.1 million blocks for nothing
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - Token
+        - Holder
+        - Transfer
+        - ForcedTransfer
+        - IssuerPermission
+        - PauseEvent
+        - RoleChange
+        - VerifierChange
+        - Denial
+      abis:
+        - name: GatedERC20
+          file: ./abis/GatedERC20.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
+        - event: ForcedTransfer(indexed address,indexed address,uint256,indexed bytes32,address)
+          handler: handleForcedTransfer
+        - event: IssuerPermissionSet(indexed address,uint64,uint64,uint256)
+          handler: handleIssuerPermissionSet
+        - event: IssuerPermissionRevoked(indexed address)
+          handler: handleIssuerPermissionRevoked
+        - event: Paused(address)
+          handler: handlePaused
+        - event: Unpaused(address)
+          handler: handleUnpaused
+        - event: RoleGranted(indexed bytes32,indexed address,indexed address)
+          handler: handleRoleGranted
+        - event: RoleRevoked(indexed bytes32,indexed address,indexed address)
+          handler: handleRoleRevoked
+        - event: VerifierChanged(indexed address,indexed address)
+          handler: handleVerifierChanged
+        - event: RequestIdChanged(uint64,uint64)
+          handler: handleRequestIdChanged
+        - event: EligibilityDenied(indexed address,indexed uint64,indexed address)
+          handler: handleEligibilityDenied
+      file: ./src/mapping.ts

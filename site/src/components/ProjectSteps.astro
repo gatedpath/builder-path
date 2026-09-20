@@ -1,0 +1,66 @@
+---
+// A project page's run of step cards (PLAN.md section 19). Holds the way back to all projects, the
+// progress line and the one small script on the page: ticks are kept in the reader's own browser
+// under `rb-project:<slug>`, never sent anywhere. With scripts off, or storage refused, the boxes
+// still tick and the page reads the same; they are just not remembered.
+interface Props { slug: string; title: string; backHref?: string; backLabel?: string }
+const { slug, title, backHref = '/tutorials/', backLabel = 'All projects' } = Astro.props;
+---
+
+<nav class="rb-project__back not-content" aria-label={`Back to ${backLabel}, top of page`}>
+  <a href={backHref}>&larr; {backLabel}</a>
+</nav>
+
+<div class="rb-project" data-project={slug}>
+  <p class="rb-project__progress not-content" aria-live="polite">
+    <span data-progress-text>Tick each step as you finish it. Your ticks stay in this browser only.</span>
+    <button type="button" class="rb-project__reset" data-reset hidden>Start again</button>
+  </p>
+  <ol class="rb-project__steps">
+    <slot />
+  </ol>
+</div>
+
+<nav class="rb-project__back rb-project__back--end not-content" aria-label={`Back to ${backLabel}, end of page`}>
+  <a href={backHref}>&larr; {backLabel}</a>
+  <span>You were on: {title}</span>
+</nav>
+
+<script>
+  for (const root of document.querySelectorAll<HTMLElement>('.rb-project')) {
+    const key = `rb-project:${root.dataset.project}`;
+    const boxes = [...root.querySelectorAll<HTMLInputElement>('input[data-step]')];
+    const text = root.querySelector<HTMLElement>('[data-progress-text]');
+    const reset = root.querySelector<HTMLButtonElement>('[data-reset]');
+    let saved: Record<string, boolean> = {};
+    try { saved = JSON.parse(localStorage.getItem(key) ?? '{}'); } catch { /* private window, storage blocked */ }
+    const paint = () => {
+      const done = boxes.filter((b) => b.checked).length;
+      if (text) text.textContent = done === 0
+        ? 'Tick each step as you finish it. Your ticks stay in this browser only.'
+        : done === boxes.length ? `All ${boxes.length} steps done.` : `${done} of ${boxes.length} steps done.`;
+      if (reset) reset.hidden = done === 0;
+      for (const b of boxes) b.closest('.rb-step')?.toggleAttribute('data-done', b.checked);
+    };
+    const store = () => {
+      try { localStorage.setItem(key, JSON.stringify(Object.fromEntries(boxes.map((b) => [b.dataset.step!, b.checked])))); } catch { /* not remembered, still usable */ }
+    };
+    for (const b of boxes) {
+      b.checked = Boolean(saved[b.dataset.step!]);
+      b.addEventListener('change', () => { store(); paint(); });
+    }
+    reset?.addEventListener('click', () => { for (const b of boxes) b.checked = false; store(); paint(); });
+    paint();
+  }
+</script>
+
+<style>
+  .rb-project__back { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: baseline; margin-block: 0 1.25rem; font-size: var(--sl-text-sm); }
+  .rb-project__back a { color: var(--rb-color-accent); font-weight: 600; text-decoration: underline; text-underline-offset: 0.2em; }
+  .rb-project__back span { color: var(--rb-color-text-muted); }
+  .rb-project__back--end { margin-block: 2rem 0; padding-top: 1.25rem; border-top: 1px solid var(--rb-color-hairline); }
+  .rb-project__progress { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: center; margin: 0 0 1rem; font-size: var(--sl-text-sm); color: var(--rb-color-text-muted); }
+  .rb-project__reset { padding: 0.25rem 0.625rem; border: 1px solid var(--rb-color-hairline-strong); border-radius: 999px; background: transparent; color: inherit; font: inherit; cursor: pointer; }
+  .rb-project__reset:hover { border-color: var(--rb-color-accent); color: var(--rb-color-accent); }
+  .rb-project__steps { list-style: none; margin: 0; padding: 0; }
+</style>

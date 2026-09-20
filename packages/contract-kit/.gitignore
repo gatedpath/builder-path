@@ -1,0 +1,8 @@
+# Build output and fetched dependencies; scripts/setup.sh recreates them.
+out/
+cache/
+lib/
+node_modules/
+broadcast/
+reports/slither.raw.txt
+deployments/

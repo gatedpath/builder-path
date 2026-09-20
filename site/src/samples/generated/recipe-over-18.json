@@ -1,0 +1,81 @@
+{
+  "id": "over-18",
+  "title": "Over 18",
+  "status": "draft",
+  "criterion": "The wallet holder was born at least eighteen years before today, proven from a government identity credential without revealing the date of birth.",
+  "credential": {
+    "types": ["PassportCredential", "DriversLicenceCredential", "EssentialIdCredential", "NationalIdCredential"],
+    "field": "birthDate",
+    "fieldType": "integer, YYYYMMDD (schema description: \"Date of birth, in YYYYMMDD format\")",
+    "context": "https://raw.githubusercontent.com/redbellynetwork/receptor-schema/refs/heads/main/schemas/json-ld/<Type>.jsonld",
+    "schemaSource": "github.com/redbellynetwork/receptor-schema commit 3b37c11, schemas/json/{Passport,DriversLicence,EssentialId,NationalId}Credential.json",
+    "queryableToday": "All four are in the SDK's list of seven queryable types (docs, configure-eligibility-criteria).",
+    "issuer": {
+      "testnet": "did:receptor:redbelly:testnet:31K82iKCtE6ciDc7oAr3T5EpjZb4S1EFM7c4xJaWkM2 (the only DID the docs print)",
+      "mainnet": "unknown; the accredited issuer registry at 0x2d68f1C50a057a310EeF28DF3199F95A65cE4ac5 lists issuers but its ABI is not public (RESEARCH.md questions 15 and 29)",
+      "wildcard": "allowedIssuers: [\"*\"] accepts any issuer and is for demos only; the docs' own example says to use trusted DIDs in production"
+    }
+  },
+  "query": {
+    "mechanism": "iden3",
+    "cutoffRule": "cutoff = the YYYYMMDD of today minus eighteen years; the query is birthDate $lt (cutoff + one day), so someone whose eighteenth birthday is today passes. Example for 2026-09-12: born on or before 2008-09-12, so birthDate $lt 20080913.",
+    "request": {
+      "id": 18,
+      "circuitId": "credentialAtomicQuerySigV2OnChain",
+      "query": {
+        "allowedIssuers": ["did:receptor:redbelly:testnet:31K82iKCtE6ciDc7oAr3T5EpjZb4S1EFM7c4xJaWkM2"],
+        "context": "https://raw.githubusercontent.com/redbellynetwork/receptor-schema/refs/heads/main/schemas/json-ld/PassportCredential.jsonld",
+        "type": "PassportCredential",
+        "credentialSubject": { "birthDate": { "$lt": 20080913 } }
+      }
+    },
+    "shapeSource": "The contract example on docs.redbelly.network uses exactly this shape on DriversLicenceCredential (birthDate $lt 20020101); the on-chain example on the SDK page uses credentialAtomicQuerySigV2OnChain with $eq.",
+    "oneTypePerRequest": "On-chain verification supports a single query today. To accept any of the four document types, set one request per type (ids 18, 19, 20, 21) and gate on any of them; the Gated base binds one id, so that needs a small OR in the contract or a verifier adapter that checks several ids."
+  },
+  "onChain": {
+    "requestId": 18,
+    "binding": "Gated(verifier, 18) with verifier = Iden3VerifierAdapter(<your ZKPVerifier child>, <Surface>)",
+    "howTheCheckMaps": "setZKPRequest(18, request) stores the query on your verifier contract. A holder proves it with submitZKPResponse(18, ...). From then on the verifier answers true for (wallet, 18): 1.x proofs[wallet][18], 2.x isProofVerified(wallet, 18), 3.x isRequestProofVerified(wallet, 18). Gated.gated reads IRedbellyVerifier.isEligible(msg.sender, 18) through the adapter and reverts NotEligible(wallet, 18) on false.",
+    "staticRequest": "The cutoff is fixed when setZKPRequest runs. Someone born 2008-09-13 becomes eighteen on 2026-09-13 but the stored query still says $lt 20080913. Either re-set the request on a schedule (daily, from a keeper the owner controls) or accept a lag and document it. The request id can stay the same across re-sets on 1.x; check the release's behaviour for overwriting a request.",
+    "stickiness": "An accepted proof is a record on your contract. Nothing read in the docs clears it when the credential later expires or is revoked. With a 2.x or 3.x verifier, read getProofStatus/getRequestProofStatus.blockTimestamp and require it to be within your freshness window; on 1.x the mapping is a bare boolean and the only remedy is a new request id."
+  },
+  "fiveStates": {
+    "NeverIssued": "The wallet holds no credential of the type, or has never submitted a proof for request 18. No record on the verifier. isEligible false; Gated reverts NotEligible(wallet, 18). In tests: ReceptorMock default.",
+    "Valid": "A credential from an allowed issuer, birthDate before the cutoff, not revoked in the reverse hash service, proof accepted by submitZKPResponse. isEligible true. In tests: mock.setStatus(wallet, 18, Valid).",
+    "Expired": "The credential's own validity has ended (Passport, DriversLicence, EssentialId and NationalId all carry expiryDate). A fresh proof cannot be produced against an expired credential if the circuit checks expiration (verify); a proof accepted earlier stays on the verifier (see stickiness). In tests: mock.setValidUntil then vm.warp, which proves the gate rejects Expired even though a real verifier would not report it.",
+    "Revoked": "The issuer revoked the credential; the holder's wallet checks the reverse hash service before proving and cannot produce a valid non-revocation proof unless skipClaimRevocationCheck was set, which production queries never set. A proof accepted before revocation stays on the verifier (see stickiness). In tests: mock.setStatus(wallet, 18, Revoked).",
+    "WrongJurisdiction": "Here: the query is not satisfied (born after the cutoff) or the credential's issuer is not in allowedIssuers. No proof can be produced, so the state is indistinguishable from NeverIssued on chain. In tests: mock.setStatus(wallet, 18, WrongJurisdiction)."
+  },
+  "privacy": {
+    "leavesWallet": [
+      "A zero-knowledge proof for request 18 and its public inputs. The public inputs identify the holder's Iden3 identity, the issuer, the schema and the query hash; which exact signals are public for the OnChain circuits is not restated in Redbelly's docs (verify).",
+      "The transaction calling submitZKPResponse, signed by the wallet, so the wallet address is the sender."
+    ],
+    "landsOnChain": [
+      "wallet address -> request 18 -> accepted, on your verifier contract, forever unless cleared.",
+      "The stored request itself: cutoff date, credential type, allowed issuer DIDs. Anyone can read that the dApp checks age eighteen against Passport credentials from issuer X.",
+      "On 2.x and 3.x releases, the block number and timestamp of the accepted proof."
+    ],
+    "neverOnChain": [
+      "The date of birth, the name, the passport or licence number, the nationality, the expiry date, the document image.",
+      "Whether the holder is 18 or 80: only that the birth date is before the cutoff."
+    ],
+    "consequence": "Do not log or store the credential subject in your frontend or backend either. The Eligibility SDK returns a proof, not the attributes; keep it that way."
+  },
+  "verify": [
+    { "what": "circuitId for on-chain proofs", "why": "The SDK page's on-chain example uses credentialAtomicQuerySigV2OnChain; the contract example uses credentialAtomicQueryMTPV2OnChain. Which one Redbelly's issuers and holder wallets support on 153 and 151 is not stated." },
+    { "what": "allowedIssuers on mainnet", "why": "No mainnet issuer DID is published; the registry ABI is not public." },
+    { "what": "expiry enforcement", "why": "Whether the OnChain circuits check the credential's expiration against the block timestamp is not stated in Redbelly's docs; it depends on the Iden3 circuit build in use." },
+    { "what": "public inputs", "why": "The exact public signals the OnChain circuits expose are not restated in Redbelly's docs." },
+    { "what": "request overwrite", "why": "Whether setZKPRequest may be called again with the same id to move the cutoff depends on the @iden3/contracts release (question 29)." },
+    { "what": "the whole recipe against a live verifier", "why": "No query in this folder has been run against a Redbelly verifier; that needs the Eligibility SDK (GitHub Packages token, verifier API key) and a testnet deployment." }
+  ],
+  "sources": [
+    { "what": "Contract example with birthDate $lt on DriversLicenceCredential, MTP on-chain circuit, allowedIssuers wildcard warning", "url": "https://docs.redbelly.network/pages/methods/proof-by-query/contract-example/", "checked": "2026-09-12" },
+    { "what": "Query workflow, operators, Sig on-chain circuit, single query on chain, the queryable types, the testnet issuer DID", "url": "https://docs.redbelly.network/pages/eligibility-sdk/configure-eligibility-criteria/", "checked": "2026-09-12" },
+    { "what": "birthDate integer YYYYMMDD on Passport, DriversLicence, EssentialId, NationalId; expiryDate on each", "url": "https://github.com/redbellynetwork/receptor-schema/tree/3b37c11/schemas/json", "checked": "2026-09-12" },
+    { "what": "Proof by Query flow and the reverse hash service revocation check", "url": "https://docs.redbelly.network/pages/methods/proof-by-query/", "checked": "2026-09-12" },
+    { "what": "Iden3 release surfaces 1.x/2.x/3.x", "url": "../../RESEARCH.md (receptor-mock rows)", "checked": "2026-09-12" }
+  ],
+  "open": ["RESEARCH.md 15", "RESEARCH.md 17", "RESEARCH.md 29"]
+}

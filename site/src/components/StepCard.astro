@@ -1,0 +1,48 @@
+---
+// One step of a project (PLAN.md section 19): a numbered card with a tick box, joined to the next
+// by an arrow. Inside it go StepPart blocks, always in the same order: gets, do, worked, ifnot.
+interface Props { n: number; title: string; track?: 'both' | 'differs' }
+const { n, title, track = 'both' } = Astro.props;
+const id = `step-${n}`;
+---
+
+<li class="rb-step" id={id}>
+  <div class="rb-step__head not-content">
+    <span class="rb-step__n" aria-hidden="true">{n}</span>
+    <h2 class="rb-step__title" id={`${id}-title`}>{title}</h2>
+    <label class="rb-step__tick">
+      <input type="checkbox" data-step={String(n)} aria-describedby={`${id}-title`} />
+      <span>Done</span>
+    </label>
+  </div>
+  {track === 'differs' && <p class="rb-step__tracks not-content">This step differs by track. Pick yours once; the site remembers it.</p>}
+  <div class="rb-step__body"><slot /></div>
+</li>
+
+<style>
+  .rb-step {
+    position: relative;
+    margin: 0 0 2.75rem;
+    padding: 1.25rem 1.25rem 1rem;
+    border: 1px solid var(--rb-color-hairline);
+    border-radius: var(--rb-radius-lg);
+    background: var(--rb-color-bg);
+  }
+  /* The arrow to the next card: a stem and a head, drawn in CSS so it costs nothing to load. */
+  .rb-step:not(:last-child)::before,
+  .rb-step:not(:last-child)::after { content: ''; position: absolute; left: 2.1rem; pointer-events: none; }
+  .rb-step:not(:last-child)::before { top: 100%; height: 2rem; border-left: 2px solid var(--rb-color-hairline-strong); }
+  .rb-step:not(:last-child)::after { top: calc(100% + 1.45rem); width: 0.6rem; height: 0.6rem; margin-left: -0.26rem; border-right: 2px solid var(--rb-color-hairline-strong); border-bottom: 2px solid var(--rb-color-hairline-strong); transform: rotate(45deg); }
+  .rb-step[data-done] { border-color: var(--rb-color-accent); }
+  .rb-step[data-done] .rb-step__n { background: var(--rb-color-accent); color: var(--rb-color-bg); border-color: var(--rb-color-accent); }
+
+  .rb-step__head { display: flex; align-items: center; gap: 0.75rem; }
+  .rb-step__n { flex: none; display: grid; place-items: center; width: 1.9rem; height: 1.9rem; border: 1px solid var(--rb-color-hairline-strong); border-radius: 50%; font-size: var(--sl-text-sm); font-weight: 600; }
+  /* Starlight gives every heading in the content column a top margin; this one sits in a row. */
+  .rb-step .rb-step__head .rb-step__title { flex: 1; margin: 0 !important; padding: 0; font-size: var(--sl-text-h4); line-height: 1.25; }
+  .rb-step__tick { flex: none; display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.3rem 0.6rem; border: 1px solid var(--rb-color-hairline-strong); border-radius: 999px; font-size: var(--sl-text-xs); cursor: pointer; }
+  .rb-step__tick input { width: 1rem; height: 1rem; margin: 0; accent-color: var(--rb-color-accent); }
+  .rb-step__tick:has(input:focus-visible) { outline: 2px solid var(--rb-color-accent); outline-offset: 2px; }
+  .rb-step__tracks { margin: 0.625rem 0 0; font-size: var(--sl-text-xs); color: var(--rb-color-text-muted); }
+  .rb-step__body { margin-top: 0.75rem; }
+</style>

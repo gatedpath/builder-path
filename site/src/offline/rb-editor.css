@@ -1,0 +1,107 @@
+/* The offline site's text editor. Injected into every page of "Website Offline" only; it is
+   never part of a published build, and build-offline.mjs is the only thing that adds it. */
+
+.rb-ed-bar {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.625rem;
+  border-radius: 0.75rem;
+  background: #10201d;
+  color: #eaf3f0;
+  box-shadow: 0 6px 24px rgb(0 0 0 / 28%);
+  font: 500 0.8125rem/1.3 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.rb-ed-bar button {
+  appearance: none;
+  border: 1px solid rgb(234 243 240 / 28%);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  padding: 0.375rem 0.625rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+.rb-ed-bar button:hover { background: rgb(234 243 240 / 12%); }
+.rb-ed-bar button:focus-visible { outline: 2px solid #7fb8ac; outline-offset: 2px; }
+.rb-ed-bar button[aria-pressed="true"] { background: #2f6d5e; border-color: #2f6d5e; }
+.rb-ed-bar button[disabled] { opacity: 0.45; cursor: default; }
+.rb-ed-bar__count { font-variant-numeric: tabular-nums; opacity: 0.85; }
+
+/* what can be edited, while editing is on */
+[data-rb-editing] [data-rb-marker] {
+  cursor: text;
+  border-radius: 0.25rem;
+  box-shadow: 0 0 0 1px rgb(47 109 94 / 35%);
+}
+[data-rb-editing] [data-rb-marker]:hover { box-shadow: 0 0 0 1px rgb(47 109 94 / 75%); }
+[data-rb-editing] [data-rb-marker]:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #2f6d5e;
+  background: rgb(47 109 94 / 5%);
+}
+[data-rb-marker][data-rb-changed] {
+  box-shadow: inset 3px 0 0 #c9963a;
+  padding-left: 0.5rem;
+}
+
+.rb-ed-panel {
+  position: fixed;
+  inset: auto 1rem 5rem 1rem;
+  max-width: 44rem;
+  margin-inline: auto;
+  z-index: 9999;
+  background: #fff;
+  color: #1f2a27;
+  border: 1px solid #cfe0db;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  box-shadow: 0 10px 40px rgb(0 0 0 / 22%);
+  font: 0.875rem/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.rb-ed-panel h2 { margin: 0 0 0.5rem; font-size: 1rem; }
+.rb-ed-panel p { margin: 0 0 0.75rem; }
+.rb-ed-panel textarea {
+  width: 100%;
+  min-height: 11rem;
+  font: 0.8125rem/1.45 ui-monospace, SFMono-Regular, Menlo, monospace;
+  border: 1px solid #cfe0db;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  resize: vertical;
+}
+.rb-ed-panel__row { display: flex; gap: 0.5rem; margin-top: 0.75rem; flex-wrap: wrap; }
+.rb-ed-panel__row button {
+  appearance: none; border: 1px solid #2f6d5e; background: #2f6d5e; color: #fff;
+  font: inherit; padding: 0.4rem 0.75rem; border-radius: 0.5rem; cursor: pointer;
+}
+.rb-ed-panel__row button.secondary { background: #fff; color: #2f6d5e; }
+
+/* The site carries a light and a dark theme; the panel follows whichever is on. */
+[data-theme='dark'] .rb-ed-panel {
+  background: #10201d;
+  color: #eaf3f0;
+  border-color: rgb(234 243 240 / 22%);
+}
+[data-theme='dark'] .rb-ed-panel textarea {
+  background: #0b1715;
+  color: #eaf3f0;
+  border-color: rgb(234 243 240 / 22%);
+}
+[data-theme='dark'] .rb-ed-panel__row button.secondary {
+  background: transparent;
+  color: #9fd3c6;
+  border-color: rgb(159 211 198 / 55%);
+}
+[data-theme='dark'] [data-rb-editing] [data-rb-marker]:focus { background: rgb(159 211 198 / 10%); }
+
+/* Search needs a server it cannot reach from a folder on disk, so it is hidden offline. */
+[data-rb-offline] .sl-flex site-search,
+[data-rb-offline] site-search { display: none !important; }
+
+@media print { .rb-ed-bar, .rb-ed-panel { display: none !important; } }

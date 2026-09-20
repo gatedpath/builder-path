@@ -1,0 +1,62 @@
+diff --git a/contracts/test/GatedERC20.invariants.t.sol b/contracts/test/GatedERC20.invariants.t.sol
+index 54040a9..92ea767 100644
+--- a/contracts/test/GatedERC20.invariants.t.sol
++++ b/contracts/test/GatedERC20.invariants.t.sol
+@@ -35,6 +35,11 @@ contract Handler is Test {
+     uint256 public denialsRecorded;
+     uint256 public skippedAmounts;
+ 
++    // Card 2: what the token held at the moment the last pause landed.
++    uint256 internal pausedSupply;
++    uint256[] internal pausedBalances;
++    bool[] internal pausedSubscribed;
++
+     constructor(
+         GatedERC20 token_,
+         ReceptorMock receptor_,
+@@ -180,7 +185,30 @@ contract Handler is Test {
+ 
+     function pause() external {
+         vm.prank(admin);
+-        try token.pause() { } catch { }
++        try token.pause() {
++            // A pause landed: record everything the token holds, so the invariant can compare the
++            // live token against it for as long as the pause lasts.
++            pausedSupply = token.totalSupply();
++            delete pausedBalances;
++            delete pausedSubscribed;
++            for (uint256 i = 0; i < actors.length; i++) {
++                pausedBalances.push(token.balanceOf(actors[i]));
++                pausedSubscribed.push(token.hasSubscribed(actors[i]));
++            }
++        } catch { }
++    }
++
++    /// True when the token is running, or when it is paused and holds exactly what it held at
++    /// the pause. Mint, distribute, subscribe, transfer, burn and forceTransfer are all in the
++    /// handler's call set, so a path that moved anything while paused would show up here.
++    function frozenWhilePaused() external view returns (bool) {
++        if (!token.paused()) return true;
++        if (token.totalSupply() != pausedSupply) return false;
++        for (uint256 i = 0; i < actors.length; i++) {
++            if (token.balanceOf(actors[i]) != pausedBalances[i]) return false;
++            if (token.hasSubscribed(actors[i]) != pausedSubscribed[i]) return false;
++        }
++        return true;
+     }
+ 
+     function unpause() external {
+@@ -257,6 +285,13 @@ abstract contract GatedERC20InvariantsBase is Test {
+         assertEq(handler.stateChangesWhilePaused(), 0);
+     }
+ 
++    /// Card 2: while paused, the token holds exactly what it held when the pause landed,
++    /// including through mint. Stronger than the counter above: it compares state, so it would
++    /// catch a change made by a path the handler forgot to count.
++    function invariant_pausedStateFrozen() public view {
++        assertTrue(handler.frozenWhilePaused());
++    }
++
+     /// Every forced transfer emitted a non-zero justification hash.
+     function invariant_forcedTransfersCarryAHash() public view {
+         assertEq(handler.forcedTransfers(), handler.forcedTransferEventsWithHash());

@@ -1,0 +1,32 @@
+---
+// The last step of every project: pre-flight, the second save, and the honest stop at the fork.
+// Run for the record on 17 September 2026 (cards/runs/2026-09-17/card-01-solidity.md).
+import { Code } from '@astrojs/starlight/components';
+import StepCard from './StepCard.astro';
+import StepPart from './StepPart.astro';
+import SaveYourWork from './SaveYourWork.astro';
+import StatusPill from './StatusPill.astro';
+interface Props { n: number; message: string }
+const { n, message } = Astro.props;
+---
+
+<StepCard n={n} title="Run pre-flight, and stop here">
+  <StepPart kind="gets">
+    <p>The same checks the deploy script will make, run before there is anything to lose.</p>
+  </StepPart>
+  <StepPart kind="do">
+    <Code lang="sh" code="npm run preflight" />
+  </StepPart>
+  <StepPart kind="worked">
+    <p>Six of seven checks pass. The one that fails is <code>DEPLOYER is a public address</code>, because you have not told the project which wallet you will sign with. That is the correct result here: the project ends at the fork.</p>
+  </StepPart>
+  <StepPart kind="ifnot">
+    <p>Any other failure is real. The two about <code>.env</code> and key-shaped values mean a secret is tracked by git; fix that before anything else, and treat the secret as compromised.</p>
+  </StepPart>
+  <SaveYourWork when="again" message={message} />
+  <p class="rb-stop"><StatusPill variant="pending" label="Testnet deploy: not part of this project yet" /> Deploying to testnet needs a verified wallet, and I have not run that step myself; <a href="/start/">Start here</a> says why and marks where it will go.</p>
+</StepCard>
+
+<style>
+  .rb-stop { margin: 1rem 0 0; font-size: 0.9375rem; }
+</style>

@@ -1,0 +1,114 @@
+---
+title: Network status
+description: RPC health, the measured block interval and the current gas price for chains 151 and 153, read from your browser, plus the dated figures from the network report.
+lastVerified: '2026-09-12'
+verifiedSource:
+  label: report/data/metrics.json
+  href: https://github.com/gatedpath/builder-path/blob/main/report/data/metrics.json
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import ForAgents from '../../components/ForAgents.astro';
+import LiveStatus from '../../components/LiveStatus.astro';
+import VineAside from '../../components/VineAside.astro';
+import metrics from '../../samples/generated/metrics.json';
+import { LINKS } from '../../data/site';
+
+export const m = metrics.chains;
+export const fmt = (n) => n.toLocaleString('en-AU');
+export const ts = (iso) => iso.replace('T', ' ').replace(/\.\d+Z$/, ' UTC').replace(/Z$/, ' UTC');
+
+<ForAgents
+  page="Network status"
+  facts={[
+    'The cards at the top are live: your browser reads eth_chainId, eth_blockNumber, eth_gasPrice, the latest block, the price feed and the last 25 blocks straight from the public governors RPCs. No backend, nothing stored. With JavaScript off they show the build-time read with its time.',
+    'Block interval is measured, not quoted: consecutive block timestamps over the last 25 blocks, median, p95, min and max. Blocks are produced on demand, so a long max on a quiet chain is normal and is not latency.',
+    'Gas is priced in US dollars: base fee times 21,000 at the feed price should read about US$0.01. If the feed time is far behind the head block, say so rather than trusting the USD figure.',
+    `The tables further down were read once, on ${ts(metrics.generatedAt)}, from the governors RPCs and Routescan, and are not live.`,
+  ]}
+/>
+
+## Right now
+
+<LiveStatus />
+
+What the cards read and how. `eth_chainId` and `eth_blockNumber` say the RPC is up and on the chain it should be; the latency is one round trip for a batch of five calls from wherever you are. The block interval is computed the way `phase-0/measure-blocktime.mjs` computes it, from the timestamps of consecutive blocks over the last 25, so it changes with traffic: blocks on Redbelly are produced on demand, and a quiet quarter of an hour gives one long interval, not a slow chain. The base fee comes from the latest block, the RBNT price from the on-chain feed with its own timestamp, and the transfer cost is the two multiplied; Vine prices a native transfer at US$0.01 and the figure should sit there whatever RBNT is worth. Every call goes from your browser to the RPC and nowhere else. When an RPC does not answer, its card says so and keeps the figures from the build, dated.
+
+<VineAside href={LINKS.vineEnvironments} label="Environments on Vine">
+The RPC URLs, chain IDs and explorers are Redbelly's; the cards read them from `@gatedpath/chains`, which recorded them from this page.
+</VineAside>
+
+## Measured on {ts(metrics.generatedAt).slice(0, 10)}
+
+I read everything below once, on the date shown against each figure, with the read-only scripts in `report/scripts/`. The measurement is exact where it says exact, and approximate where Routescan's own count is.
+
+### Latest block at the time of reading
+
+| Figure | Mainnet 151 | Testnet 153 |
+|---|---|---|
+| Block number | {fmt(m['151'].totals.latestBlock.number)} | {fmt(m['153'].totals.latestBlock.number)} |
+| Block timestamp | {ts(m['151'].totals.latestBlock.timestamp)} | {ts(m['153'].totals.latestBlock.timestamp)} |
+| Read at | {ts(m['151'].totals.latestBlock.source.split(' at ')[1])} | {ts(m['153'].totals.latestBlock.source.split(' at ')[1])} |
+| First produced block | {ts(m['151'].totals.genesis.block1Timestamp)} | {ts(m['153'].totals.genesis.block1Timestamp)} |
+| Chain age from block 1 | {m['151'].totals.chainAgeDays.fromBlock1} days | {m['153'].totals.chainAgeDays.fromBlock1} days |
+
+Block 0 carries the same template timestamp on both chains, so age is counted from block 1.
+
+### Block interval over a week
+
+The same measurement as the live cards, over every block in the seven full UTC days before the read (Routescan's block listing, {ts(m['151'].blocks.routescan7d.source.finishedAt)}).
+
+| Figure | Mainnet 151 | Testnet 153 |
+|---|---|---|
+| Blocks in the window | {fmt(m['151'].blocks.routescan7d.blocks)} | {fmt(m['153'].blocks.routescan7d.blocks)} |
+| Interval, median | {m['151'].blocks.routescan7d.interval.median} s | {m['153'].blocks.routescan7d.interval.median} s |
+| Interval, p90 | {m['151'].blocks.routescan7d.interval.p90} s | {m['153'].blocks.routescan7d.interval.p90} s |
+| Interval, max | {m['151'].blocks.routescan7d.interval.max} s | {m['153'].blocks.routescan7d.interval.max} s |
+| Empty blocks | {m['151'].blocks.routescan7d.emptyBlockRatio}% | {m['153'].blocks.routescan7d.emptyBlockRatio}% |
+| Transactions per block, mean | {m['151'].blocks.routescan7d.txPerBlock.mean} | {m['153'].blocks.routescan7d.txPerBlock.mean} |
+
+### Activity, last 90 full days
+
+The window is {m['151'].daily.window.from} to {m['151'].daily.window.to}, full UTC days, the read date excluded.
+
+| Figure | Mainnet 151 | Testnet 153 |
+|---|---|---|
+| Transactions, total | {fmt(m['151'].daily.summary.last90.totalTransactions)} | {fmt(m['153'].daily.summary.last90.totalTransactions)} |
+| Transactions per day, median | {fmt(m['151'].daily.summary.last90.transactions.median)} | {fmt(m['153'].daily.summary.last90.transactions.median)} |
+| Transactions per day, last 7 days median | {fmt(m['151'].daily.summary.last7.transactions.median)} | {fmt(m['153'].daily.summary.last7.transactions.median)} |
+| Blocks, total | {fmt(m['151'].daily.summary.last90.totalBlocks)} | {fmt(m['153'].daily.summary.last90.totalBlocks)} |
+| Blocks per day, median | {fmt(m['151'].daily.summary.last90.blocks.median)} | {fmt(m['153'].daily.summary.last90.blocks.median)} |
+
+Transactions and fees come from Routescan's daily statistics (fetched {ts(m['151'].daily.sources.transactions.fetchedAt)}); blocks per day are exact, from the first block at or after each UTC midnight by RPC.
+
+### Who is sending, last 30 days
+
+The window is {m['151'].activeSenders.window.from} to {m['151'].activeSenders.window.to}.
+
+| Figure | Mainnet 151 | Testnet 153 |
+|---|---|---|
+| Active senders per day, median | {m['151'].activeSenders.summary.median} | {m['153'].activeSenders.summary.median} |
+| Active senders per day, range | {m['151'].activeSenders.summary.min} to {m['151'].activeSenders.summary.max} | {m['153'].activeSenders.summary.min} to {m['153'].activeSenders.summary.max} |
+| Distinct senders over the window | {fmt(m['151'].activeSenders.distinctSendersWholeWindow)} | {fmt(m['153'].activeSenders.distinctSendersWholeWindow)} |
+| Gas per transaction, median | {fmt(m['151'].gas.gasUsedPerTx.median)} | {fmt(m['153'].gas.gasUsedPerTx.median)} |
+| Plain transfers (no calldata) | {m['151'].gas.mix.noCalldataShare}% | {m['153'].gas.mix.noCalldataShare}% |
+
+Counted from every transaction in the window on Routescan's listing (mainnet {fmt(m['151'].activeSenders.source.transactionsFetched)} transactions fetched, finished {ts(m['151'].activeSenders.source.finishedAt)}). Exact for the indexed set.
+
+### Lifetime and contracts
+
+| Figure | Mainnet 151 | Testnet 153 |
+|---|---|---|
+| Transactions, lifetime (Routescan, {m['151'].totals.totalTransactions.routescanCount.countType}) | {fmt(m['151'].totals.totalTransactions.routescanCount.value)} | {fmt(m['153'].totals.totalTransactions.routescanCount.value)} |
+| Verified contracts | {m['151'].contracts.verified.count} | {m['153'].contracts.verified.count} |
+| Contracts created since {m['151'].contracts.creations.since.slice(0, 10)} | {fmt(m['151'].contracts.creations.totalContracts)} | {fmt(m['153'].contracts.creations.totalContracts)} |
+
+Read at {ts(m['151'].totals.totalTransactions.routescanCount.at)} (mainnet) and {ts(m['153'].totals.totalTransactions.routescanCount.at)} (testnet).
+
+### Gas price at the time of the Phase 0 pass
+
+At 08:25 UTC on 12 September 2026 the mainnet price feed returned 2427, which is US$0.002427 per RBNT at the feed's six decimals; the base fee was 196,205,387,799,948 wei, so a 21,000-gas transfer cost 4.12 RBNT, US$0.01. The priority fee was zero. Source: the research log, question 6. The live card above reads the same two values now.
+
+<Aside type="note" title="Where the numbers come from">
+The live cards: your browser, the public governors RPCs, nothing in between; the code is `site/src/lib/status-reader.ts` and runs once at build too. The tables: `report/data/metrics.json`, generated {ts(metrics.generatedAt)} by `report/scripts/build.mjs` from RPC reads and public Routescan API reads. Nothing here uses a wallet, a key or a transaction. The site's build copies the file and fails if the copy drifts from the source.
+</Aside>

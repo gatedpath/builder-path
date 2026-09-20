@@ -1,0 +1,25 @@
+---
+title: When something fails
+description: Every failure the tool can name, in plain words, with why it happened and the next command; one table, shared by the MCP server, the frontend kit and this page.
+lastVerified: '2026-09-14'
+---
+
+import ForAgents from '../../components/ForAgents.astro';
+import FailureTable from '../../components/FailureTable.astro';
+
+<ForAgents
+  page="When something fails"
+  facts={[
+    'Call explain_failure in the MCP server with a revert (hex data or message), a txHash with chain, or a pasted stderr. It returns kind, plainWords, cause and fix, and kind: "unknown" with the raw text when it cannot tell. It never signs.',
+    'In a page, explainError(error) from @gatedpath/frontend-kit turns a viem or wagmi error into the same words: NotEligible with the credential state when a ReceptorMock can say, user rejection, wrong chain, not enough RBNT.',
+    'NotEligible(wallet, requestId) is the contract refusing a wallet; it is not the network refusing it. The network gate is permission.isAllowed, read before you sign.',
+    "Pre-flight's balance check prices 3,000,000 gas unless you pass --gas. The measured deploy of GatedERC20 is 1,899,210 gas; on 14 September 2026 that still needed 486.4 RBNT on testnet at the feed price.",
+    'Call status with the project path before each turn: it says what compiles, what passed, whether Slither and the rules files are current, what is deployed where, and the one next command.',
+  ]}
+/>
+
+Every entry below is generated at build from `packages/agent-rules/src/failures.ts`. The MCP server's `explain_failure` and the frontend kit's `explainError` read that same file, so the words an agent sees and the words a page shows are the words here. Each entry says what happened, why it happened, and then the next command or the page to read. Where a fact belongs to the network, the entry links to Vine or docs.redbelly.network and adds only the consequence for your code.
+
+One entry is someone else's observation rather than ours: the error the real network returns to a wallet that has no write access yet. A fork and a local Anvil do not enforce the node-level permission map, and nothing of ours has signed against 151 or 153 yet, so I have not seen it. A DAO developer, Rahman, published the wording on 9 July 2026 with a testnet transaction as evidence: `Sender not authorised to write transactions`. The tools now recognise it, the entry says whose observation it is and links to his write-up, and it moves to measured the day one of us captures it.
+
+<FailureTable />

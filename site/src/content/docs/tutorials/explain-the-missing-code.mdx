@@ -1,0 +1,105 @@
+---
+title: 'Project 3: Explain the missing code'
+description: 'This project has no confirmation counting and no reorg handling, on purpose. Get the explanation from an agent or write it yourself, and learn what your indexer must do in their place.'
+lastVerified: '2026-09-17'
+tableOfContents: false
+prev: false
+next: false
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import ForAgents from '../../../components/ForAgents.astro';
+import StatusPill from '../../../components/StatusPill.astro';
+import Sample from '../../../components/Sample.astro';
+import Ext from '../../../components/Ext.astro';
+import ProjectSteps from '../../../components/ProjectSteps.astro';
+import StepCard from '../../../components/StepCard.astro';
+import StepPart from '../../../components/StepPart.astro';
+import ProjectStepMake from '../../../components/ProjectStepMake.astro';
+import ProjectStepPreflight from '../../../components/ProjectStepPreflight.astro';
+import ProjectPrompt from '../../../components/ProjectPrompt.astro';
+import ProjectPager from '../../../components/ProjectPager.astro';
+
+<ForAgents
+  page="Project 3: Explain the missing code"
+  facts={[
+    'There is no confirmation-count or reorg handling because DBFT finality is deterministic: a transaction in a block is final. Cite /concepts/consensus-and-finality/ and /concepts/blocks-on-demand/.',
+    'An indexer must: treat the receipt as final; key every off-chain write on transaction hash plus log index and make reprocessing a no-op; never infer order inside a block; expect bursts and silence, not a block time; read events through eth_getLogs in windows of about 100 blocks, because debug and trace methods are not served; record the genesis hash at start-up and refuse to continue on a mismatch.',
+    'Ordering inside a super block is documented for the 2021 UTXO design and changes in Q4 2026 (Redbelly, 2026-09-17). The 153_2 label on Routescan is not evidence of a testnet reset (checked 2026-09-15). Do not repeat either as an open mystery.',
+  ]}
+/>
+
+A warm-up with nothing to compile. The most common mistake in a dApp brought here from another chain is code that should not exist: waiting for confirmations, handling a reorganisation that cannot happen. This project asks for the explanation, because a builder who can explain why that code is missing will not add it back.
+
+<ProjectSteps slug="explain-the-missing-code" title="Project 3: Explain the missing code">
+
+<ProjectStepMake reuse />
+
+<StepCard n={2} title="Get the explanation" track="differs">
+<StepPart kind="gets">
+A written answer to two questions: why is this code missing, and what must an indexer do in its place.
+</StepPart>
+<StepPart kind="do">
+<Tabs syncKey="track">
+<TabItem label="Directing an agent">
+<ProjectPrompt n={3} />
+
+The agent has no tests to lean on here, so ask it to cite the page and the date behind each claim. It should reach the two concept pages through the rules file in the project.
+
+<StatusPill variant="verified" label="Run 12 Sep 2026, Claude Code" /> The answer took about four minutes, no tool ran, and I checked it claim by claim against the research log; it passed. The answer and the check are in the <Ext href="https://github.com/gatedpath/builder-path/blob/main/cards/runs/2026-09-12/card-03.md">run record</Ext>. One agent so far; the plan asks for two.
+</TabItem>
+<TabItem label="Writing it yourself">
+There is no Solidity in this project, so this track is a reading. Read [Consensus and finality](/concepts/consensus-and-finality/) and [Blocks on demand](/concepts/blocks-on-demand/), then write your own answer to the two questions before you open step 3. Ten minutes is enough, and writing it is what makes it stay.
+
+<StatusPill variant="verified" label="Checked 17 Sep 2026" /> Step 3 is the answer I check yours against, re-checked against the research log on that date.
+</TabItem>
+</Tabs>
+</StepPart>
+<StepPart kind="worked">
+Your answer, or the agent's, says in its first paragraph that finality here is deterministic: a transaction that is in a block is final, and no later block can replace it.
+</StepPart>
+</StepCard>
+
+<StepCard n={3} title="Check the answer against this list">
+<StepPart kind="gets">
+The six things an indexer on this network does, and the four things it deletes.
+</StepPart>
+<StepPart kind="do">
+1. **Treat the receipt as final.** Keep a pending state only for the seconds between send and receipt, and poll for the receipt; there is no block time to sleep for.
+2. **Be idempotent against yourself.** With no reorganisations, the only way an event reaches your code twice is your own retry, a restarted worker or a duplicated webhook. Key every write on the transaction hash plus the log index.
+3. **Never infer order inside a block.** A block is a super block combined from many governors' proposals. The 2021 paper documents an ordering rule for its own design, Redbelly has told me it changes in Q4 2026, and nothing you build should depend on it.
+4. **Expect bursts and silence.** Blocks come when there is traffic: minutes of nothing, then several blocks seconds apart. Do not alert on "no new block for two minutes".
+5. **Read events, not traces.** The RPC serves no `debug` or `trace` methods, so events and `eth_getLogs` are your only view, about 100 blocks a call. This is why the scaffold emits an event on every state change that matters.
+6. **Record the genesis hash.** At start-up, compare it and refuse to continue on a mismatch. A testnet reset is not a reorganisation, and a reorg handler would not help you with one.
+
+Delete from a ported indexer: the confirmation-depth setting, the canonical-chain table, the parent-hash walk that detects a reorganisation, and the unwind path. Keep the idempotency key.
+</StepPart>
+<StepPart kind="worked">
+The answer in front of you has all six, in any words, and claims nothing beyond them.
+</StepPart>
+<StepPart kind="ifnot">
+Two things in the agent's answer of 12 September were right then and are out of date now, and yours may repeat them if your agent reads an old page. It called the ordering inside a block unstated; it is documented for the 2021 design and is changing. It read Routescan's `153_2` label as a sign of a past testnet reset; a later reading found none. In both cases the advice was still safe. The <Ext href="https://github.com/gatedpath/builder-path/blob/main/cards/runs/2026-09-17/card-03-recheck.md">re-check</Ext> has the table, and [Read what comes back](/agents-guide/read-what-comes-back/) uses it as its example of why you look at the dates.
+</StepPart>
+</StepCard>
+
+<StepCard n={4} title="Look for the missing code in your own project">
+<StepPart kind="gets">
+The explanation applied to something real.
+</StepPart>
+<StepPart kind="do">
+Search the scaffolded project for the words a ported dApp would carry:
+
+```sh
+grep -rniE "confirmations|reorg|finalized|safe block" web/src contracts/src scripts
+```
+</StepPart>
+<StepPart kind="worked">
+Nothing comes back. If you bring code of your own into the project later, run the same search on it.
+</StepPart>
+</StepCard>
+
+</ProjectSteps>
+
+This project changes no code, so there is nothing to commit and no pre-flight to run. The next one, [Break it on purpose](/tutorials/break-it-on-purpose/), is the other project that changes nothing and teaches a great deal.
+
+<ProjectPager n={3} />
