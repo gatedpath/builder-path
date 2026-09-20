@@ -14,6 +14,7 @@ Node 22, npm. From this folder:
 
 ```
 npm ci
+npm run setup        # once, from a fresh clone: installs and builds the three packages the sample check type-checks
 npm run samples      # re-extract code samples from ../packages, ../phase-0, ../report
 npm run build        # check:samples, then astro build into dist/
 npm run check        # astro check

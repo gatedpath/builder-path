@@ -1,0 +1,12 @@
+# Installed and built things: made again by `npm install` and a build.
+node_modules/
+dist/
+.astro/
+
+# Secrets never belong in a repository. Use a Foundry keystore, never a key in a file.
+.env
+.env.*
+!.env.example
+
+# The operating system's clutter.
+.DS_Store

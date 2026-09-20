@@ -9,6 +9,7 @@
     "node": ">=22"
   },
   "scripts": {
+    "setup": "node scripts/setup-packages.mjs",
     "samples": "node scripts/extract-samples.mjs",
     "check:samples": "node scripts/check-samples.mjs",
     "check:errors": "node scripts/check-errors.mjs",
