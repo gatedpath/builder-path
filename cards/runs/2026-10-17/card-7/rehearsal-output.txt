@@ -1,0 +1,77 @@
+Card 7 rehearsal, 2026-10-17T16:04:48Z, Foundry Version: 1.7.1
+Anvil chain 31337, fork of 153, block 3052411, rpc http://127.0.0.1:8547
+GatedTicket 0x07AF11e412ed7C343603c0F4b35645f7870686Eb   ReceptorMock 0x37cA242a94945CdC3d3F155452a82Af6374bebD7   request id 18
+face value 1.000000000000000000 RBNT, resale cap 1.100000000000000000 RBNT (11000 bps), max supply 100, sales open: true
+organiser and door: Anvil account 7 0x14dC79964da2C08b23698B3D3cc7Ca32193d9955
+wallets: NeverIssued 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC | Valid 0x90F79bf6EB2c4f870365E785982E1f101E93b906 | Expired 0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65 | Revoked 0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc | WrongJurisdiction 0x976EA74026E726554dB657fA54763abd0C3a0aa9
+
+== 1. The five seeded wallets try to buy at face value
+ NeverIssued (0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC), mock status 0, canPurchase false:
+   refused as expected: NotEligible(address,uint64)  0x879342fb
+ Expired (0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65), mock status 2, canPurchase false:
+   refused as expected: NotEligible(address,uint64)  0x879342fb
+ Revoked (0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc), mock status 3, canPurchase false:
+   refused as expected: NotEligible(address,uint64)  0x879342fb
+ WrongJurisdiction (0x976EA74026E726554dB657fA54763abd0C3a0aa9), mock status 4, canPurchase false:
+   refused as expected: NotEligible(address,uint64)  0x879342fb
+ Valid (0x90F79bf6EB2c4f870365E785982E1f101E93b906), mock status 1, canPurchase true:
+   ok: status 0x1, block 3052412, gas 135081
+   ownerOf(0) = 0x90F79bf6EB2c4f870365E785982E1f101E93b906   minted = 1   contract balance 1.000000000000000000 RBNT
+
+== 2. Wrong price is refused (0.5 RBNT for a 1 RBNT ticket)
+   refused as expected: WrongPrice(uint256,uint256)  0x6871963e
+
+== 3. Resale over the cap: the holder lists ticket 0 at cap + 1 wei
+   refused as expected: AboveResaleCap(uint256,uint256)  0xc3b03ea2
+
+== 4. Resale at the cap: listed, then bought by a second verified wallet (Anvil account 8, set Valid on the mock)
+   ok: status 0x1, block 3052413, gas 72725
+   listings(0) = true 1100000000000000000 [1.1e18] 
+   buyer 0x23618e81e3f5cdf7f54c3d65f7fbc0abf5b21e8f mock status 1
+   before: seller 9990.928659237337662009 RBNT, buyer 10000.000000000000000000 RBNT
+   buyer pays the cap minus 1 wei first:
+   refused as expected: WrongPrice(uint256,uint256)  0x6871963e
+   buyer pays exactly the cap:
+   ok: status 0x1, block 3052415, gas 89487
+   after:  seller 9992.028659237337662009 RBNT, buyer 9996.464974339743718310 RBNT   ownerOf(0) = 0x23618e81E3f5cdF7f54C3d65f7FBc0aBf5B21E8f
+
+== 5. An unverified wallet cannot buy a resold ticket either
+   ok: status 0x1, block 3052416, gas 72725
+   refused as expected: NotEligible(address,uint64)  0x879342fb
+
+== 6. Resale under the cap: the first holder buys it back at 0.5 RBNT
+   ok: status 0x1, block 3052417, gas 89487
+   ownerOf(0) = 0x90F79bf6EB2c4f870365E785982E1f101E93b906
+
+== 7. A plain transferFrom is refused even between two verified wallets: the contract cannot see its price
+   refused as expected: TransferOnlyThroughResale(uint256)  0x259456d5
+
+== 8. The door checks ticket 0 in (Anvil account 7 holds DOOR_ROLE); a holder cannot
+   refused as expected: AccessControlUnauthorizedAccount(address,bytes32)  0xe2517d3f
+   ok: status 0x1, block 3052418, gas 54928
+   checkedIn(0) = true   isTransferable(0) = false
+
+== 9. After check-in nothing moves it: list, buy and transferFrom all refuse
+   refused as expected: TicketUsed(uint256)  0x1f5d53e3
+   refused as expected: NotListed(uint256)  0xd176cea0
+   refused as expected: TicketUsed(uint256)  0x1f5d53e3
+   a second check-in is refused too:
+   refused as expected: AlreadyCheckedIn(uint256)  0x9ad62359
+
+== 10. The organiser refunds the checked-in ticket 0 at face value; a holder cannot refund
+   refused as expected: AccessControlUnauthorizedAccount(address,bytes32)  0xe2517d3f
+   before: holder 9989.664320302671803277 RBNT, contract 1.000000000000000000 RBNT
+   ok: status 0x1, block 3052419, gas 57238
+   after:  holder 9990.664320302671803277 RBNT, contract 0.000000000000000000 RBNT, balanceOf(holder) = 0
+   refused as expected: ERC721NonexistentToken(uint256)  0x7e273289
+
+== 11. A refund reaches a holder whose credential has since been revoked (ticket 1)
+   ok: status 0x1, block 3052420, gas 157781
+   holder mock status now 3 (3 = Revoked); the holder can no longer buy:
+   refused as expected: NotEligible(address,uint64)  0x879342fb
+   but the refund still lands:
+   ok: status 0x1, block 3052422, gas 61728
+   balanceOf(holder) = 0, contract 0.000000000000000000 RBNT
+   holder restored to Valid for the web page: 1
+
+Done: 11 steps on Anvil chain 31337 (a fork of 153). Nothing was signed on a real network.

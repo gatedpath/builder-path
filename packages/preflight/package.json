@@ -1,6 +1,6 @@
 {
   "name": "@gatedpath/preflight",
-  "version": "0.2.0",
+  "version": "0.2.3",
   "description": "Pre-flight checks before deploying to Redbelly Network (151 mainnet, 153 testnet): chain ID, deployer verification, Safe admin, compiler pins, secrets in git history, RBNT balance, Slither report.",
   "license": "MIT",
   "repository": {
@@ -35,7 +35,7 @@
   ],
   "scripts": {
     "build": "node scripts/ensure-deps-built.mjs && tsc -p tsconfig.json && node -e \"for (const f of ['cli.js','doctor-cli.js','redbelly.js']) require('fs').chmodSync('dist/'+f,0o755)\"",
-    "test": "npm run build && node --test --test-reporter=spec --test-concurrency=1 test/unit.test.mjs test/preflight.test.mjs test/doctor.test.mjs test/gas.test.mjs test/ship.test.mjs",
+    "test": "npm run build && node --test --test-reporter=spec --test-concurrency=1 test/unit.test.mjs test/preflight.test.mjs test/doctor.test.mjs test/gas.test.mjs test/fees.test.mjs test/ship.test.mjs",
     "test:live": "npm run build && node --test --test-reporter=spec test/live.test.mjs",
     "prepack": "npm run build"
   },

@@ -53,7 +53,9 @@ test('every entry says what, why and the next step, and every network link stays
     assert.ok(f.measured.length > 10, `${f.kind} says where it was measured or what is pending`);
     if (f.status === 'pending') assert.match(f.measured, /not yet|pending/i);
   }
-  assert.deepEqual(failures.filter((f) => f.status === 'pending').map((f) => f.kind), []);
+  // One entry is allowed to stay pending: the 30-second resend was described by Redbelly in writing
+  // (12 October 2026) and has not yet happened to us on 151 or 153. It moves to measured when it does.
+  assert.deepEqual(failures.filter((f) => f.status === 'pending').map((f) => f.kind), ['no-receipt-after-30-seconds']);
   // `reported`: someone else saw it and said where; we have not. It must say so, name them and link.
   for (const f of failures.filter((x) => x.status === 'reported')) {
     assert.match(f.measured, /not captured by us|not seen by us/i, `${f.kind} must say we have not seen it ourselves`);

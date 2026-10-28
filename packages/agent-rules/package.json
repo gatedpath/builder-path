@@ -1,6 +1,6 @@
 {
   "name": "@gatedpath/agent-rules",
-  "version": "0.2.0",
+  "version": "0.2.3",
   "description": "One source of truth for Redbelly Network agent rules, rendered to CLAUDE.md, AGENTS.md, Cursor MDC, Copilot instructions, GEMINI.md, llms.txt and llms-full.txt, plus the one table of failure messages the MCP server, the frontend kit and the site share.",
   "license": "MIT",
   "repository": {

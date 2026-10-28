@@ -537,7 +537,7 @@ export function parseAstro(absPath, repoRoot) {
  */
 const DATA_FIELDS = {
   'src/data/tools.ts': ['summary', 'statusLabel'],
-  'src/data/cards.ts': ['outcome', 'learn', 'tip'],
+  'src/data/cards.ts': ['outcome', 'why', 'who', 'learn', 'tip'],
   'src/data/rules.ts': ['summary', 'what'],
   'src/data/tips.ts': ['tip'],
 };

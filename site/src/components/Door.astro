@@ -25,6 +25,8 @@ const { href, eyebrow, title, text } = Astro.props;
   }
   .rb-door:hover { border-color: var(--rb-color-hairline-strong); box-shadow: var(--rb-shadow-sm); }
   .rb-door:hover .rb-door__title { color: var(--rb-color-accent-high); text-decoration: underline; text-underline-offset: 0.2em; }
-  .rb-door__title { font-size: var(--sl-text-xl); font-weight: 600; line-height: 1.25; color: var(--rb-color-accent); }
+  /* On a door the eyebrow is the card's header, so it carries the card-title weight and the strong text colour. */
+  .rb-door .rb-eyebrow { font-weight: var(--rb-weight-card-title); font-size: var(--sl-text-xs); color: var(--rb-color-text-strong); }
+  .rb-door__title { font-size: var(--sl-text-xl); font-weight: var(--rb-weight-card-title); line-height: 1.25; color: var(--rb-color-accent); }
   .rb-door__text { font-size: var(--sl-text-sm); line-height: 1.5; color: var(--rb-color-text-muted); }
 </style>

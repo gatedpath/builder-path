@@ -1,0 +1,115 @@
+Gated liquidity pool rehearsal, 2026-10-17T22:15:36Z, chain 31337, fork block at start 3052540
+factory 0x07AF11e412ed7C343603c0F4b35645f7870686Eb  verifier 0x37cA242a94945CdC3d3F155452a82Af6374bebD7  request id 708  pair 0x902d7D8d9D86ecC64774D31Cb9f32147E97Bcda1
+token0 0x2aD7753d3A0f9b14e82AE37b49dCC8DdC66Ef236  token1 0xEF86CEc1CEf0C78E5725fA6Cc3E9929788bBde35
+wallets: Valid(3) 0x90F79bf6EB2c4f870365E785982E1f101E93b906  NeverIssued(2) 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC  Expired(4) 0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65  Revoked(5) 0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc  WrongJurisdiction(6) 0x976EA74026E726554dB657fA54763abd0C3a0aa9  unverified(8) 0x23618e81e3f5cdf7f54c3d65f7fbc0abf5b21e8f  deployer(7) 0x14dC79964da2C08b23698B3D3cc7Ca32193d9955
+factory.requestId() = 708; isVerifiedRecipient(Valid) = true; isVerifiedRecipient(unverified) = false
+
+== 1. Mint 1,000,000 of each pool token to every wallet (the mock tokens are open to anyone)
+   tx 0x406765ef3b201d8d2b54a69f05e81307515711b02d14dd03e5f6b4bea43e90dc gas 68415 status ok
+   tx 0x015fbfbf536b3848913d842b95fd3763e69f5c3d3f67d7f828ad08a7cbcb5cb5 gas 68415 status ok
+   tx 0x570775faa14af5c9e628a7e08c31f2de314472541db2d7e1152a56c95067d864 gas 51327 status ok
+   tx 0x50b6e4989bc8e309351140eab7edfdf08a005a0eb57d2fbe5619a51e109dfe93 gas 51327 status ok
+   tx 0x3b3abb7eb8b6b977410bd2adb9a49a7a0b1ec9d071b4fc141607174a0466b4bc gas 51327 status ok
+   tx 0xffc9f89fe5c01c478b0cb798e937fa410143e3fb89aadb4973ced14481fe48ca gas 51327 status ok
+   tx 0xdf15db65e3a478b11715bde57ed4fca2d86343b93353d41fb7aff5944218fad3 gas 51327 status ok
+   tx 0x45c8be2668ef65eb9ac3c92fdd967314fbcd50cf0975ef977f6e55b70e53d571 gas 51327 status ok
+   tx 0xd46c97d05951607d6778aab17a8449538a4c879ff3f1765b096630b6c189178b gas 51327 status ok
+   tx 0x049736ca49ce1623ea3616d85f9aa70ca2fe68ddb990598f39c8301845dc9539 gas 51327 status ok
+   tx 0x0160b5ab790e754125b130293d892b5133bad88bf5ce42af1826ae2648774e06 gas 51327 status ok
+   tx 0x57e108ca86e38a2faf1ce0946ceb843b5e9b9d698c56c0a44425f09e74a811dd gas 51327 status ok
+
+== 2. The Valid wallet adds liquidity: 100,000 of each token into the pair, then mint(self)
+   tx 0x179700213749ab35eeb3f18c8025dfd22e3458ed21f5cf0450ca54a5fc8a593c gas 51637 status ok
+   tx 0xb96b2a4c4c5245e9de2f2515e514da0da4d5878bd307870135814843edd19bce gas 51637 status ok
+   tx 0x75a591bc3a4febdc9513f48cdbedfddd720ef8afcdb2d0f1301d7aecaf7e243d gas 152597 status ok
+   LP balance of Valid: 99999999999999999999000   reserves: 100000000000000000000000 100000000000000000000000 1792275054 
+
+== 3. Pool entry refused in the four non-valid states (each sends 1,000 of each token in, is refused on mint, and the Valid wallet skims the deposit back to it)
+ - NeverIssued 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC (eligibilityStatus = 0)
+   tx 0x3c5dfa2c055ecfb810ec64f4ce51b5a7dfd509507716c5f0001b77c523d1fe2e gas 34525 status ok
+   tx 0x26aa2eb096c1213004794792633007b3212cb392697abc2db87d51ecf9646643 gas 34525 status ok
+   refused NotEligible(wallet, requestId) = 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC 708 
+   tx 0xc0b773a3387765429dace183a1d6c0133a86b3af5288cd7521df9b15e653aa28 gas 75411 status ok
+   LP balance of NeverIssued: 0; token0 balance back to 1000000000000000000000000
+ - Expired 0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65 (eligibilityStatus = 2)
+   tx 0xbd25d1c6f017f1610b1a9c445ef000dbf0dea9eee37032c09f9ebe1a188f0b79 gas 34525 status ok
+   tx 0xa8de8017108c011742a8706fe3b36820b1437cd3294e2dd7585f1c217bf19067 gas 34525 status ok
+   refused NotEligible(wallet, requestId) = 0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65 708 
+   tx 0xcb17889c5e1dd6682a790239c47c58f0b049e43841bdd7572977686cf9ac3ff2 gas 75423 status ok
+   LP balance of Expired: 0; token0 balance back to 1000000000000000000000000
+ - Revoked 0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc (eligibilityStatus = 3)
+   tx 0x2aed2d5969a1a8cd625de5d21a1456b3b9913721c2b6b6b12539318071bc9844 gas 34525 status ok
+   tx 0xfe98f0b08d9e4616abede2f5fb90730a911785e12bd0db7c0d5fd71f0495f405 gas 34525 status ok
+   refused NotEligible(wallet, requestId) = 0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc 708 
+   tx 0xa572fdd826ea74ec15f327060a6fb6cb7e0bf8ebd58a1ecb2903074b21484120 gas 75423 status ok
+   LP balance of Revoked: 0; token0 balance back to 1000000000000000000000000
+ - WrongJurisdiction 0x976EA74026E726554dB657fA54763abd0C3a0aa9 (eligibilityStatus = 4)
+   tx 0xef340c07e53d22ab20054857e4bba6a4011fccc4f4010d205869b6609e6582db gas 34525 status ok
+   tx 0xd212d94c1864a6ed156cbac3df70350f97ced7de98f57753d6278a947d99d1b5 gas 34525 status ok
+   refused NotEligible(wallet, requestId) = 0x976EA74026E726554dB657fA54763abd0C3a0aa9 708 
+   tx 0xe81eec0064599e3a5f9b783a6bd96e139a72374c956225c37d4e85c30b22ada5 gas 75423 status ok
+   LP balance of WrongJurisdiction: 0; token0 balance back to 1000000000000000000000000
+
+== 4. A swap by a verified wallet with no credential (NeverIssued): 1,000 token0 in, token1 out
+   tx 0x8eae25c4466076e6b638286463b64a11b63e08c830e30e1b0e963892de53d2b1 gas 34525 status ok
+   tx 0xf2745a62a92dd492cc1dd09b26d12c0e6009543f8a91f9a95d16a5fa7cc72545 gas 119189 status ok
+   token1 received: 987158034397061298850 (quoted 987158034397061298850)   reserves: 101000000000000000000000 99012841965602938701150 1792275063 
+
+== 5. The same swap with one more unit of output than the constant product allows
+   tx 0x4e64859fe47824a5964bc88a8031a3943579666c59fb4dbd5f7f3c91297783d9 gas 34525 status ok
+   refused Error(string) = "UniswapV2: K"
+   and at the quoted amount it goes through:
+   tx 0x89859e93b6abf43d8f5b2d00cb274db2c94efc2235d388da10d6ba163e6ef350 gas 84989 status ok
+
+== 6. Swap output to a wallet the network never verified (Anvil account 8) is refused, from a verified sender and from the unverified wallet itself
+   tx 0xb2b80085483268de5e5df61acfe27554a22232805ca0cf01cfdafdede26be960 gas 34525 status ok
+   refused NotVerified(wallet) = 0x23618e81E3f5cdF7f54C3d65f7FBc0aBf5B21E8f
+   refused NotVerified(wallet) = 0x23618e81E3f5cdF7f54C3d65f7FBc0aBf5B21E8f
+   (on 151 and 153 the chain refuses the unverified sender before the pair sees it; the fork does not enforce that, the pair does)
+   the unverified wallet's deposit is stranded until someone skims it to a verified wallet:
+   tx 0x4019756695daf083eb2d0f62608c5b380c683dec7242a1159f692fac60d83cca gas 69811 status ok
+
+== 7. Revoked and WrongJurisdiction wallets swap too: the credential gates liquidity, not trading
+   tx 0x1025966fd5900bb8ba65cfcef84a78c7c5c01bed5b2e2df73924f90b8a0607dd gas 34525 status ok
+   tx 0x98598930c06a82e04030c13d1a43fbb6d51259f7cd92fde251204199da2f3b71 gas 85001 status ok
+   tx 0xe8f2cce147519a16316686715d400e11fd7bc0d694242424bdf838b174d57f39 gas 34525 status ok
+   tx 0xc70a4547866efa66cdff0515f691703421e768c14f2d0f6e7fa1244b17811f19 gas 74053 status REVERTED
+
+== 8. A credential that expires after the position was opened: account 4 made Valid until now + 600 s, adds liquidity, time passes
+   tx 0xbeb5824546987345cc3c19d201ce0fcb579af455de6000d0a4d44c60668b53c2 gas 32445 status ok
+   eligibilityStatus(account 4) = 1 (1 = Valid)
+   tx 0xdbe2ff5f797cc22f62fe82691861bb505dc8f1f50f6d54d358076f00dcb6e612 gas 34537 status ok
+   tx 0xf35cf3c4fffaaf3ad6cfa2f56a7c95d0bf7cff4de7935a06ee1e18227cd390ba gas 34537 status ok
+   tx 0x331d375955b503d80fb35731ce4d1f90738cfc78a3963ef7d96fff8cc4bfac23 gas 104384 status ok
+   LP balance of account 4: 49069539666993143976493
+   601 s later: eligibilityStatus(account 4) = 2 (2 = Expired)
+   adding more is refused:
+   tx 0x5120bd93f228f74a808196e14016232f12e173ccd5792289e91c30ebf961ec2d gas 34513 status ok
+   tx 0x5a7680bcf2f081997cce6867ee5b4209334af0628f7ed8913cafd8a9e3606c7d gas 34513 status ok
+   refused NotEligible(wallet, requestId) = 0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65 708 
+   tx 0x8f63805f35955625d406d218d7b589e758602f658ea91ebe58f41f23dfefaea6 gas 75423 status ok
+   leaving is not: LP tokens into the pair, then burn(self)
+   tx 0xd28f56747ac76b31f505161e4a5985ba01e8be23aef2de583dbb7e4311c3ba86 gas 46805 status ok
+   tx 0x936aaf971de7fdfc2c0f9d2d764092ccce670f55a384ecb3c17ed07aceb8fd8c gas 108248 status ok
+   token0 back: 50099999999999999999999  token1 back: 48700778395669794511704  LP left: 0   reserves: 102100000000000000000001 99248492498959800791319 1792275676 
+
+== 9. The Valid wallet's credential is revoked after the fact: it cannot add, cannot hand its position to another non-wholesale wallet, can still swap and can still leave
+   tx 0x03ba5366e6605a54e1de987b188ea518ce78a71a6b9d0507a087040730e74cf9 gas 32447 status ok
+   eligibilityStatus(account 3) = 3 (3 = Revoked)
+   tx 0xfb9dec74160b029fd80eef592beb8f188f80243028f0f6052a698b99941b92eb gas 34513 status ok
+   tx 0x22795de83e762a5804952bdae191b04190d5a1fbe2c58f54fd66af9afd3da91a gas 34513 status ok
+   refused NotEligible(wallet, requestId) = 0x90F79bf6EB2c4f870365E785982E1f101E93b906 708 
+   refused NotEligible(wallet, requestId) = 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC 708 
+   tx 0x5f733f3e0b4b986a8592a1a5f2f2e08e91e073aadb7c2a7e8d9c9ce13affd027 gas 85132 status ok
+   (the 1 token0 sent in for the refused mint paid for that swap; the 1 token1 stays in the pool)
+   tx 0xde534ef0344ed27c20f1ef4e7982caf52e24ac9ff6b94b4f439ea825b788b682 gas 46805 status ok
+   tx 0x6b9b2b217552b0a0f182b5b9dfa09eb098311b59905fd0bee63ab175fa2ef129 gas 108248 status ok
+   LP left: 0   reserves after everyone left: 1022 993 1792275680    totalSupply (the locked MINIMUM_LIQUIDITY): 1000
+
+== 10. The gates on the log: EligibilityDenied is never emitted (every refusal reverts); PairCreated, Mint, Burn and Swap counts since block 3052540
+   PairCreated: 0
+   Mint: 2
+   Burn: 2
+   Swap: 4
+
+end of rehearsal, block 3052593, 2026-10-17T22:16:10Z

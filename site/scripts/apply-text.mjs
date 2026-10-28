@@ -47,7 +47,14 @@ for (const page of manifest.pages) {
 const edited = new Map();   // marker -> text
 const sources = new Map();  // marker -> which file it came from
 const origins = new Map();  // marker -> the paragraph a browser edit was written for
-for (const name of readdirSync(EDITS).sort()) {
+// Tooltips have a folder of their own (Tooltips/, one file per page). Its markers never repeat a
+// page file's, so the order between the two does not matter; it is read first only so that a loose
+// export from the offline site, read last, still overrides both.
+const TOOLTIP_DIR = 'Tooltips';
+const tooltipFiles = existsSync(join(EDITS, TOOLTIP_DIR))
+  ? readdirSync(join(EDITS, TOOLTIP_DIR)).filter((f) => f.endsWith('.txt')).sort().map((f) => `${TOOLTIP_DIR}/${f}`)
+  : [];
+for (const name of [...tooltipFiles, ...readdirSync(EDITS).sort()]) {
   if (!name.endsWith('.txt') || name === 'README.txt') continue;
   const body = readFileSync(join(EDITS, name), 'utf8');
   const found = readEdited(body);

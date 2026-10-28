@@ -1,0 +1,6 @@
+detectors total 8 on the three contracts 5
+- unused-return Medium | PropertyUnits._update(address,address,uint256[],uint256[]) (src/PropertyUnits.sol#169-183) ignores return value by _unitHistory[id][from].push(now_,SafeCast.toUint208(balanceOf(from,id))) (src/PropertyUnits.sol#177) 
+- unused-return Medium | PropertyUnits._update(address,address,uint256[],uint256[]) (src/PropertyUnits.sol#169-183) ignores return value by _totalHistory[id].push(now_,SafeCast.toUint208(totalSupply(id))) (src/PropertyUnits.sol#180) 
+- unused-return Medium | PropertyUnits._update(address,address,uint256[],uint256[]) (src/PropertyUnits.sol#169-183) ignores return value by _unitHistory[id][to].push(now_,SafeCast.toUint208(balanceOf(to,id))) (src/PropertyUnits.sol#178) 
+- timestamp Low | PropertyUnits.getPastTotalUnits(uint256,uint48) (src/PropertyUnits.sol#139-143) uses timestamp for comparisons Dangerous comparisons: - timepoint >= current (src/PropertyUnits.sol#141) 
+- timestamp Low | PropertyUnits.getPastUnits(uint256,address,uint48) (src/PropertyUnits.sol#132-136) uses timestamp for comparisons Dangerous comparisons: - timepoint >= current (src/PropertyUnits.sol#134) 

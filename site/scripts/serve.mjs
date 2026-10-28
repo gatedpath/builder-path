@@ -2,8 +2,8 @@
 // so several scripts can run at once on different ports. Astro 7's `astro preview` is a
 // background daemon and only one instance runs per project, which these scripts don't want.
 import { createServer } from 'node:http';
-import { createReadStream, existsSync, statSync } from 'node:fs';
-import { extname, join, normalize, resolve, dirname } from 'node:path';
+import { createReadStream, existsSync, readdirSync, statSync } from 'node:fs';
+import { extname, join, normalize, relative, resolve, dirname, sep } from 'node:path';
 import { createGzip } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 
@@ -29,6 +29,8 @@ export const PAGES = [
   { name: 'concepts-gas-model', path: '/concepts/gas-model/' },
   { name: 'concepts-identity-gate', path: '/concepts/identity-gate/' },
   { name: 'identity', path: '/identity/' },
+  { name: 'wallets', path: '/wallets/' },
+  { name: 'teams', path: '/teams/' },
   { name: 'agents', path: '/agents/' },
   { name: 'tutorials', path: '/tutorials/' },
   { name: 'project-change-the-gate', path: '/tutorials/change-the-gate/' },
@@ -56,6 +58,26 @@ const types = {
   '.wasm': 'application/wasm', '.pf_meta': 'application/octet-stream', '.pf_index': 'application/octet-stream', '.pf_fragment': 'application/octet-stream', '.pagefind': 'application/octet-stream', '.xml': 'application/xml',
 };
 const compressible = new Set(['.html', '.css', '.js', '.mjs', '.json', '.txt', '.md', '.mdc', '.svg', '.xml']);
+
+/**
+ * Every page the build wrote, read from dist/. The checks that must not miss a page use this and
+ * not PAGES above: the audit of 19 September 2026 found axe covering 26 of 38 pages, because the
+ * list is kept by hand and twelve pages had been added without it. PAGES still names what gets a
+ * screenshot, where a chosen set is the point.
+ */
+export function distRoutes() {
+  const dist = resolve(siteDir, 'dist');
+  const routes = [];
+  const walk = (dir) => {
+    for (const name of readdirSync(dir)) {
+      const p = join(dir, name);
+      if (statSync(p).isDirectory()) { if (name !== 'pagefind' && name !== '_astro') walk(p); }
+      else if (name === 'index.html') routes.push('/' + relative(dist, p).split(sep).join('/').replace(/index\.html$/, ''));
+    }
+  };
+  if (existsSync(dist)) walk(dist);
+  return routes.sort();
+}
 
 export async function serve(host = '127.0.0.1') {
   const dist = resolve(siteDir, 'dist');

@@ -1,10 +1,16 @@
 ---
 // A short tooltip on a label that a reader cannot decode on its own.
 //
-// No JavaScript: the trigger is a real button, the bubble is a sibling shown on hover and on
-// :focus-visible, and the button carries aria-describedby so a screen reader announces the text
-// without the bubble ever being visible. That covers mouse, keyboard and touch, because tapping a
-// button focuses it.
+// Showing it needs no JavaScript: the trigger is a real button, the bubble is a sibling shown on
+// hover and on :focus-visible, and the button carries aria-describedby so a screen reader announces
+// the text without the bubble ever being visible. That covers mouse, keyboard and touch, because
+// tapping a button focuses it.
+//
+// WCAG 1.4.13 asks two more things of content that appears on hover or focus (audit of 19 September
+// 2026). Hoverable: the pointer can move onto the bubble without it vanishing, so the hover rule is
+// on the wrapper and an invisible strip bridges the gap between trigger and bubble. Dismissible:
+// Escape closes it without moving the pointer or the focus, which is the one thing CSS cannot do,
+// so the script at the foot of this file does it. With scripts off, everything but Escape works.
 //
 // The id is passed in rather than generated, so two chips with the same words on one page cannot
 // collide and the markup is identical between builds.
@@ -46,7 +52,8 @@ const { id, text, class: cls, placement = 'top', side = 'left', narrow = 'sheet'
 </span>
 
 <style>
-  .rb-tip { position: relative; display: inline-flex; }
+  /* max-width so a long pill inside can wrap and does not push the page sideways. */
+  .rb-tip { position: relative; display: inline-flex; max-width: 100%; }
 
   .rb-tip__trigger {
     font: inherit;
@@ -104,11 +111,18 @@ const { id, text, class: cls, placement = 'top', side = 'left', narrow = 'sheet'
   .rb-tip__bubble[data-placement='top'] { bottom: calc(100% + 0.5rem); }
   .rb-tip__bubble[data-placement='bottom'] { top: calc(100% + 0.5rem); }
 
-  .rb-tip__trigger:hover + .rb-tip__bubble,
+  .rb-tip:hover > .rb-tip__bubble,
   .rb-tip__trigger:focus-visible + .rb-tip__bubble {
     opacity: 1;
     visibility: visible;
   }
+  /* The strip that lets a pointer cross from the trigger to the bubble. A hidden bubble takes no
+     pointer events, so the strip cannot open a tooltip by itself. */
+  .rb-tip__bubble::before { content: ''; position: absolute; left: 0; right: 0; height: 0.5rem; }
+  .rb-tip__bubble[data-placement='top']::before { top: 100%; }
+  .rb-tip__bubble[data-placement='bottom']::before { bottom: 100%; }
+  /* Escape was pressed: stay closed until the pointer leaves or the focus moves. */
+  .rb-tip[data-dismissed] > .rb-tip__bubble { opacity: 0; visibility: hidden; }
 
   /* A trigger in the right half of a narrow card would push a left-anchored bubble off the edge,
      so there it hangs from the right and grows inwards instead. */
@@ -129,5 +143,24 @@ const { id, text, class: cls, placement = 'top', side = 'left', narrow = 'sheet'
       max-width: none;
       font-size: var(--sl-text-xs);
     }
+    /* A sheet is nowhere near its trigger, so there is no gap to bridge. */
+    .rb-tip__bubble[data-narrow='sheet']::before { content: none; }
   }
 </style>
+
+<script>
+  // Escape closes whichever tooltip is showing, and it stays closed until the reader leaves it.
+  // "Leaves" is checked whenever the pointer or the focus lands anywhere else, not by a listener on
+  // the tooltip alone, so a tooltip can never be left closed for good by an event that did not fire.
+  const release = (event: Event) => {
+    for (const tip of document.querySelectorAll<HTMLElement>('.rb-tip[data-dismissed]')) {
+      if (!(event.target instanceof Node) || !tip.contains(event.target)) delete tip.dataset.dismissed;
+    }
+  };
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    for (const tip of document.querySelectorAll<HTMLElement>('.rb-tip:hover, .rb-tip:focus-within')) tip.dataset.dismissed = '';
+  });
+  document.addEventListener('pointerover', release);
+  document.addEventListener('focusin', release);
+</script>

@@ -1,0 +1,35 @@
+
+> web@0.1.0 typecheck
+> tsc --noEmit
+
+typecheck exit 0
+
+> web@0.1.0 build
+> next build
+
+▲ Next.js 16.3.5 (Turbopack)
+✓ Running next.config.ts took 690ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 2.8s
+  Running TypeScript ...
+  Finished TypeScript in 1596ms ...
+  Collecting page data using 7 workers ...
+  Generating static pages using 7 workers (0/6) ...
+  Generating static pages using 7 workers (1/6) 
+  Generating static pages using 7 workers (2/6) 
+  Generating static pages using 7 workers (4/6) 
+✓ Generating static pages using 7 workers (6/6) in 194ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /eligibility
+├ ○ /fees
+└ ○ /send
+
+
+○  (Static)  prerendered as static content
+
+build exit 0

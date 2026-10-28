@@ -1,0 +1,49 @@
+---
+title: What it costs
+description: The base fee, the feed price and what a transfer, an enable and a deploy cost right now in RBNT and US dollars, read from your browser; and two years of the same call on mainnet.
+lastVerified: '2026-10-17'
+---
+
+import ForAgents from '../../components/ForAgents.astro';
+import LiveFees from '../../components/LiveFees.astro';
+import VineAside from '../../components/VineAside.astro';
+import { LINKS } from '../../data/site';
+
+<ForAgents
+  page="What it costs"
+  facts={[
+    'Gas on this network is priced in US dollars: US$0.01 for a 21,000-gas transfer, converted to RBNT at execution from an on-chain price feed. The RBNT figure moves with the coin; the dollar figure does not.',
+    'The cards are live: your browser reads the latest block and the price feed from the public governors RPCs. Nothing is sent anywhere else and nothing is stored.',
+    'Reference gas figures are measured, not quoted: the recipient guard deploy (503,685 gas) and the enable call (2,154,375 gas) on 17 October 2026, the gated token deploy (1,971,486 gas) from the ship report the same day.',
+    'Enabling a wallet has cost about one US dollar since mainnet began in October 2024; in RBNT it has been 20, 4, 41, 212 and 568 at different dates. Never quote a cost in RBNT without its date.',
+    'The same figures on the command line, read-only, no key: npx -y -p @gatedpath/preflight redbelly fees [--chain 151|153] [--no-history] [--json], since 0.2.3 (run 2026-10-27 against the public registry and chain 153: both read in under four seconds).',
+  ]}
+/>
+
+Every number on this page is read from the chain while you look at it, and the ones that cannot be read live are measured and dated. That is the only honest way to answer "what does this cost", because on this network the answer in coins changes every day and the answer in dollars does not.
+
+## Right now
+
+<LiveFees />
+
+The gas figures in the cards are the ones a builder meets first: a plain transfer, deploying the recipient guard from [project 13](/tutorials/transfer-that-refuses-to-lose-money/), deploying the gated token from the [start page](/start/), and enabling a wallet on the network, which is the first thing anyone pays for here. I measured each on the day named beside it; none is a figure from a document.
+
+<VineAside href={LINKS.vineFees} label="Fees on Vine">
+Vine states the dollar price of gas and warns that most wallets mishandle fee information on Redbelly. The [gas model](/concepts/gas-model/) page has what that means for your code.
+</VineAside>
+
+## The same answer in your terminal
+
+Since version 0.2.3 of the tools the fee checker is also a command. `redbelly fees` reads the same head block, base fee and feed price from both chains, prints the four calls above in gas, RBNT and US cents through the same arithmetic, and on mainnet prints the enable call at the nine block heights below as a table; `--chain` limits it to one chain, `--no-history` skips the table and `--json` is for an agent. It is read-only and takes no key. I ran it from the public registry on 27 October 2026 (`npx -y -p @gatedpath/preflight redbelly fees --chain 153 --no-history`): testnet read in 3.4 seconds, the same four rows as the cards.
+
+## Why the two charts look so different
+
+They are the same call, enabling a wallet, priced at the base fee the chain reported at nine block heights from the first week of mainnet to today. In RBNT it has been 20, then 4, then 41, then 212, then 568. In dollars it has been about one dollar the whole time, because the network sets the base fee from the price feed so that gas costs a fixed amount in dollars. The coin moved; the price of the work did not. This is why a cost written in RBNT, in any guide including Redbelly's own, is stale the month after it is written, and why this site quotes gas and dollars and dates whatever it quotes.
+
+## What this is not
+
+It is not a wallet's gas estimate, which on this network is often wrong, and it is not a forecast. The feed price is whatever the feed said at its last update; if the feed time shown is far behind the head block, treat the dollar figure with care.
+
+## Where it comes from
+
+The reads are the latest block's base fee and `getLatestPrice()` on the price feed named by the bootstrap registry, through `@gatedpath/chains`. The reference gas figures are in the run records under `cards/runs/`. The history is `eth_getBlockByNumber` at the nine heights listed in the table. The dollar rate is Vine's US$0.01 per transfer ([research question 3](/research/)).

@@ -1,0 +1,63 @@
+# Distribution rehearsal on a LOCAL fork of Redbelly mainnet. Sat Oct 17 22:51:39 BST 2026
+rpc http://127.0.0.1:8558   chain id 31337   block 3228723
+register 0x0Eea5afF22b8B5e89CAdd84ed1a18b828404e392 (a real ERC-3643 register on mainnet; read only)
+holder table: 78 holders with a balance at snapshot block 3228698, total balance 75531283012000000000000000 (from <scratch>/holders-classA.json)
+deployer: Anvil account 7 0x14dC79964da2C08b23698B3D3cc7Ca32193d9955   administrator and payer: Anvil account 8 0x23618e81E3f5cdF7f54C3d65f7FBc0aBf5B21E8f
+
+== 1. the register is a register: identityRegistry() answers with a contract, and it is paused=true
+   identityRegistry 0x1618B203f432d3477408FD7683e69cB2012b01D8, code 3211 hex chars; name "CLASS A", totalSupply 75531283012000000000000000 [7.553e25]
+
+== 2. deploy RegisterDistributor through its script (the scaffold's pre-flight runs first)
+     RegisterDistributor: 0x1f5E9E9602bEb4D14c38952cB5504E4471E3328F
+   ONCHAIN EXECUTION COMPLETE & SUCCESSFUL.
+   RegisterDistributor 0x1f5e9e9602beb4d14c38952cb5504e4471e3328f
+
+== 3. deploy the mock stablecoin from account 7 and fund the administrator
+   MockStable (mAUD, 6 decimals) 0x9323d71E54CFFE145Ae15Ad711a5aD52255A7866
+   status 0x1 gasUsed 72887 block 3228726 tx 0xaab3b2adc5a004ee3bf103c95f5c513f771751ae1dabc20c7c140841e9f1ab4a
+   status 0x1 gasUsed 46366 block 3228727 tx 0xb9bff34324a57b9e9560ba68d20713aa43ff8376889ea40529fb5c6afa4f472e
+   administrator mAUD balance: 100000000000 [1e11]
+
+== 4. the administrator opens the distribution: 100000000000 units of mAUD across 78 holders of 0x0Eea5afF22b8B5e89CAdd84ed1a18b828404e392 at block 3228698
+   status 0x1 gasUsed 5557765 block 3228728 tx 0x1c34f29d27e4d93a8f4d5a1d99658393f8105acb9cb1ae093d8808e660d4efda
+   distribution 1: (0x23618e81E3f5cdF7f54C3d65f7FBc0aBf5B21E8f, 0x9323d71E54CFFE145Ae15Ad711a5aD52255A7866, 0x0Eea5afF22b8B5e89CAdd84ed1a18b828404e392, 3228698 [3.228e6], 100000000000 [1e11], 75531283012000000000000000 [7.553e25], 78, 0, 0, 0, 0, 0, false)
+   administrator mAUD balance after open (nothing moved): 100000000000 [1e11]
+
+== 5. one holder is put on the mock coin's deny list before paying, to rehearse a payment that fails part way: 0x0112b33dd542ac8a39013c5294bcda6b612360ed
+   status 0x1 gasUsed 44247 block 3228729 tx 0xb066b50e7d1be07969f08bacb7fcecb16892f1ffa3824e10c12471e937a965aa
+
+== 6. pay in batches of 40
+   pay(1, 40) from cursor 0:
+   status 0x1 gasUsed 2632159 block 3228730 tx 0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7
+   pay(1, 40) from cursor 40:
+   status 0x1 gasUsed 2446380 block 3228731 tx 0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d
+   2 pay transactions
+   distribution 1 after paying: (0x23618e81E3f5cdF7f54C3d65f7FBc0aBf5B21E8f, 0x9323d71E54CFFE145Ae15Ad711a5aD52255A7866, 0x0Eea5afF22b8B5e89CAdd84ed1a18b828404e392, 3228698 [3.228e6], 100000000000 [1e11], 75531283012000000000000000 [7.553e25], 78, 78, 99999999962 [9.999e10], 92219781925 [9.221e10], 77, 1, false)
+   (fields: payer, stablecoin, register, snapshotBlock, total, totalBalance, holderCount, cursor, due, paid, paidCount, failedCount, closed)
+
+== 7. the failed holder: status (0 Pending, 1 Paid, 2 Skipped, 3 Failed) = 3; taken off the deny list and retried
+   status 0x1 gasUsed 22400 block 3228732 tx 0x0175f96c9b820f77cb6905200db6dbf3b679ad63912b45d18b848a54b6093931
+   status 0x1 gasUsed 110719 block 3228733 tx 0xda3c318e71b19ba9e5725f67082a3fd1dbe4e93a74be236d5e59e4c84b04c31a
+   status now 1, mAUD balance 7780218037 [7.78e9]
+   status 0x1 gasUsed 51394 block 3228734 tx 0x3addf56a29911803f609f74ff34578a3e004776c3864a97fc511690f0964ff63
+
+== 8. check every holder's mAUD against total * balance / totalBalance, and sum them
+   78 holders checked, 0 mismatches; sum received 99999999962; dust 38 units stayed in the wallet
+   administrator mAUD balance now: 38 (the dust)
+
+== 9. the register was never touched: its Transfer log since block 3228723 and the largest holder's balance
+   register events since the rehearsal began: 0
+   0x597266f743d5a4c34a3b28c59f0ef2f78d91e41c register balance now 10152653923000000000000000 [1.015e25] (snapshot: 10152653923000000000000000)
+   is the distributor verified on the register's identity registry? false
+
+== 10. export the receipt
+[receipt] 78 rows written to <scratch>/rehearsal/receipt.csv (and .json)
+   rows: 78; by status:   78 Paid;
+   opened: {'block': 3228728, 'tx': '0x1c34f29d27e4d93a8f4d5a1d99658393f8105acb9cb1ae093d8808e660d4efda', 'payer': '0x23618e81e3f5cdf7f54c3d65f7fbc0abf5b21e8f', 'stablecoin': '0x9323d71e54cffe145ae15ad711a5ad52255a7866', 'register': '0x0eea5aff22b8b5e89cadd84ed1a18b828404e392', 'snapshotBlock': '3228698', 'total': '100000000000', 'holderCount': '78', 'totalBalance': '75531283012000000000000000'}
+   completed: {'block': 3228731, 'tx': '0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d', 'paid': '92219781925', 'paidCount': '77', 'failedCount': '1', 'dust': '38'}
+   closed: True
+
+done. Sat Oct 17 22:51:55 BST 2026
+real 16.53
+user 5.87
+sys 66.15

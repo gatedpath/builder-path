@@ -7,12 +7,13 @@ import Ext from './Ext.astro';
 import { failures } from '../../../packages/agent-rules/src/failures';
 import type { FailureEntry, FailureGroup } from '../../../packages/agent-rules/src/failures';
 import StatusPill from './StatusPill.astro';
+import { REPO } from '../data/site';
 
 const groups: Array<{ id: FailureGroup; heading: string; intro: string }> = [
   { id: 'contract', heading: 'The contract refused', intro: 'Custom errors from the Gated base. The selector is the first four bytes of the revert data; cast prints it, viem decodes it.' },
   { id: 'deploy-script', heading: 'The deploy script refused', intro: 'RedbellyDeployScript.sol reverts with a string before anything is broadcast. Each string below is the exact one.' },
   { id: 'preflight', heading: 'Pre-flight said fail', intro: 'One entry per check id in redbelly-preflight. The line on the terminal starts with fail and the id.' },
-  { id: 'network', heading: "The network's gate", intro: "permission.isAllowed is the one gate every wallet passes before it can send. Read it before you sign." },
+  { id: 'network', heading: "The network's gate", intro: "permission.isAllowed is the gate every wallet passes before it can send anything except the call that asks for access. Read it before you sign." },
   { id: 'wallet', heading: 'The wallet or the browser', intro: 'What viem and wagmi raise in a page, and the words the frontend kit shows instead.' },
   { id: 'forge', heading: 'forge', intro: '' },
   { id: 'cast', heading: 'cast and keystores', intro: 'Nothing here ever holds a key. A keystore name is a file under ~/.foundry/keystores that cast decrypts at the prompt.' },
@@ -58,6 +59,7 @@ const reported = failures.filter((f) => f.status === 'reported').length;
           <span>On this site: <a href={f.docsPage}>{f.docsPage}</a>. </span>
           <span>Recognised by {recognisedBy(f).length ? recognisedBy(f).join('; ') : 'the verifier\'s eligibilityStatus read, after a NotEligible revert'}. </span>
           <span>{f.status === 'measured' ? 'Seen: ' : f.status === 'reported' ? 'Reported: ' : 'Pending: '}{f.measured}</span>
+          {f.record && <span> <Ext href={`${REPO}/${f.record}`}>The record</Ext>.</span>}
           {f.reportedBy && <span> Source: <Ext href={f.reportedBy.url}>{f.reportedBy.who}</Ext>, {f.reportedBy.date}.</span>}
         </p>
       </article>

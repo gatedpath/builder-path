@@ -1,0 +1,15 @@
+snapshot block chosen: 3228698 (mainnet head at 22:45 BST); second run after adding the rate-limit backoff
+[holders] 0x0Eea5afF22b8B5e89CAdd84ed1a18b828404e392: scanning blocks 3059036 to 3228698 in windows of 100 (chain head 3228698)
+[holders] 200/1697 windows, 0 transfers, 0 addresses, 0 retries after a rate limit (35.2 s)
+[holders] 400/1697 windows, 0 transfers, 0 addresses, 0 retries after a rate limit (69.5 s)
+[holders] 600/1697 windows, 318 transfers, 78 addresses, 0 retries after a rate limit (104.4 s)
+[holders] 800/1697 windows, 526 transfers, 78 addresses, 0 retries after a rate limit (139.7 s)
+[holders] 1000/1697 windows, 526 transfers, 78 addresses, 0 retries after a rate limit (176.0 s)
+[holders] 1200/1697 windows, 526 transfers, 78 addresses, 0 retries after a rate limit (212.7 s)
+[holders] 1400/1697 windows, 526 transfers, 78 addresses, 0 retries after a rate limit (248.2 s)
+[holders] 1600/1697 windows, 526 transfers, 78 addresses, 0 retries after a rate limit (283.1 s)
+[holders] 1697/1697 windows, 526 transfers, 78 addresses, 0 retries after a rate limit (299.7 s)
+[holders] 78 holders with a balance at block 3228698, 0 at zero; total 75531283012000000000000000
+real 321.75
+user 4.19
+sys 0.67

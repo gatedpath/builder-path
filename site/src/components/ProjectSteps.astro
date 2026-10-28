@@ -3,13 +3,27 @@
 // progress line and the one small script on the page: ticks are kept in the reader's own browser
 // under `rb-project:<slug>`, never sent anywhere. With scripts off, or storage refused, the boxes
 // still tick and the page reads the same; they are just not remembered.
+//
+// A page whose slug is a card's slug also shows that card's two idea-pool answers (PLAN.md 20.8)
+// above its steps. They are read from data/cards.ts, never retyped here, so the card and its page
+// cannot disagree and the owner edits the words in one place. The guide pages under /agents-guide/
+// use this wrapper too; they match no card and show nothing.
+import { cards } from '../data/cards';
 interface Props { slug: string; title: string; backHref?: string; backLabel?: string }
 const { slug, title, backHref = '/tutorials/', backLabel = 'All projects' } = Astro.props;
+const card = cards.find((c) => c.slug === slug);
 ---
 
 <nav class="rb-project__back not-content" aria-label={`Back to ${backLabel}, top of page`}>
   <a href={backHref}>&larr; {backLabel}</a>
 </nav>
+
+{card && (
+  <div class="rb-project__pool not-content">
+    <p><span class="rb-project__pool-label">Why this network</span> {card.why}</p>
+    <p><span class="rb-project__pool-label">Who transacts</span> {card.who}</p>
+  </div>
+)}
 
 <div class="rb-project" data-project={slug}>
   <p class="rb-project__progress not-content" aria-live="polite">
@@ -59,6 +73,11 @@ const { slug, title, backHref = '/tutorials/', backLabel = 'All projects' } = As
   .rb-project__back a { color: var(--rb-color-accent); font-weight: 600; text-decoration: underline; text-underline-offset: 0.2em; }
   .rb-project__back span { color: var(--rb-color-text-muted); }
   .rb-project__back--end { margin-block: 2rem 0; padding-top: 1.25rem; border-top: 1px solid var(--rb-color-hairline); }
+  .rb-project__pool { margin: 0 0 1.5rem; padding: 1rem 1.25rem; border-radius: var(--rb-radius-lg); background: var(--rb-color-surface); font-size: 0.9375rem; line-height: 1.55; }
+  .rb-project__pool p { margin: 0; color: var(--rb-color-text); }
+  .rb-project__pool p + p { margin-top: 0.625rem; }
+  .rb-project__pool-label { font-weight: 600; color: var(--rb-color-text-strong); }
+  .rb-project__pool-label::after { content: ':'; }
   .rb-project__progress { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: center; margin: 0 0 1rem; font-size: var(--sl-text-sm); color: var(--rb-color-text-muted); }
   .rb-project__reset { padding: 0.25rem 0.625rem; border: 1px solid var(--rb-color-hairline-strong); border-radius: 999px; background: transparent; color: inherit; font: inherit; cursor: pointer; }
   .rb-project__reset:hover { border-color: var(--rb-color-accent); color: var(--rb-color-accent); }

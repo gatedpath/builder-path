@@ -3,12 +3,90 @@
 Whenever the site or one of the packages tells you something about Redbelly Network, this is where
 I got it, how I got it and when I checked. Where it says "measured", I made a read-only call against
 the public RPC or the Routescan API, and you can repeat it yourself: the scripts are in `phase-0/`
-and in the packages' live tests. I am not restating Redbelly's own docs here. For that, go to
-[Vine](https://vine.redbelly.network) and [docs.redbelly.network](https://docs.redbelly.network).
+and in the packages' live tests. Where it says "run", I signed a transaction on testnet 153 from my
+own verified wallet and the receipt is in the run record the row points at, under `cards/runs/`. I am
+not restating Redbelly's own docs here. For that, go to [Vine](https://vine.redbelly.network) and
+[docs.redbelly.network](https://docs.redbelly.network).
 
 This page is made from my working research log. That log contains correspondence and open
 questions, so it remains private, and a fact is only here if its source is something anyone can
-open.
+open. The newest checks are at the top. An older row stands as it was checked on its date; where a
+later row corrects it, the later row says so. Last brought up to date 28 October 2026.
+
+Two pages cited below have moved since I captured them: `docs.redbelly.network/pages/eligibility-sdk/`
+and `vine.redbelly.network/direct-support/` returned 404 on 25 October 2026. The rows that rest on
+them stand as read on their dates, and I will point them at the new addresses when I have found them.
+
+## Checked 2026-10-27
+
+The register explorer (card 17) built on a fresh 0.2.3 scaffold from npm and read mainnet live from a
+browser, with no wallet connected and nothing signed. The fee command run from the public registry.
+
+| Fact | Source | How it was reached | Confidence |
+|---|---|---|---|
+| All 44 ERC-20 contracts on mainnet that answered `identityRegistry()` with a contract on 12 October still do so at block 3,241,235 (20:47 UTC), every one T-REX "4.1.3"; the 44 came from Routescan's list of 527 ERC-20 contracts on 151, each asked by `eth_call` | `cards/runs/2026-10-27/card-17.md` and `card-17/live-read-151-transcript.md`; Routescan `/v2/network/mainnet/evm/151/erc20`, paged | measured | high as of the day; the test catches T-REX shapes only |
+| 38 of the 44 registers are registration-only (no trusted issuer, no required claim topic, so the issuer's act of registering a wallet is the whole gate); 6 are claims-gated by two issuers in all: `0x6B48…4B11` for topics 1 to 5 or 1 to 3 on four registers, `0x06f3…85c5` for topic 13 on two notes | same record, the per-register rows | measured | high as of the day |
+| 26 of the 44 are paused and 18 are not; two registers share one identity registry, and two more have two registries over one identity storage, so a wallet verified for one is verified for its sibling | same record, findings 2 and 3 | measured | high as of the day |
+| A holder count is not a view on T-REX: card 18 rebuilt one register's 78 holders from 526 Transfer events over 1,697 block windows (12 October's largest register, "CLASS A", `0x0Eea…e392`, paused on mainnet) | `cards/runs/2026-10-17/card-18/holders-classA-3228698.json` and `holders-run-output.txt` | measured | high for block 3,228,698 |
+| `redbelly fees` 0.2.3 from the public registry (`npx -y -p @gatedpath/preflight redbelly fees --chain 153 --no-history`) read testnet's head block, base fee, feed price and the four common calls in 3.4 seconds, the same four rows as the site's fee page; read-only, no key | the run, `packages/preflight` tests with a fake RPC | measured | high |
+| `npm create redbelly-dapp@latest` resolved 0.2.3 in 13 s, `npm install` 24 s, `contracts:install` 1 s, 68 contract tests in 3 s, `next build` 8 s | `cards/runs/2026-10-27/card-17/timings.txt` | measured | high for one machine |
+
+## Checked 2026-10-23 to 2026-10-26
+
+Six deploys of mine on testnet 153 and the use of four of them, every transaction signed from one
+verified wallet in a Foundry keystore. These rows are what the real network showed that a fork could
+not. Addresses and Routescan links are in the README.
+
+| Fact | Source | How it was reached | Confidence |
+|---|---|---|---|
+| A wallet enabled under an individual's credential can deploy contracts on 153; two contract creations from one wallet in one block were accepted (`GatedERC20` and `ReceptorMock`, block 3,055,910), as were a deploy plus an admin call in one block (block 3,056,726) and seven transactions from one wallet in one block (block 3,056,734) | `cards/runs/2026-10-23/scaffold-token.md`; `cards/runs/2026-10-17/card-7.md`, verdict of 25 October; `card-8.md`, "Route B on 153" | run | high |
+| Routescan's verify recipe holds for a contract with constructor arguments and for a contract under `lib/` resolved through a remapping: `forge verify-contract <addr> <path:Name> --verifier etherscan --verifier-url https://api.routescan.io/v2/network/testnet/evm/153/etherscan --etherscan-api-key verifyContract --chain 153 --compiler-version 0.8.30 --evm-version prague --num-of-optimizations 200 --constructor-args <from the record> --watch`, "Pass - Verified" after one "Pending in queue" each time; a second deployment of identical bytecode is reported "already verified" | the same records; Routescan `getsourcecode` | run | high |
+| The scaffold's token and its mock verifier: 2,675,097 gas across two contracts, 815.53 test RBNT at a base fee of 304,859.46 gwei, about US$1.27 at the feed price of the day; the gas report's estimate for the token (1,971,486) was within 0.05% of the receipt (1,972,293) | `cards/runs/2026-10-23/scaffold-token.md` | run | high |
+| The other deploys, from their receipts: `GrantEscrow` 1,476,223 gas, 450.04 test RBNT (block 3,055,920); a second `GatedERC20` through card 14's policy 1,972,293 gas, 601.27 (block 3,055,942); `InvoiceFinancing` and its mock stablecoin 1,608,707 gas, 502.66 (block 3,056,722); `GatedTicket` and its sale opening 2,467,014 gas, 770.85 (block 3,056,726) | `cards/runs/2026-10-17/card-9.md`, `card-14.md`, `card-8.md`, `card-7.md`, each verdict's dated section | run | high |
+| Foundry's dry-run "amount required" is about double the receipt, because it prices at twice the base fee as a ceiling (card 8: 2,091,318 gas estimated against 1,608,707 paid); Forge's closing "Total Paid" line disagreed with its own receipts three times. The receipts and the balance are the figure to trust | `cards/runs/2026-10-23/scaffold-token.md`; `card-8.md`, verdict of 25 October | run | high; cosmetic, Foundry's |
+| A plain transfer on 153: 21,000 gas, 6.40 test RBNT at the day's base fee, 1.0 US cent at the feed, the same figure the fee checker gives; through card 14's policy, 1 RBNT passed below the limit, 15 RBNT waited for a typed confirmation, 250 RBNT was refused over the limit, an "urgent" override was refused, and a send to `0x…dEaD` was refused because the network's gate says no | `cards/runs/2026-10-17/card-14.md`, verdict of 23 October, and its decision log | run | high |
+| A gated call's cost on the live path: `fund` 29,254 gas warm against about 76,000 on a fork's cold mock, `release` 79,527; a cold first `purchase` on the ticket 157,781 gas against 72,725 warm in the same session, so the first buyer of a sale pays about twice the gas of the second. Budget the cold figure | `card-8.md`, "Route B on 153"; `card-7.md`, "Live use on 153" | run | high for one network and one contract each |
+| The kit's Iden3 adapter works on 153 against a 2.x-shaped verifier, and a request id never set reads as nobody eligible through it; a role can be granted and read on chain for a wallet that has never been enabled on the network | `card-8.md`, "Route B on 153" | run | high |
+| A refund to a ticket holder whose credential has been revoked lands (74,659 gas), the burn-checks-nothing policy proven live; the gate is checked before the price on `buy` and `purchase`, so a stranger is refused `NotEligible` with no funds needed and the refusals can be read by `eth_call` from an empty address | `card-7.md`, "Live use on 153" | run | high |
+| The RPC alias `redbelly_testnet` only resolves inside the project's `foundry.toml`; run from another folder the deploy fails before the network with "Internal transport error" and nothing is sent | `card-8.md`, verdict of 25 October | run | high |
+
+## Checked 2026-10-17 and 2026-10-18
+
+The first contract of mine on a real network, the enable fee read across mainnet's history, the fee
+checker, and ten cards run on forks in one night.
+
+| Fact | Source | How it was reached | Confidence |
+|---|---|---|---|
+| `RecipientGuard` deployed on 153 at `0x017b98c2b39E26435f9ad3880101F9f1c5FDBE73`, block 3,052,324, 503,685 gas at 263,963.68 gwei (about 133 test RBNT), source verified on Routescan the same hour; it resolves the real testnet permission contract through the registry, reads its deployer as Permissioned and itself as Contract | `cards/runs/2026-10-10/card-13.md`, verdict of 17 October; `deployment-153-RecipientGuard.json` beside it | run | high |
+| One test RBNT sent through the guard to a verified wallet (block 3,052,326, 50,308 gas, `Sent` event read back); a send to an unverified recipient reverts `RecipientNotPermissioned`, selector `0xa7eda872`, simulated with `cast call --from` and nothing signed | same record | run, read | high |
+| `forge script ... --account <keystore-name>` without `--sender <address>` rehearses as Foundry's default sender, which fails `permission.isAllowed`, so the pre-flight inside the script reverts and nothing is broadcast. Every deploy command now carries `--sender` (0.2.2) | same record; the scaffold's README | run | high |
+| The faucet paid 500 test RBNT on one request; a first deploy of the scaffold's two contracts needs more than one claim at the day's base fee | `cast balance` before and after; the dry-run estimates in card 13's record | measured | high as of the day |
+| The enable call on mainnet (about 2.15 million gas) has cost about US$1.02 at every block height since genesis, while its RBNT count tracked the coin's price: 20.5 RBNT at block 204 (20 October 2024, base fee 9,524 gwei), 4.1 at blocks 400,000 to 2,000,000 (1,905 gwei), 41 at 2,400,000 (19,048), 212 at 2,800,000 (98,795), 296 at 3,100,000 (137,468), 567 to 570 at the head of 17 October 2026 (263,817) | `eth_getBlockByNumber` `baseFeePerGas` at each height; Routescan `txlist` on the permission contract, ascending; `cards/runs/2026-10-17/card-16.md` | measured, derived | high |
+| Base fee and feed price were identical on 151 and 153 at the minute of the read (264,403.37 gwei; US$0.001801 per RBNT, 13:38 UTC), so a call priced on testnet was priced on mainnet to the figure shown; the two feeds are separate contracts and could diverge | both chains' latest block and `getLatestPrice()`, read in a browser | measured | high for that minute |
+| A browser's first read of `governors.testnet.redbelly.network` can fail with a CORS error and a retry answers in about 4.5 s; from the command line both RPCs answer `OPTIONS` and `POST` with `access-control-allow-origin: *` | the fee checker's console; `curl` the same minute | observed | medium; a browser read of 153 needs a retry |
+| None of the three AUD stablecoins on mainnet refuses a contract sender: AUDM (Fireblocks ERC20F, verified source) gates by a deny-list registry and never looks at the caller; AUDD's implementation is unverified and its bytecode shows no gate; rAUD is plain OpenZeppelin. On a fork of mainnet a contract received, sent and pulled all three | `cards/runs/2026-10-17/card-18/stablecoin-read.md`, `mainnet-source-read.txt`, `stablecoin-probe-output.txt` | read, then a fork probe with nothing signed on the real network | high for the day; AUDD's gate is read from bytecode, not source |
+| `github.com/redbellynetwork/interface` is an untouched mirror of Uniswap's front-end monorepo (0 commits ahead, 95 behind, no Solidity, no mention of Redbelly); the organisation has no v2 or v3 core or periphery fork, so a pool here is Uniswap v2 core from upstream | `cards/runs/2026-10-17/card-10.md` | read | high |
+| `eth_estimateGas` under-estimates the first Uniswap v2 swap in a new second by about 44,000 gas, because the price accumulators are not written in the estimate; on blocks on demand that is every swap, so a web app that swaps here needs a gas margin | `card-10/rehearsal-output-run3-out-of-gas.txt` | observed on a fork of 153 | medium; one network, one pair |
+| The reference ERC-3643 suite (T-REX 4.1.3, ONCHAINID 2.2.1) pins solc 0.8.17 exactly, so the pre-flight's "pins 0.8.30 and Prague" check fails on any project that vendors it; deploying the whole suite costs 22,862,717 gas, about US$10.89 and about 6,000 test RBNT at the day's price | `cards/runs/2026-10-17/card-15.md` | fork | high |
+| Ten cards run on fresh 0.2.1 scaffolds on local forks between 17 and 18 October, one agent each, every one proven on the fork and not further; tests 88, 95, 89, 89, 68, 88, 104, 100, 31 and 84 | `cards/runs/2026-10-17/card-{6,7,8,9,14,10,11,12,15,18}.md` | run on forks | high |
+
+## Checked 2026-09-23
+
+Every paper on Redbelly's research page and both company documents, read in full. No throughput or
+latency figure from any of them is used on the site; the rows are the properties the pages rest on.
+
+| Fact | Source | How it was reached | Confidence |
+|---|---|---|---|
+| DBFT is leaderless and deterministic and solves consensus under partial synchrony with fewer than a third of nodes faulty; the paper's proofs and measurements are in a companion technical report | Crain, Gramoli, Larrea, Raynal, *DBFT*, IEEE NCA 2018 | paper, read in full | high |
+| The binary consensus at the heart of DBFT is model-checked as pseudocode for any number of nodes with fewer than a third faulty: safety unconditionally, liveness under a fairness assumption; the node software, the EVM and a dApp's contract are outside the proof | Bertrand, Gramoli, Konnov, Lazić, Tholoniat, Widder, *Holistic Verification of Blockchain Consensus*, DISC 2022 | paper, read in full | high |
+| Above a third faulty, honest nodes end up holding signed proof naming at least a third of the guilty; the proof is exchanged among consensus nodes, not handed to clients | Civit, Gilbert, Gramoli, *Polygraph*, ICDCS 2021 | paper, read in full | high |
+| The design behind "tolerates a colluding majority": above a third faulty the chain forks, the guilty are excluded on proofs of fraud, new members included from a pool, branches merged and state recomputed; its payment design treats a transaction as final only at a block depth and can revert a contract's returned state with a reimbursement | Ranchal-Pedrosa, Gramoli, *ZLB*, DSN 2024 | paper, read in full | high; which phases the deployed network runs is not stated by Redbelly |
+| The EVM chain the network runs is geth-derived; a transaction is validated once by the node it was sent to and travels only inside proposed blocks, so a transaction sent only to a node that declines it is not included and the client resends | Tennakoon, Hua, Gramoli, *Smart Redbelly Blockchain*, IPDPS 2023, and its arXiv version | paper, read in full | high for the research system; whether the deployed network keeps it exactly has been asked of Redbelly |
+| Redbelly's own description: consensus nodes and separate SEVM nodes; a transaction is final when it is in a block; the wallet sends to one node and may have to resend, and reads by fetching f + 1 identical copies from several SEVM nodes; governors elected by sitting governors; reconfiguration, upgrade and a history-rewrite function as built-in contracts; ordering inside a super block by hash or nonce in this version | *Redbelly Blockchain: a Combination of Recent Advances*, Bulletin of the EATCS 137, 2022, republished as the Redbelly Network Yellow Paper v1.0 (file dated November 2024) | company document, read in full | high as their statement |
+| The whitepaper confirms the SEVM carries the validation reduction and names two staked node roles; it names a Policy SDK, a First Party Oracle SDK, an MEV mitigation and bridged BTC that the site does not cover; its throughput sentence cites the 2018 DBFT paper, which contains no measurements | *Redbelly Network: An accountable data layer for AI powered financial services*, 28 August 2025 | company document, read in full | high as their claim; no number taken from it |
+| The only published test of the shipped node (version 0.36.2): it tolerated the crashes it is designed for and recovered from a partition; trusting a single node "brings the number of tolerated Byzantine faults to zero"; Redbelly's recommended client cross-checks reads across several nodes (credence.js); submitting to several nodes made it faster | *Stabl*, Middleware 2025 | paper, read in full | high for the tested version |
+| Four fair-ordering designs from the founder's group; the whitepaper cites Lyra and AOAB for MEV mitigation; fair ordering alone does not prevent front-running without commit-reveal (Aion's own words); AOAB's guarantee covers only transactions that do not arrive close together; none is confirmed as deployed | Aion, ESORICS 2023; fair separability, ESORICS 2024; Lyra, IPDPS 2023; AOAB, DSN 2024 | papers, read in full | high for the designs; deployment not stated |
+| Diablo benchmarks six chains, not Redbelly, and records that the geth-derived EVM has no hard per-transaction gas cap where three other chains do | Diablo, EuroSys 2023 | paper, read in full | high |
 
 ## Checked 2026-09-20
 

@@ -1,0 +1,27 @@
+22:46:07 fork start
+
+> dev
+> node scripts/dev.mjs --no-web --port 8555
+
+[dev] anvil --port 8555 --chain-id 31337 --silent --fork-url https://governors.testnet.redbelly.network
+[dev] anvil ready, forked 153 at block 3052519 (5.9 s)
+[dev] forge build (0.1 s)
+[dev] permission gate mocked at 0x519ba1b48D571FD92FAF6FE4D20fe74Ca435B690; deployer and the five wallets allowed (7.6 s)
+[dev] deployed GatedExample 0x07AF11e412ed7C343603c0F4b35645f7870686Eb with ReceptorMock 0x37cA242a94945CdC3d3F155452a82Af6374bebD7, request id 18 (the deploy script's default) (5.8 s)
+[dev] seeded five wallets (1.9 s)
+[dev] ready in 21.4 s
+Local loop ready: Anvil chain 31337 (fork of 153 at block 3052519) at http://127.0.0.1:8555
+GatedExample 0x07AF11e412ed7C343603c0F4b35645f7870686Eb   verifier (ReceptorMock) 0x37cA242a94945CdC3d3F155452a82Af6374bebD7   request id 18
+deployer and admin: Anvil account 7 0x14dC79964da2C08b23698B3D3cc7Ca32193d9955 (accounts 0 and 1 are never used)
+
+Wallet  State              Address                                     Impersonate (cast)
+------  -----------------  ------------------------------------------  ------------------------------------------------------------------------------------------------------------
+2       NeverIssued        0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC  cast rpc anvil_impersonateAccount 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC --rpc-url http://127.0.0.1:8555
+3       Valid              0x90F79bf6EB2c4f870365E785982E1f101E93b906  cast rpc anvil_impersonateAccount 0x90F79bf6EB2c4f870365E785982E1f101E93b906 --rpc-url http://127.0.0.1:8555
+4       Expired            0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65  cast rpc anvil_impersonateAccount 0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65 --rpc-url http://127.0.0.1:8555
+5       Revoked            0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc  cast rpc anvil_impersonateAccount 0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc --rpc-url http://127.0.0.1:8555
+6       WrongJurisdiction  0x976EA74026E726554dB657fA54763abd0C3a0aa9  cast rpc anvil_impersonateAccount 0x976EA74026E726554dB657fA54763abd0C3a0aa9 --rpc-url http://127.0.0.1:8555
+
+States are per request id 18; change one with: cast send 0x37cA242a94945CdC3d3F155452a82Af6374bebD7 "setStatus(address,uint64,uint8)" <wallet> 18 <0-4> --unlocked --from 0x14dC79964da2C08b23698B3D3cc7Ca32193d9955 --rpc-url http://127.0.0.1:8555
+Record: deployments/local.json (account indices, never a key).
+Ctrl-C stops Anvil.

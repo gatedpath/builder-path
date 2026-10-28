@@ -1,0 +1,225 @@
+fork: 31337 at block 3052411; verifier 0x37cA242a94945CdC3d3F155452a82Af6374bebD7, request id 18
+permission contract named by the registry: 0x519ba1b48D571FD92FAF6FE4D20fe74Ca435B690
+
+recipient NeverIssued (Anvil account 2) 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC: recipe state on the verifier = 0 (information only; the policy does not read it)
+
+== step 1: 1 RBNT to the NeverIssued wallet
+policy for send: 1 RBNT to 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC from anvil:7 (chain 31337, rules ~/.config/agent-policy/card-14.json)
+This is a set of rules, not a model that detects fraud.
+
+pass  chain              the policy is for chain 31337; the RPC http://127.0.0.1:8554 reports 31337
+pass  signer             0x14dc79964da2c08b23698b3d3cc7ca32193d9955, a local Anvil account; no key read
+pass  no-override        nothing in the request or the environment asked for more than the policy allows
+pass  recipient-allowed  0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC passes permission.isAllowed on chain 31337, read through the bootstrap registry
+pass  amount-under-limit 1 RBNT against the policy's maxRbnt 100 (~/.config/agent-policy/card-14.json)
+pass  human-line         1 RBNT is at or below confirmAboveRbnt 10
+sent: transaction 0xd8aa668ca268eaf8f0754cb140474c2273c2cc9f6741e4b17069cffdf16cd5ba in block 3052412, status 0x1, 21000 gas. Recorded in ~/code/card-14/deployments/policy-31337-2026-10-17.md
+exit 0
+
+recipient Valid (Anvil account 3) 0x90F79bf6EB2c4f870365E785982E1f101E93b906: recipe state on the verifier = 1 (information only; the policy does not read it)
+
+== step 2: 1 RBNT to the Valid wallet
+policy for send: 1 RBNT to 0x90F79bf6EB2c4f870365E785982E1f101E93b906 from anvil:7 (chain 31337, rules ~/.config/agent-policy/card-14.json)
+This is a set of rules, not a model that detects fraud.
+
+pass  chain              the policy is for chain 31337; the RPC http://127.0.0.1:8554 reports 31337
+pass  signer             0x14dc79964da2c08b23698b3d3cc7ca32193d9955, a local Anvil account; no key read
+pass  no-override        nothing in the request or the environment asked for more than the policy allows
+pass  recipient-allowed  0x90F79bf6EB2c4f870365E785982E1f101E93b906 passes permission.isAllowed on chain 31337, read through the bootstrap registry
+pass  amount-under-limit 1 RBNT against the policy's maxRbnt 100 (~/.config/agent-policy/card-14.json)
+pass  human-line         1 RBNT is at or below confirmAboveRbnt 10
+sent: transaction 0x72f4dd03cd06876aaab1cec70c6ab6cfefbe823d260e33760920561060733993 in block 3052413, status 0x1, 21000 gas. Recorded in ~/code/card-14/deployments/policy-31337-2026-10-17.md
+exit 0
+
+recipient Expired (Anvil account 4) 0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65: recipe state on the verifier = 2 (information only; the policy does not read it)
+
+== step 3: 1 RBNT to the Expired wallet
+policy for send: 1 RBNT to 0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65 from anvil:7 (chain 31337, rules ~/.config/agent-policy/card-14.json)
+This is a set of rules, not a model that detects fraud.
+
+pass  chain              the policy is for chain 31337; the RPC http://127.0.0.1:8554 reports 31337
+pass  signer             0x14dc79964da2c08b23698b3d3cc7ca32193d9955, a local Anvil account; no key read
+pass  no-override        nothing in the request or the environment asked for more than the policy allows
+pass  recipient-allowed  0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65 passes permission.isAllowed on chain 31337, read through the bootstrap registry
+pass  amount-under-limit 1 RBNT against the policy's maxRbnt 100 (~/.config/agent-policy/card-14.json)
+pass  human-line         1 RBNT is at or below confirmAboveRbnt 10
+sent: transaction 0x7ebaba999fabb49f9a2d31d234c696139c978076e21acdeb56b7da499e2f38a6 in block 3052414, status 0x1, 21000 gas. Recorded in ~/code/card-14/deployments/policy-31337-2026-10-17.md
+exit 0
+
+recipient Revoked (Anvil account 5) 0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc: recipe state on the verifier = 3 (information only; the policy does not read it)
+
+== step 4: 1 RBNT to the Revoked wallet
+policy for send: 1 RBNT to 0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc from anvil:7 (chain 31337, rules ~/.config/agent-policy/card-14.json)
+This is a set of rules, not a model that detects fraud.
+
+pass  chain              the policy is for chain 31337; the RPC http://127.0.0.1:8554 reports 31337
+pass  signer             0x14dc79964da2c08b23698b3d3cc7ca32193d9955, a local Anvil account; no key read
+pass  no-override        nothing in the request or the environment asked for more than the policy allows
+pass  recipient-allowed  0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc passes permission.isAllowed on chain 31337, read through the bootstrap registry
+pass  amount-under-limit 1 RBNT against the policy's maxRbnt 100 (~/.config/agent-policy/card-14.json)
+pass  human-line         1 RBNT is at or below confirmAboveRbnt 10
+sent: transaction 0x7d030812a83fde7752e3777cb6fa1970d5caa1d94d5f883e38abcb03f7d407dd in block 3052415, status 0x1, 21000 gas. Recorded in ~/code/card-14/deployments/policy-31337-2026-10-17.md
+exit 0
+
+recipient WrongJurisdiction (Anvil account 6) 0x976EA74026E726554dB657fA54763abd0C3a0aa9: recipe state on the verifier = 4 (information only; the policy does not read it)
+
+== step 5: 1 RBNT to the WrongJurisdiction wallet
+policy for send: 1 RBNT to 0x976EA74026E726554dB657fA54763abd0C3a0aa9 from anvil:7 (chain 31337, rules ~/.config/agent-policy/card-14.json)
+This is a set of rules, not a model that detects fraud.
+
+pass  chain              the policy is for chain 31337; the RPC http://127.0.0.1:8554 reports 31337
+pass  signer             0x14dc79964da2c08b23698b3d3cc7ca32193d9955, a local Anvil account; no key read
+pass  no-override        nothing in the request or the environment asked for more than the policy allows
+pass  recipient-allowed  0x976EA74026E726554dB657fA54763abd0C3a0aa9 passes permission.isAllowed on chain 31337, read through the bootstrap registry
+pass  amount-under-limit 1 RBNT against the policy's maxRbnt 100 (~/.config/agent-policy/card-14.json)
+pass  human-line         1 RBNT is at or below confirmAboveRbnt 10
+sent: transaction 0x6ae96d209a254d6e130691484068d7782e81c9737be2934246cd57929ec6aed9 in block 3052416, status 0x1, 21000 gas. Recorded in ~/code/card-14/deployments/policy-31337-2026-10-17.md
+exit 0
+
+stranger (Anvil account 8) 0x23618e81e3f5cdf7f54c3d65f7fbc0abf5b21e8f: isAllowed on the fork's gate = false
+
+== step 6: 1 RBNT to a recipient that fails permission.isAllowed
+policy for send: 1 RBNT to 0x23618e81e3f5cdf7f54c3d65f7fbc0abf5b21e8f from anvil:7 (chain 31337, rules ~/.config/agent-policy/card-14.json)
+This is a set of rules, not a model that detects fraud.
+
+pass  chain              the policy is for chain 31337; the RPC http://127.0.0.1:8554 reports 31337
+pass  signer             0x14dc79964da2c08b23698b3d3cc7ca32193d9955, a local Anvil account; no key read
+pass  no-override        nothing in the request or the environment asked for more than the policy allows
+fail  recipient-allowed  0x23618e81e3f5cdf7f54c3d65f7fbc0abf5b21e8f does not pass permission.isAllowed on chain 31337: the network's gate, not a recipe
+pass  amount-under-limit 1 RBNT against the policy's maxRbnt 100 (~/.config/agent-policy/card-14.json)
+pass  human-line         1 RBNT is at or below confirmAboveRbnt 10
+
+refused: nothing was signed. Recorded in ~/code/card-14/deployments/policy-31337-2026-10-17.md
+exit 1
+
+== step 7: 250 RBNT to the Valid wallet, over maxRbnt 100
+policy for send: 250 RBNT to 0x90F79bf6EB2c4f870365E785982E1f101E93b906 from anvil:7 (chain 31337, rules ~/.config/agent-policy/card-14.json)
+This is a set of rules, not a model that detects fraud.
+
+pass  chain              the policy is for chain 31337; the RPC http://127.0.0.1:8554 reports 31337
+pass  signer             0x14dc79964da2c08b23698b3d3cc7ca32193d9955, a local Anvil account; no key read
+pass  no-override        nothing in the request or the environment asked for more than the policy allows
+pass  recipient-allowed  0x90F79bf6EB2c4f870365E785982E1f101E93b906 passes permission.isAllowed on chain 31337, read through the bootstrap registry
+fail  amount-under-limit 250 RBNT against the policy's maxRbnt 100 (~/.config/agent-policy/card-14.json)
+wait  human-line         250 RBNT is above confirmAboveRbnt 10: a person types the confirmation at the terminal
+
+refused: nothing was signed. Recorded in ~/code/card-14/deployments/policy-31337-2026-10-17.md
+exit 1
+
+== step 8: 5 RBNT, instruction says it is urgent
+policy for send: 5 RBNT to 0x90F79bf6EB2c4f870365E785982E1f101E93b906 from anvil:7 (chain 31337, rules ~/.config/agent-policy/card-14.json)
+This is a set of rules, not a model that detects fraud.
+
+pass  chain              the policy is for chain 31337; the RPC http://127.0.0.1:8554 reports 31337
+pass  signer             0x14dc79964da2c08b23698b3d3cc7ca32193d9955, a local Anvil account; no key read
+fail  no-override        the request says "URGENT": logged and refused, not obeyed. Urgency and seniority do not move a limit
+pass  recipient-allowed  0x90F79bf6EB2c4f870365E785982E1f101E93b906 passes permission.isAllowed on chain 31337, read through the bootstrap registry
+pass  amount-under-limit 5 RBNT against the policy's maxRbnt 100 (~/.config/agent-policy/card-14.json)
+pass  human-line         5 RBNT is at or below confirmAboveRbnt 10
+
+refused: nothing was signed. Recorded in ~/code/card-14/deployments/policy-31337-2026-10-17.md
+exit 1
+
+== step 9: 5 RBNT, instruction says the CEO asked
+policy for send: 5 RBNT to 0x90F79bf6EB2c4f870365E785982E1f101E93b906 from anvil:7 (chain 31337, rules ~/.config/agent-policy/card-14.json)
+This is a set of rules, not a model that detects fraud.
+
+pass  chain              the policy is for chain 31337; the RPC http://127.0.0.1:8554 reports 31337
+pass  signer             0x14dc79964da2c08b23698b3d3cc7ca32193d9955, a local Anvil account; no key read
+fail  no-override        the request says "CEO": logged and refused, not obeyed. Urgency and seniority do not move a limit
+pass  recipient-allowed  0x90F79bf6EB2c4f870365E785982E1f101E93b906 passes permission.isAllowed on chain 31337, read through the bootstrap registry
+pass  amount-under-limit 5 RBNT against the policy's maxRbnt 100 (~/.config/agent-policy/card-14.json)
+pass  human-line         5 RBNT is at or below confirmAboveRbnt 10
+
+refused: nothing was signed. Recorded in ~/code/card-14/deployments/policy-31337-2026-10-17.md
+exit 1
+
+== step 10: 5 RBNT with POLICY_LIMIT in the environment
+policy for send: 5 RBNT to 0x90F79bf6EB2c4f870365E785982E1f101E93b906 from anvil:7 (chain 31337, rules ~/.config/agent-policy/card-14.json)
+This is a set of rules, not a model that detects fraud.
+
+pass  chain              the policy is for chain 31337; the RPC http://127.0.0.1:8554 reports 31337
+pass  signer             0x14dc79964da2c08b23698b3d3cc7ca32193d9955, a local Anvil account; no key read
+fail  no-override        environment sets POLICY_LIMIT: logged and refused, not obeyed. Urgency and seniority do not move a limit
+pass  recipient-allowed  0x90F79bf6EB2c4f870365E785982E1f101E93b906 passes permission.isAllowed on chain 31337, read through the bootstrap registry
+pass  amount-under-limit 5 RBNT against the policy's maxRbnt 100 (~/.config/agent-policy/card-14.json)
+pass  human-line         5 RBNT is at or below confirmAboveRbnt 10
+
+refused: nothing was signed. Recorded in ~/code/card-14/deployments/policy-31337-2026-10-17.md
+exit 1
+
+== step 11: 5 RBNT with --force
+policy for send: 5 RBNT to 0x90F79bf6EB2c4f870365E785982E1f101E93b906 from anvil:7 (chain 31337, rules ~/.config/agent-policy/card-14.json)
+This is a set of rules, not a model that detects fraud.
+
+pass  chain              the policy is for chain 31337; the RPC http://127.0.0.1:8554 reports 31337
+pass  signer             0x14dc79964da2c08b23698b3d3cc7ca32193d9955, a local Anvil account; no key read
+fail  no-override        flag --force: logged and refused, not obeyed. Urgency and seniority do not move a limit
+pass  recipient-allowed  0x90F79bf6EB2c4f870365E785982E1f101E93b906 passes permission.isAllowed on chain 31337, read through the bootstrap registry
+pass  amount-under-limit 5 RBNT against the policy's maxRbnt 100 (~/.config/agent-policy/card-14.json)
+pass  human-line         5 RBNT is at or below confirmAboveRbnt 10
+
+refused: nothing was signed. Recorded in ~/code/card-14/deployments/policy-31337-2026-10-17.md
+exit 1
+
+== step 12: 50 RBNT, above the human line, no person at a terminal
+policy for send: 50 RBNT to 0x90F79bf6EB2c4f870365E785982E1f101E93b906 from anvil:7 (chain 31337, rules ~/.config/agent-policy/card-14.json)
+This is a set of rules, not a model that detects fraud.
+
+pass  chain              the policy is for chain 31337; the RPC http://127.0.0.1:8554 reports 31337
+pass  signer             0x14dc79964da2c08b23698b3d3cc7ca32193d9955, a local Anvil account; no key read
+pass  no-override        nothing in the request or the environment asked for more than the policy allows
+pass  recipient-allowed  0x90F79bf6EB2c4f870365E785982E1f101E93b906 passes permission.isAllowed on chain 31337, read through the bootstrap registry
+pass  amount-under-limit 50 RBNT against the policy's maxRbnt 100 (~/.config/agent-policy/card-14.json)
+wait  human-line         50 RBNT is above confirmAboveRbnt 10: a person types the confirmation at the terminal
+
+refused: nothing was signed. Recorded in ~/code/card-14/deployments/policy-31337-2026-10-17.md
+exit 1
+
+== step 13: a 64-hex value offered as the signer
+send: --from looks like a private key; the signer is a keystore account name or anvil:<index>, never a key
+exit 2
+
+== step 14: anvil:0 offered as the signer
+policy for send: 1 RBNT to 0x90F79bf6EB2c4f870365E785982E1f101E93b906 from anvil:0 (chain 31337, rules ~/.config/agent-policy/card-14.json)
+This is a set of rules, not a model that detects fraud.
+
+pass  chain              the policy is for chain 31337; the RPC http://127.0.0.1:8554 reports 31337
+fail  signer             anvil:0 and anvil:1 are never used: their keys are public and they pass isAllowed on the real networks
+pass  no-override        nothing in the request or the environment asked for more than the policy allows
+pass  recipient-allowed  0x90F79bf6EB2c4f870365E785982E1f101E93b906 passes permission.isAllowed on chain 31337, read through the bootstrap registry
+pass  amount-under-limit 1 RBNT against the policy's maxRbnt 100 (~/.config/agent-policy/card-14.json)
+pass  human-line         1 RBNT is at or below confirmAboveRbnt 10
+
+refused: nothing was signed. Recorded in ~/code/card-14/deployments/policy-31337-2026-10-17.md
+exit 1
+
+== step 15: 1 RBNT to a contract (the verifier)
+policy for send: 1 RBNT to 0x37cA242a94945CdC3d3F155452a82Af6374bebD7 from anvil:7 (chain 31337, rules ~/.config/agent-policy/card-14.json)
+This is a set of rules, not a model that detects fraud.
+
+pass  chain              the policy is for chain 31337; the RPC http://127.0.0.1:8554 reports 31337
+pass  signer             0x14dc79964da2c08b23698b3d3cc7ca32193d9955, a local Anvil account; no key read
+pass  no-override        nothing in the request or the environment asked for more than the policy allows
+fail  recipient-allowed  0x37cA242a94945CdC3d3F155452a82Af6374bebD7 is a contract, not a wallet that passed the gate; this policy sends to wallets
+pass  amount-under-limit 1 RBNT against the policy's maxRbnt 100 (~/.config/agent-policy/card-14.json)
+pass  human-line         1 RBNT is at or below confirmAboveRbnt 10
+
+refused: nothing was signed. Recorded in ~/code/card-14/deployments/policy-31337-2026-10-17.md
+exit 1
+
+== step 16: deploy from anvil:7, no person at a terminal
+policy for deploy: script/Deploy.s.sol from anvil:7 (chain 31337, rules ~/.config/agent-policy/card-14.json)
+This is a set of rules, not a model that detects fraud.
+
+pass  chain              the policy is for chain 31337; the RPC http://127.0.0.1:8554 reports 31337
+pass  signer             0x14dc79964da2c08b23698b3d3cc7ca32193d9955, a local Anvil account; no key read
+pass  no-override        nothing in the request or the environment asked for more than the policy allows
+pass  deployer-allowed   0x14dc79964da2c08b23698b3d3cc7ca32193d9955 passes permission.isAllowed on chain 31337
+wait  human-line         a deploy always waits for a person to type the confirmation; its cost is in npm run gas
+
+refused: nothing was signed. Recorded in ~/code/card-14/deployments/policy-31337-2026-10-17.md
+exit 1
+
+== balances: Valid wallet 10001.000000000000000000 RBNT (10000 + 1 expected); stranger 10000.000000000000000000 RBNT (10000 expected)
+== the record: deployments/policy-31337-2026-10-17.md

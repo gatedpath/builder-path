@@ -88,6 +88,44 @@ run. On 2026-09-12 the `/start` page was followed literally with Foundry and wit
 fresh scaffolds against a testnet fork (`../packages/create-redbelly-dapp/reports/golden-path-*.md`);
 the commands that have not run are the ones that need a real wallet, and each carries a pill.
 
+## Terminal recordings
+
+A recording on a page is the run, shown: a real terminal session, replayed as text. There is one
+player for the whole site (`src/components/Cast.astro`, `src/lib/cast-player.js`) and one small
+terminal that the player, the no-script view and the build gate all read a recording through
+(`src/lib/cast-term.js`). Nothing is installed for any of it: the recorder takes its terminal from
+Python's standard `pty` module. Adding a recording to a step is four things.
+
+1. Add an entry to `casts.config.mjs`: an id, the page, where the file goes
+   (`cards/runs/<date>/casts/<id>.cast`), a title, the folder to run in, and the commands, written
+   exactly as they are in the page's code block.
+2. Record it, in an empty work folder outside the repository, earlier steps first:
+
+   ```sh
+   npm run record -- start-scaffold --root /path/to/an/empty/folder
+   ```
+
+   The recorder runs each command in an 80 by 24 terminal with no input attached, starts npm with
+   an empty cache so the timing is a first run's, writes the work folder as `~/code` and the home
+   folder as `~`, and writes nothing if a command fails. Only record steps that need no key, no
+   password and no typed answer. A command that runs until it is stopped, like `npm run dev`, gets
+   a `stop` rule in its entry: what to wait for, and how many seconds later to send Ctrl-C. The
+   recording's header says it was stopped that way. The recorder also writes this machine's address
+   on its own network as `<this machine>`, because a dev server prints it.
+3. Put `<Cast id="start-scaffold" />` under the step's code block.
+4. `npm run build`. `scripts/check-casts.mjs` runs first and refuses a recording whose commands are
+   not lines of a code block on its page, whose commands or exit codes differ from the list, that
+   holds an instruction the player cannot draw, whose smoothed replay does not end on the screen
+   the recording ends on, or that holds a machine path, a private name, a well-known Anvil account
+   or 64 hex characters. Change a command on a page and the build fails until it is recorded again.
+
+A recording is never edited by hand. Its replay data is not in the page: the build writes it to
+`/casts/<id>.js`, and the player adds that file when a reader presses Play (as a script, not a
+fetch, so it also works in the offline copy opened from a folder). So the budget has two tiers
+(`scripts/budget.mjs`): 60 KB of script on load, which every visitor pays and which recordings no
+longer touch, and 150 KB a recording on demand, which only a reader who asks for a replay pays. What
+a recording still adds to the page itself is the text of the run, once, in the HTML.
+
 ## Fonts
 
 Readex Pro (OFL 1.1, reserved name "RevReading Lexend") and JetBrains Mono (OFL 1.1) as the

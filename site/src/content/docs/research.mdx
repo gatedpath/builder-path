@@ -1,62 +1,102 @@
 ---
-title: Research
-description: The four papers the concept pages rest on, each in plain language with a link to the concept that depends on it, and the rest of Redbelly's research page listed for later.
-lastVerified: '2026-09-12'
+title: Network research
+description: Every paper on Redbelly's research page and both company documents, read in full, each in plain language with what it changes for your code and where its guarantee stops.
+lastVerified: '2026-09-23'
 ---
 
 import ForAgents from '../../components/ForAgents.astro';
 import StatusPill from '../../components/StatusPill.astro';
 
 <ForAgents
-  page="Research"
+  page="Network research"
   facts={[
-    'Four papers matter for code: DBFT (NCA 2018) for finality, Red Belly (S&P 2021) for super blocks and throughput assumptions, Polygraph (ICDCS 2021) for accountability, Holistic Verification (DISC 2022) for what "verified consensus" covers.',
-    'Benchmark numbers in papers are benchmarks, not mainnet measurements. Cite the measured pages on this site for the live network.',
-    'The consensus is verified; your application is not. Nothing in these papers audits your contract.',
+    'The consensus core is machine-checked (Holistic Verification, DISC 2022): the binary consensus as pseudocode, safety for any number of nodes with fewer than a third faulty, liveness under a fairness assumption. The node software, the EVM and your contract are outside that proof.',
+    '"Cannot fork" holds while fewer than a third of governors are faulty. Above that the design detects the guilty with signed proof and recovers by replacing them (Polygraph, ICDCS 2021; ZLB, DSN 2024). What the deployed network does in that case is open (research question 56).',
+    'Redbelly\'s own architecture paper (2022, republished as the yellow paper v1.0 in 2024) says a transaction is validated by the node it was sent to and travels only inside blocks, and that a wallet may have to resend. Redbelly confirmed on 12 October 2026 that this is deployed and that the RPC endpoint does the resend itself after 30 seconds. Poll for the receipt; wait 45 seconds before treating silence as failure; keep the nonce.',
+    'Redbelly\'s recommended client model reads f + 1 identical copies of state from several nodes (Stabl, Middleware 2025; the yellow paper). The ops kit fails over instead. Treat two endpoints that disagree as a reason to stop, never as a vote.',
+    'Benchmark numbers in papers describe research systems on rented machines, never the live network. Cite the measured pages on this site.',
   ]}
 />
 
-Redbelly grew out of a decade of consensus research, and the papers are the reason some of this network's properties are stronger than the usual EVM assumptions. You can build without reading them, but you do need to know what each one guarantees and where the guarantee stops. The summaries here are plain and short; the concept pages carry the consequences.
+Redbelly grew out of a decade of consensus research, and the papers are the reason some of this network's properties are stronger than the usual EVM assumptions. You can build without reading them, but you do need to know what each one guarantees and where the guarantee stops. I have read every paper on Redbelly's [research page](https://redbelly.network/research) and both company documents, twenty-three in all as of 23 September 2026, and this page is what they come to for your code. Nothing here carries a throughput or latency figure from a paper, on purpose: every one of those describes a research system on rented machines, and the numbers that describe the live network are on the [status page](/status/) and the pages that measured them.
 
-## DBFT: Efficient Leaderless Byzantine Consensus and its Application to Blockchains
+## The four that decide what you delete
 
-Crain, Gramoli, Larrea, Raynal. IEEE NCA 2018.
-
-Most Byzantine consensus protocols pick a leader who proposes the next block; if the leader is slow or malicious, everyone waits or votes them out. DBFT has no leader. Every node proposes, the protocol reduces the question "which proposals get in" to many parallel yes-or-no decisions, and a weak coordinator helps those decisions converge without being able to block them. Decisions are deterministic once made. Applied to a blockchain, that means all correct nodes agree on one block and there is no fork to resolve later.
+**DBFT: Efficient Leaderless Byzantine Consensus and its Application to Blockchains.** Crain, Gramoli, Larrea, Raynal, IEEE NCA 2018. Most Byzantine consensus protocols pick a leader who proposes the next block; if the leader is slow or malicious, everyone waits or votes them out. DBFT has no leader. Every node proposes, the protocol reduces "which proposals get in" to many parallel yes-or-no decisions, and a weak coordinator helps them converge without being able to block them. Decisions are deterministic once made, so all correct nodes agree on one block and there is no fork to resolve later, as long as fewer than a third of them are faulty. Its proofs and its measurements are in a companion technical report rather than in the paper, which matters when someone cites it for a number.
 
 For your code: [consensus and finality](/concepts/consensus-and-finality/). A receipt is final; delete the confirmation-count waiting.
 
-## Red Belly: A Secure, Fair and Scalable Open Blockchain
+**Red Belly: A Secure, Fair and Scalable Open Blockchain.** Crain, Natoli, Gramoli, IEEE S&P 2021. The paper behind the super block. Instead of one proposer's block, the block that gets committed is the union of proposals from many nodes, which is why a Redbelly block can contain transactions from every governor. It also shares the work of verifying signatures across nodes, and it argues fairness: a transaction that a correct sender submits is eventually included, provided the sender does not submit conflicting transactions and the network is not flooded. That is a promise of inclusion, not of order. Its chain is a UTXO payment system with no EVM. The ordering rule it documents is the one Redbelly told me on 17 September 2026 changes in Q4 2026.
 
-Crain, Natoli, Gramoli. IEEE S&P 2021.
+**Smart Redbelly Blockchain: Reducing Congestion for Web3.** Tennakoon, Hua, Gramoli, IEEE IPDPS 2023, with a longer arXiv version. This is the chain this site rests on: DBFT under an EVM derived from geth, with blocks produced when there are transactions. Its central change is what it calls validation and propagation reduction: a transaction is validated once, by the node you sent it to, and then travels only inside proposed blocks; nodes do not pass transactions to each other. The consequence the authors state themselves is that a transaction sent only to a node that declines it is not included, and the remedy is for the client to resend when no receipt arrives. Whether the deployed network keeps this exactly is the first question I put to Redbelly on 22 September 2026 (question 42); their whitepaper says the SEVM does this validation reduction, and their yellow paper says a wallet may have to resend.
 
-This is the paper behind the super block. Instead of one proposer's block, the block that gets committed is the union of proposals from many nodes, which is why a Redbelly block can contain transactions from every governor. The paper also shares the work of verifying transaction signatures across nodes rather than having every node verify everything, and argues fairness: a transaction that a correct sender submits is eventually included, provided the sender does not submit conflicting transactions and the network is not flooded. That is a promise of inclusion, not of order. The paper's chain is a UTXO payment system; the EVM came later and is not described in it. The evaluation ran on a thousand machines across continents; the plan uses its latency figure, about three seconds, as a benchmark reference and nothing more. Under a coalition attack by a third of the nodes, throughput in the paper fell from 5,700 to 1,900 transactions per second, which is the more honest floor.
+For your code: [blocks on demand](/concepts/blocks-on-demand/) has the polling and the resend rule.
 
-For your code: [consensus and finality](/concepts/consensus-and-finality/) for what a super block means, [blocks on demand](/concepts/blocks-on-demand/) for what "block time" means here, and the live figures on the [status page](/status/) rather than the benchmark.
-
-## Polygraph: Accountable Byzantine Agreement
-
-Civit, Gilbert, Gramoli. ICDCS 2021, with an earlier brief at DISC 2020.
-
-Consensus protocols are safe as long as fewer than a third of nodes misbehave. Polygraph asks what happens past that line. Its answer is accountability: if too many nodes collude and cause a disagreement, the correct nodes can produce cryptographic proof that identifies the ones responsible. It does not stop the disagreement; it makes it attributable, which is what lets a network punish or exclude the culprits.
-
-For your code: a dApp can assume that a consensus failure would be forensic rather than silent, but it cannot assume that it can never happen; a chain that holds real assets still wants a pause and an admin behind a Safe. The [review page](/review/) has the threat model.
-
-## Holistic Verification of Blockchain Consensus
-
-Bertrand, Gramoli, Konnov, Lazić, Tholoniat, Widder. DISC 2022, arXiv 2206.04489.
-
-"Formally verified" gets said loosely. This paper is specific: the consensus algorithm was checked by machine, with parameterised model checking (the ByMC tool), for all numbers of nodes rather than one fixed configuration, under Byzantine faults. "Holistic" means the whole protocol was checked rather than one component in isolation. The boundary matters as much as the result: what is verified is the consensus algorithm. The implementation that runs it, the EVM on top of it, and your contract are outside that proof.
+**Holistic Verification of Blockchain Consensus.** Bertrand, Gramoli, Konnov, Lazić, Tholoniat, Widder, DISC 2022. People say "formally verified" loosely, and this paper is exact about it. What was checked by machine, with the ByMC parameterised model checker, is the binary consensus at the heart of DBFT, as pseudocode, for any number of nodes with fewer than a third faulty: safety without conditions, and liveness under a fairness assumption that replaces the timers. What was not checked is everything around it: the reduction from many proposals to one super block, the node software that runs the algorithm, the EVM, and your contract.
 
 For your code: do not let "verified consensus" leak into "verified application". Your contract still needs tests in all five credential states, static analysis, and for anything holding value an audit. [Review before mainnet](/review/) lists them.
 
-## The rest of the research page
+## The two the company wrote
 
-Redbelly's [research page](https://redbelly.network/research) lists more than these four. Recorded on 12 September 2026 and not yet summarised: <StatusPill variant="draft" label="Summaries not yet written" tipKey="summaries-pending" />
+**The yellow paper, version 1.0.** Redbelly Network, file dated November 2024. It is the company's 2022 architecture article, *Redbelly Blockchain: a Combination of Recent Advances* (Bulletin of the EATCS 137), republished word for word under a cover, and it is the company's standing technical description until the next version, which is where the ordering change is due to be written down. It states the things the research papers leave to inference: the network has consensus nodes and separate SEVM nodes, because consensus needs more than three times the faulty count and correct data retrieval only twice; a transaction is final the moment it is in a block; the wallet Redbelly describes sends to one node and resends if need be, and reads by fetching f + 1 identical copies of state from several SEVM nodes; governors are elected by the sitting governors under a Byzantine-tolerant single transferable vote; reconfiguration and software upgrades are built-in contract functions invoked by a quorum of governors; and the governance holds a built-in rewrite function that, on the vote of a quorum, erases a suffix of the chain at every honest SEVM node. That last one is the reason I never write "immutable" on this site without saying against whom. Whether the rewrite function is live on the deployed network is question 54; ordering inside a super block, "in the order of their hash or nonce" in this version, is question 5.
 
-- Evaluating the Red Belly Blockchain, the 2018 benchmark report.
-- The Redbelly whitepaper, An accountable data layer for AI powered financial services.
-- Gramoli's OPODIS 2023 invited talk, From Consensus Research to Redbelly Network, the best single narrative of how the papers became the product.
-- Smart Redbelly Blockchain: Reducing Congestion for Web3, which describes the on-demand block model behind [blocks on demand](/concepts/blocks-on-demand/).
-- Aion, order-fair state machine replication using trusted execution, which bears on ordering inside a super block. Redbelly told me on 17 September 2026 that the ordering changes in Q4 2026 and will be described in the next yellow paper, so the yellow paper is the one to read first.
-- Stabl, ComChain, Planetary Scale Byzantine Consensus, Fair Separability, Diablo, the yellow paper and Gramoli's Springer book.
+**The whitepaper.** *Redbelly Network: An accountable data layer for AI powered financial services*, 28 August 2025. The product described by the company, in marketing register and unreviewed, which makes it the right source for what Redbelly says the network is and the wrong source for any number. It confirms that the SEVM carries the validation reduction above, names two staked node roles, and names parts of the platform that this site does not cover because I have not seen them deployed: a Policy SDK, a First Party Oracle SDK, an MEV mitigation by commit-reveal, and bridged BTC (questions 47 to 49). Its throughput sentence cites the 2018 DBFT paper, which contains no measurements, so I do not repeat it.
+
+## Past a third: what accountability is, and is not
+
+**Polygraph: Accountable Byzantine Agreement.** Civit, Gilbert, Gramoli, ICDCS 2021, with a brief at DISC 2020. Consensus is safe while fewer than a third of nodes misbehave. Polygraph asks what happens past that line, and its answer is accountability: if enough nodes collude to cause a disagreement, the correct nodes end up holding signed, irrefutable proof naming at least a third of the guilty. It does not stop the disagreement; it makes it attributable. The proof is exchanged among the nodes running consensus, not handed to clients, so a dApp is not given a certificate to check (question 50).
+
+**ZLB: A Blockchain to Tolerate Colluding Majorities.** Ranchal-Pedrosa and Gramoli, DSN 2024. This is what "tolerates a colluding majority" is built from, and the phrase is easy to misread. Above a third faulty the chain does fork; ZLB then uses Polygraph's proofs to vote the guilty out, votes candidates in from a pool, merges the branches and recomputes state, and in its payment design funds any double spend from the deposits of the guilty. The paper's own words are that a transaction in that design should not be treated as final until it is a number of blocks deep, and that a contract's returned state can be reverted with a reimbursement. So there are two regimes: below a third, no fork, proven; above it, a recovery that is stronger than any chain without accountability offers but is a recovery. The yellow paper carries both (a transaction "is either pending or committed", and the network "can recover" from more than a third faulty) without saying which the deployed network runs (question 56).
+
+**ComChain: A Blockchain with Byzantine Fault Tolerant Reconfiguration.** Vizier and Gramoli, Concurrency and Computation: Practice and Experience, 2020. How the set of deciders changes without stopping: the current set decides the next in a configuration block, signed by enough of the current members. Clients learn the current set from a directory service assumed correct. Together with ZLB's fraud-driven exclusion, this is the likely shape of how governors change on the deployed network (question 44).
+
+For your code: a dApp can assume that a consensus failure would be forensic rather than silent, and that recovery is designed for; it cannot assume that it can never happen, or that state can never move under it in that case. A chain that holds real assets still wants a pause and an admin behind a Safe. The [review page](/review/) has the threat model.
+
+## Ordering, and what "MEV mitigation" cites
+
+**Aion** (Zarbafian and Gramoli, ESORICS 2023), **fair separability** (ESORICS 2024), **Lyra** (IPDPS 2023) and **AOAB** (Gramoli, Lu, Tang, Zarbafian, DSN 2024) are four designs for ordering transactions fairly, by send time with trusted hardware clocks, by the median of arrival positions, and by commit-reveal that hides a transaction's content until it is committed. The whitepaper cites Lyra and AOAB for its MEV mitigation, and two limits go with that. Aion says in its own words that fair ordering alone does not prevent front-running without a commit-reveal step. AOAB's ordering guarantee applies only between transactions that do not arrive close together; two that do may be output in either order. None of the four is confirmed as deployed (question 47).
+
+For your code: do not build on order within a block, and do not expect a priority fee to buy position, because the measured priority fee is zero on both networks. The [consensus page](/concepts/consensus-and-finality/) has the rule as it stands.
+
+## The one paper that tested the shipped node
+
+**Stabl.** Middleware 2025. The only published work that ran Redbelly's own node software (version 0.36.2) rather than a research prototype, on a small cluster, against crashes, partitions and a rejoining node. It tolerated the crashes it was designed to tolerate and recovered from a partition, with the recovery time set by a reconnect timeout the developers confirmed could be shortened. Two sentences in it matter more than its measurements. Trusting a single node, the authors write, brings the number of tolerated Byzantine faults to zero, and Redbelly's recommended client for that reason is a library, credence.js, that cross-checks its reads across several nodes. And sending each transaction to several nodes made Redbelly faster, because a transaction that reaches several proposers is included a little earlier.
+
+For your code: I have not found credence.js published anywhere yet (question 53), and the ops kit's [RPC helper](/operate/) fails over between endpoints, which is a different guarantee from cross-checking them. Until the kit does that, treat two endpoints that answer differently as a reason to stop.
+
+## Methods, context, and one mechanic worth keeping
+
+**Diablo** (EuroSys 2023) is the founder's group's benchmark of six chains under real application workloads, and Redbelly is not among them. It is here for two reasons: it is the argument against unconditioned throughput claims, which is the rule this site follows, and it records that the geth-derived EVM has no hard per-transaction gas cap where three other chains do, a property Redbelly confirmed the deployed network keeps on 12 October 2026 (question 43). **Bare metal evaluations** (SDLT 2023) is a methods paper whose one rule I have adopted for our own numbers: report distributions, not averages. **Planetary Scale Byzantine Consensus** (invited paper, 2023) explains why the super block scales with the number of proposers. **From Blockchain Consensus Back to Byzantine Consensus** (2020) is the founder's case for a network of known participants, which is the reasoning behind the identity gate on this network, in his framing rather than mine. **Anonymity-preserving vector consensus** (ESORICS 2020) contributes a mechanic rather than a claim: traceable ring signatures over a known set give one vote per member with the voter hidden, which is the shape of a shareholder or governance vote on a gated token. The **OPODIS 2023 invited talk** is the best single narrative of how the papers became the product.
+
+**Project Acacia, final report.** Reserve Bank of Australia and the Digital Finance CRC, 18 May 2026. Not a Redbelly paper, but the first primary source that places the network in a regulated setting: Redbelly was one of three platforms on which the RBA issued pilot wholesale CBDC to participants. Pilots, not production, and the report assesses no platform. The [idea pool](/tutorials/) says what it supports and no more.
+
+## What none of them covers
+
+Your contract. Every proof above stops at the consensus algorithm as pseudocode, and every measurement stops at a research system or a small test cluster. The five credential states, static analysis, an audit for anything that holds value, and a rehearsed pause are still yours, and [review before mainnet](/review/) is the list.
+
+## The questions this site cites
+
+Wherever a page says "question 30" it means one of these, numbered as they are in my working research log. The log itself stays private because it holds correspondence; the questions do not. Each is open with Redbelly, or answered on the page that cites it, and the number lets you follow one thread across pages.
+
+- **Question 4.** How long a transaction takes to be included and final, measured from a funded wallet.
+- **Question 5.** How transactions are ordered inside a super block, and what MEV surface that leaves.
+- **Question 6.** How the RBNT price behind the fee is set and how often it updates.
+- **Question 7.** Whether deploying a contract needs anything beyond a verified wallet.
+- **Question 15.** Which credential schemas and issuers are live on each network.
+- **Question 16.** Whether Redbelly objects to a third-party tool wrapping the faucet and access status.
+- **Question 20.** Whether the wallets under one identity can be linked to each other by an outside observer.
+- **Question 23.** What conduct leads to a credential being revoked, and whether there is notice, appeal or reinstatement.
+- **Question 24.** Whether a revoked credential restricts a wallet's plain transfers, or only its gated actions.
+- **Question 25.** Whether an entity's delegate wallets can reach the representative's personal identity.
+- **Question 28.** Answered by my own run on 17 October 2026: `forge verify-contract` against Routescan's testnet endpoint, as the [start page](/start/) now shows it.
+- **Question 29.** Which release of the Iden3 contracts Redbelly's verifier backend deploys from.
+- **Question 30.** Why Anvil's public default accounts 0 and 1 pass the network's access check.
+- **Question 38.** How two contract calls that touch the same storage are ordered inside a super block.
+- **Question 42.** Answered by Redbelly on 12 October 2026: the validation-once design is deployed, and the RPC endpoint resends a transaction to another governor after 30 seconds ([blocks on demand](/concepts/blocks-on-demand/)).
+- **Question 43.** Answered by Redbelly on 12 October 2026: the network keeps the geth EVM's absence of a hard per-transaction gas cap ([gas model](/concepts/gas-model/)).
+- **Question 44.** How governors are admitted, replaced and removed. Redbelly said on 12 October 2026 that a new yellow paper, due this quarter, describes it, with a rule of a sufficient stake open to anyone; open until the paper is out.
+- **Question 47.** Whether the MEV mitigation the whitepaper describes is deployed, and what ordering a contract may rely on.
+- **Question 50.** Whether a client can read the consensus certificates or proofs of fraud, to verify finality itself.
+- **Question 53.** What credence.js is, where it is published, and whether Redbelly still recommends it.
+- **Question 54.** Whether the governance history-rewrite function in the yellow paper is live on the deployed network.
+- **Question 56.** Which of ZLB's recovery phases the deployed network runs, and whether a finalization depth exists.

@@ -1,0 +1,82 @@
+
+== 0. Where we are
+    rpc http://127.0.0.1:8548  chain id 31337  block 3052411  fork of 153
+    InvoiceFinancing 0xEF86CEc1CEf0C78E5725fA6Cc3E9929788bBde35
+    investor gate: verifier 0x37cA242a94945CdC3d3F155452a82Af6374bebD7  request id 708 (au-wholesale-investor)
+    lister gate:   verifier 0x37cA242a94945CdC3d3F155452a82Af6374bebD7  request id 0 (business-delegate, either role)
+    stablecoin 0x07AF11e412ed7C343603c0F4b35645f7870686Eb ("mUSD", 6 decimals)   owner 0x14dC79964da2C08b23698B3D3cc7Ca32193d9955 (Anvil account 7)
+    investors seeded by npm run dev on 708: NeverIssued 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC (2), Valid 0x90F79bf6EB2c4f870365E785982E1f101E93b906 (3), Expired 0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65 (4), Revoked 0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc (5), WrongJurisdiction 0x976EA74026E726554dB657fA54763abd0C3a0aa9 (6)
+
+== 1. The business side: account 8 is a current delegate, account 9 a removed one (request id 0 on the same mock)
+status 0x1  gas 49523  block 3052412
+status 0x1  gas 49523  block 3052413
+    isLister(delegate 8)      true
+    isLister(former 9)        false
+    isLister(valid investor)  false   (a wholesale credential is not a delegate role)
+    isEligible(delegate 8)    false   (a delegate role is not a wholesale credential)
+    isEligible(valid investor) true
+
+== 2. Mint mUSD: the advance to every investor wallet so a refusal is the gate and not an empty purse; the face value to the business for repayment
+    investor (3) balance 9700000000   business (8) balance 300000000   contract 0
+
+== 3. The delegate lists invoice 1: face 10,000 mUSD, 300 bps discount, due in 30 days, document hash 0x81f9a02e43a03ba66c0d8f8e76b50f9df6d2f0a8d02cd1b17b8da4213b2c4bcf
+status 0x1  gas 147535  block 3052425
+    invoice 1: Listed  (0x23618e81E3f5cdF7f54C3d65f7FBc0aBf5B21E8f, 0x0000000000000000000000000000000000000000, 10000000000 [1e10], 300, 1794844950 [1.794e9], 1, 0x81f9a02e43a03ba66c0d8f8e76b50f9df6d2f0a8d02cd1b17b8da4213b2c4bcf)
+    advanceFor(face, 300) = 9700000000 [9.7e9]
+
+== 4. Refused on list: the removed delegate, and a valid investor who is nobody's delegate
+  former delegate (9) lists:
+    refused: NotEligible(0xa0Ee7A142d267C1f36714E4a8F75612F20a79720, 0)  selector 0x879342fb
+  valid investor (3) lists:
+    refused: NotEligible(0x90F79bf6EB2c4f870365E785982E1f101E93b906, 0)  selector 0x879342fb
+    invoiceCount still 1
+
+== 5. The valid investor (3) funds invoice 1: 9,700 mUSD goes straight to the business
+status 0x1  gas 75918  block 3052426
+    invoice 1: Funded  (0x23618e81E3f5cdF7f54C3d65f7FBc0aBf5B21E8f, 0x90F79bf6EB2c4f870365E785982E1f101E93b906, 10000000000 [1e10], 300, 1794844950 [1.794e9], 2, 0x81f9a02e43a03ba66c0d8f8e76b50f9df6d2f0a8d02cd1b17b8da4213b2c4bcf)
+    investor (3) balance 0   business (8) balance 10000000000   contract 0
+
+== 6. The delegate lists invoice 2; the four other investor states and the delegate itself are refused on fund
+    invoice 2: Listed  (0x23618e81E3f5cdF7f54C3d65f7FBc0aBf5B21E8f, 0x0000000000000000000000000000000000000000, 10000000000 [1e10], 300, 1794844950 [1.794e9], 1, 0x81f9a02e43a03ba66c0d8f8e76b50f9df6d2f0a8d02cd1b17b8da4213b2c4bcf)
+  NeverIssued (2):
+    refused: NotEligible(0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC, 708)  selector 0x879342fb
+  Expired (4):
+    refused: NotEligible(0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65, 708)  selector 0x879342fb
+  Revoked (5):
+    refused: NotEligible(0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc, 708)  selector 0x879342fb
+  WrongJurisdiction (6):
+    refused: NotEligible(0x976EA74026E726554dB657fA54763abd0C3a0aa9, 708)  selector 0x879342fb
+  the delegate (8), no wholesale credential:
+    refused: NotEligible(0x23618e81E3f5cdF7f54C3d65f7FBc0aBf5B21E8f, 708)  selector 0x879342fb
+  the valid investor (3) funding invoice 1 again:
+    refused: WrongStatus(1, 1, 2)  selector 0x9b0b4afd
+    business (8) balance unchanged 10000000000
+
+== 7. Release before repayment is refused; a stranger's repayment is not
+  investor (3) releases invoice 1 while Funded:
+    refused: WrongStatus(1, 3, 2)  selector 0x9b0b4afd
+  the business (8) repays invoice 1, face value into the contract:
+status 0x1  gas 59839  block 3052429
+    invoice 1: Repaid  (0x23618e81E3f5cdF7f54C3d65f7FBc0aBf5B21E8f, 0x90F79bf6EB2c4f870365E785982E1f101E93b906, 10000000000 [1e10], 300, 1794844950 [1.794e9], 3, 0x81f9a02e43a03ba66c0d8f8e76b50f9df6d2f0a8d02cd1b17b8da4213b2c4bcf)
+    business (8) balance 0   contract 10000000000
+
+== 8. Refused on release: the wrong wallet, and the right wallet whose credential has lapsed
+  NeverIssued (2) releases invoice 1:
+    refused: NotEligible(0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC, 708)  selector 0x879342fb
+  the delegate (8) releases invoice 1:
+    refused: NotEligible(0x23618e81E3f5cdF7f54C3d65f7FBc0aBf5B21E8f, 708)  selector 0x879342fb
+  the investor's credential is revoked on 708:
+  investor (3), now Revoked, releases invoice 1:
+    refused: NotEligible(0x90F79bf6EB2c4f870365E785982E1f101E93b906, 708)  selector 0x879342fb
+    the face value stays in the contract: 10000000000
+
+== 9. Credential restored, the investor releases invoice 1 and has earned the discount
+status 0x1  gas 69670  block 3052432
+    invoice 1: Released  (0x23618e81E3f5cdF7f54C3d65f7FBc0aBf5B21E8f, 0x90F79bf6EB2c4f870365E785982E1f101E93b906, 10000000000 [1e10], 300, 1794844950 [1.794e9], 4, 0x81f9a02e43a03ba66c0d8f8e76b50f9df6d2f0a8d02cd1b17b8da4213b2c4bcf)
+    investor (3) balance 10000000000  (paid 9,700, received 10,000)   business (8) balance 0   contract 0
+  releasing it twice:
+    refused: WrongStatus(1, 3, 4)  selector 0x9b0b4afd
+  repaying invoice 2, never funded:
+    refused: WrongStatus(2, 2, 1)  selector 0x9b0b4afd
+
+== 10. Done. Chain 31337, block 3052432; invoiceCount 2; nothing left a local Anvil

@@ -33,7 +33,7 @@
 | `scripts/preflight.mjs` | The deploy script's checks as a command you can run before signing anything, offline where it can |
 | `__PM_RUN__ doctor`, `__PM_RUN__ gas`, `__PM_RUN__ ship` | The vendored `@gatedpath/preflight`: the machine before the first command; gas per function in RBNT and US cents at the chain's feed price; the mainnet gate that writes `contracts/deployments/ship-<chain>-<date>.md` when every check passes |
 | `scripts/slither.mjs` | `__PM_RUN__ lint:slither`: Slither as CI runs it, writing `contracts/reports/slither.json` and the sources hash beside it that `redbelly-preflight` compares |
-| `vendor/` | Built copies of `@gatedpath/chains`, `@gatedpath/agent-rules` and `@gatedpath/preflight`{{#if web}} (and `@gatedpath/frontend-kit` for the web app){{/if}}, installed by path until they are published; the versions are recorded under `redbelly.vendor` in `package.json` and `__PM_RUN__ doctor` compares |
+| `vendor/` | Built copies of `@gatedpath/chains`, `@gatedpath/agent-rules` and `@gatedpath/preflight`{{#if web}} (and `@gatedpath/frontend-kit` for the web app){{/if}}, pinned builds of the published packages so a clone builds without the registry; the versions are recorded under `redbelly.vendor` in `package.json` and `__PM_RUN__ doctor` compares |
 | `SECURITY.md`, `THREAT-MODEL.md`, `.env.example` | The security programme, the threat-model stub with PLAN section 6 headings, and an env file with a comment on every line and no secret |
 
 ## The local loop: `__PM_RUN__ dev`
@@ -145,13 +145,13 @@ https://access.redbelly.network, fund it from https://redbelly.faucetme.pro/, th
 | Foundry | Hardhat |
 |---|---|
 | `__PM_RUN__ preflight` | `__PM_RUN__ preflight` |
-| `cd contracts && forge script script/Deploy.s.sol --rpc-url redbelly_testnet --account deployer --broadcast` | `cd hardhat && __PM_RUN__ keystore:set` once, then `__PM_RUN__ deploy:testnet` |
+| `cd contracts && forge script script/Deploy.s.sol --rpc-url redbelly_testnet --account deployer --sender <its address> --broadcast` | `cd hardhat && __PM_RUN__ keystore:set` once, then `__PM_RUN__ deploy:testnet` |
 {{/if}}
 {{#unless hardhat}}
 ```
 __PM_RUN__ preflight
 __PM_RUN__ ship -- --chain 153 --account deployer     # optional on testnet: writes contracts/deployments/ship-153-<date>.md
-cd contracts && forge script script/Deploy.s.sol --rpc-url redbelly_testnet --account deployer --broadcast
+cd contracts && forge script script/Deploy.s.sol --rpc-url redbelly_testnet --account deployer --sender <its address> --broadcast
 ```
 {{/unless}}
 
@@ -179,7 +179,7 @@ whole command with them filled in.
 {{/unless}}
 
 The Routescan endpoint answers keyless (the `verifyContract` key is a documented placeholder,
-not a secret). The exact recipe is still being confirmed against a live deploy; if it fails,
+not a secret). The recipe has verified contracts on 153 as written; if it fails for you,
 Routescan's web form takes the standard JSON input from `forge verify-contract --show-standard-json-input`.
 
 {{#if web}}

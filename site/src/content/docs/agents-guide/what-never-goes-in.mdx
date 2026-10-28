@@ -23,7 +23,7 @@ import ProjectPrompt from '../../../components/ProjectPrompt.astro';
   ]}
 />
 
-On this network a wallet is a verified person, and for many builders it is the same person who holds the assets. A leaked key is not a lost test account; it is an identity and whatever sits under it. So the rule is simple and has no exceptions, and the tools are built so that you never have a reason to break it.
+On this network a wallet is a verified person, and for many builders it is the same person who holds the assets. If a key leaks you have not lost a test account. Someone now holds an identity and whatever sits under it. So nothing on the list below goes into an agent, whatever the reason, and the tools are built so that you never have a reason to put it there. What Redbelly's own pages say about a linked wallet is on [your developer wallet](/wallets/).
 
 <ProjectSteps slug="agents-what-never-goes-in" title="What never goes into an agent" backHref="/agents/" backLabel="Directing an agent">
 
@@ -35,8 +35,8 @@ The things that never appear in a prompt, a chat, a screenshot or a file the age
 - A private key or a seed phrase, for any wallet, on any network, test or real.
 - A keystore password.
 - The contents of `.env`, and any API key: an RPC provider's, a verifier's, a package registry token.
-- A webhook URL. Anyone who has it can post alerts that look like yours.
-- Your users' personal or credential data. Your contract never sees it, and your agent should not either.
+- A webhook URL, because anyone who has it can post alerts that look like yours.
+- Your users' personal or credential data, which your contract never sees and your agent should not see either.
 
 A conversation with an agent is stored by whoever runs the model, may be logged by the tool, and can end up in a transcript you share. Treat it as you would an email.
 </StepPart>

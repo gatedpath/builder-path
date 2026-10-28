@@ -1,6 +1,6 @@
 {
   "name": "@gatedpath/mcp",
-  "version": "0.2.0",
+  "version": "0.2.3",
   "description": "Local stdio MCP server for Redbelly Network builders: chain facts, isAllowed, gas in USD, pre-flight, five-state tests, rules-file drift, testnet deploy and Routescan verification through forge with keystore names, docs lookup, status (the one next command) and explain_failure (plain words for a revert, a transaction or a pasted stderr). Never holds a key.",
   "license": "MIT",
   "repository": {

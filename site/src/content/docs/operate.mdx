@@ -3,7 +3,7 @@ title: Operate
 description: 'The week after the deploy: alerts on the events that matter, Routescan for what happened, a subgraph when you outgrow it, an RPC that fails over, and the runbook for three in the morning.'
 status: mainnet
 statusLabel: Mainnet, chain 151
-lastVerified: '2026-09-12'
+lastVerified: '2026-09-17'
 ---
 
 import { Aside } from '@astrojs/starlight/components';
@@ -25,7 +25,7 @@ import { LINKS, REPO } from '../../data/site';
   ]}
 />
 
-Section 6 of the plan ends with "Operate": monitoring on the events the contract kit emits, an on-call contact, a published `security.txt`, a disclosure address and a rehearsed pause procedure. This page is the tooling for the first and last of those. The kit is `packages/ops-kit`. I ran everything on this page on 12 September 2026 against a local anvil or the public Routescan API; nothing has yet run against a contract of ours on either network, because none is deployed.
+The last stage of the path is operating the contract: monitoring on the events the contract kit emits, an on-call contact, a published `security.txt`, a disclosure address and a rehearsed pause procedure. This page is the tooling for the first and last of those. The kit is `packages/ops-kit`. I ran everything on this page on 12 September 2026 against a local anvil or the public Routescan API, and the system-contract watcher on 17 September against both networks' RPCs, read-only. Nothing has yet run against a contract of ours on either network, because none is deployed.
 
 ## What to watch
 
@@ -33,11 +33,11 @@ The contract kit's `GatedERC20` emits an event on every state change a monitor c
 
 <Sample id="ops-events" />
 
-The severity is the kit's opinion, and the runbook says what to do with each. Plain `Transfer`, `Approval` and issuer mints are not alerts; they are what the token is for.
+The severity is the kit's opinion, and the runbook says what to do with each. Plain `Transfer`, `Approval` and issuer mints are what the token is for, so they are not alerts.
 
 ## The alert recipe
 
-This is one script. It needs no service and no account with anyone. It polls `eth_blockNumber` every fifteen seconds, and when the head has moved it asks `eth_getLogs` for the contract's watched topics since the last block it saw, decodes each log and POSTs it as JSON to the webhook URL in the environment. The last block lives in a small state file, so a restart neither re-alerts nor misses anything; there are no reorgs on this network, so a block seen is final and the file only moves forward.
+It is one script, and it needs no service and no account with anyone. It polls `eth_blockNumber` every fifteen seconds, and when the head has moved it asks `eth_getLogs` for the contract's watched topics since the last block it saw, decodes each log and POSTs it as JSON to the webhook URL in the environment. The last block lives in a small state file, so a restart neither re-alerts nor misses anything; there are no reorgs on this network while fewer than a third of governors are faulty (the [consensus page](/concepts/consensus-and-finality/) has the exact scope), so a block seen is final and the file only moves forward.
 
 ```sh
 export ALERT_WEBHOOK_URL=https://hooks.example/…    # Slack, Discord, PagerDuty, or your own receiver
@@ -67,7 +67,7 @@ An alert from this watcher is not your incident to fix. It is a reason to re-run
 
 ## Routescan for what happened
 
-Routescan indexes both networks and its API answers keyless at two requests a second (measured on 15 September 2026; see SOURCES.md in the repository). Three scripts in the kit wrap the calls an operator makes most: the transfers of a token, its holders, and whether the source at an address is verified and is what you deployed.
+Routescan indexes both networks and its API answers keyless at two requests a second (Routescan's published limit, read 12 September 2026; see SOURCES.md in the repository). Three scripts in the kit wrap the calls an operator makes most: the transfers of a token, its holders, and whether the source at an address is verified and is what you deployed.
 
 ```sh
 node packages/ops-kit/scripts/routescan-transfers.mjs 0xToken --network mainnet --limit 50
@@ -93,6 +93,8 @@ Vine lists three public mainnet RPCs: the governors endpoint, Ankr, and Uniblock
 The three URLs and the Uniblock header are on this page; the kit reads them from `@gatedpath/chains`. Vine lists no third-party RPC for testnet, so on 153 the helper retries the one URL.
 </VineAside>
 
+The governors endpoint is itself a gateway: it tries one governor for five seconds, then another chosen at random, and resends a transaction not committed after thirty seconds (Redbelly, 12 October 2026). This helper does not do what Redbelly's own client does. Redbelly's client model, in its architecture paper and in the only published test of the shipped node (Stabl, Middleware 2025), is to read the same state from several nodes and believe an answer that f + 1 of them agree on; Stabl names credence.js as Redbelly's recommended library for exactly that, and I have not found it published anywhere yet ([question 53](/research/#the-questions-this-site-cites)). Fail-over gives you availability and nothing more. Until the kit does the cross-check, treat two endpoints that answer differently as a reason to stop, never as a vote.
+
 ## The runbook
 
 `packages/ops-kit/runbook/INCIDENT-RUNBOOK.md` is written for the on-call person at three in the morning: what each alert means and whether it is an incident, five steps (confirm in ten minutes, pause, contain, tell people, recover and record), the `cast` and script commands they need, the quarterly drill, and a table to fill in once. It assumes the contract kit's Safe plus timelock layout, where pausing is one Safe transaction and unpausing waits out the timelock.
@@ -102,5 +104,5 @@ The three URLs and the Uniblock header are on this page; the kit reads them from
 Next to it is a filled-in record from a drill on 12 September 2026: a forced transfer with a hash nobody could match, paused ninety seconds after the alert, unpaused eleven minutes later, and what the drill found (the hash-to-document step had no owner at night). It ran on a local anvil, not on a network, and says so in its first paragraph.
 
 <Aside type="caution" title="What stays unverified">
-No alert has fired for a real event on 151 or 153. No subgraph has been built, and the webhook receiver in the test is local; the Routescan runs are against a third party's token. Each of those becomes a verified line the day a contract of ours is deployed, which waits on the wallet policy in the project's `CLAUDE.md`.
+No alert has fired for a real event on 151 or 153. No subgraph has been built, and the webhook receiver in the test is local; the Routescan runs are against a third party's token. Each of those becomes a verified line the day a contract of ours is deployed, which waits on my own decision about which wallet signs; see [the wallets page](/wallets/).
 </Aside>

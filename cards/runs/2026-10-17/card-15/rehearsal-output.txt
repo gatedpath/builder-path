@@ -1,0 +1,154 @@
+
+== 0. the fork
+chain id: 31337  block: 3052532
+permission (network gate) from the bootstrap registry: 0x519ba1b48D571FD92FAF6FE4D20fe74Ca435B690
+
+== 1. deploy the suite (deployer anvil 8, ADMIN_SAFE stand-in anvil 9, agent anvil 7, claim signer anvil 5)
+No files changed, compilation skipped
+== Return ==
+s: struct TrexSuiteDeployer.Suite Suite({ timelock: 0x95bD8D42f30351685e96C62EDdc0d0613bf9a87A, implementationAuthority: 0x98eDDadCfde04dC22a0e62119617e74a6Bc77313, token: 0x2B8380FCA14b5F5C4a763bf38573A3c36a548c56, tokenOnchainId: 0x67EBb5690d1Fc1Bc0fa67cBD6Fe944515c5e7F93, identityRegistry: 0x3495fa1C4C2Ae290CF20ED1745395663b6189911, identityRegistryStorage: 0xE0e0Dd37299c2d019658639fb01db4c312528d73, trustedIssuersRegistry: 0x1B0Fd9Df9c444A4CeEC9863B88e1D7Cb3db621c0, claimTopicsRegistry: 0xBe0F340075060F856612d91e17cAe599dE92C745, compliance: 0x446Ae0F4BE2110a900B6506f5E1379C1E4BDfC57, claimIssuer: 0xA62045beac3b7195393e3b6a5B0b0066c0ea0DF9, gateReport: 0xF940b30E23De6Fcf8c38e56a6399679D2c948410 })
+== Logs ==
+  chain id: 31337
+  deployer: 0x23618e81E3f5cdF7f54C3d65f7FBc0aBf5B21E8f
+  chain is not 151 or 153: identity check skipped (local anvil without the registry?)
+  ADMIN_SAFE is not a contract; allowed on this chain but put a Safe there before mainnet
+  admin: 0xa0Ee7A142d267C1f36714E4a8F75612F20a79720
+  ADMIN IS NOT A SAFE: a stand-in proposes and executes on the timelock. Real deploy: a Safe 1.4.1, threshold >= 2.
+  timelock delay (s): 172800
+  agent: 0x14dC79964da2C08b23698B3D3cc7Ca32193d9955
+  claim signer: 0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc
+  permission (network gate): 0x519ba1b48D571FD92FAF6FE4D20fe74Ca435B690
+  timelock: 0x95bD8D42f30351685e96C62EDdc0d0613bf9a87A
+  implementation authority: 0x98eDDadCfde04dC22a0e62119617e74a6Bc77313
+  token: 0x2B8380FCA14b5F5C4a763bf38573A3c36a548c56
+  token ONCHAINID: 0x67EBb5690d1Fc1Bc0fa67cBD6Fe944515c5e7F93
+  identity registry: 0x3495fa1C4C2Ae290CF20ED1745395663b6189911
+  identity registry storage: 0xE0e0Dd37299c2d019658639fb01db4c312528d73
+  trusted issuers registry: 0x1B0Fd9Df9c444A4CeEC9863B88e1D7Cb3db621c0
+  claim topics registry: 0xBe0F340075060F856612d91e17cAe599dE92C745
+  compliance: 0x446Ae0F4BE2110a900B6506f5E1379C1E4BDfC57
+  claim issuer: 0xA62045beac3b7195393e3b6a5B0b0066c0ea0DF9
+  gate report: 0xF940b30E23De6Fcf8c38e56a6399679D2c948410
+  the token is born paused (Token.init): the agent calls unpause() when the register opens
+  deployment record: deployments/31337-TrexSuite.json
+==========================
+==========================
+==========================
+token 0x2B8380FCA14b5F5C4a763bf38573A3c36a548c56
+identity registry 0x3495fa1C4C2Ae290CF20ED1745395663b6189911
+claim issuer 0xA62045beac3b7195393e3b6a5B0b0066c0ea0DF9
+gate report 0xF940b30E23De6Fcf8c38e56a6399679D2c948410
+timelock 0x95bD8D42f30351685e96C62EDdc0d0613bf9a87A
+
+== 1b. gas of the whole suite's deploy, summed from the broadcast receipts
+CREATE TimelockController                  1,608,964
+CREATE call                                2,054,449
+CREATE call                                3,133,123
+CREATE call                                  482,260
+CREATE call                                1,545,748
+CREATE call                                1,033,016
+CREATE call                                1,176,500
+CREATE call                                1,266,889
+CALL   call                                  167,787
+CALL   call                                   52,348
+CREATE call                                  493,265
+CREATE call                                  493,168
+CREATE call                                  493,212
+CREATE call                                  568,591
+CREATE call                                  493,236
+CREATE call                                2,393,909
+CREATE call                                  674,002
+CALL   call                                  106,189
+CALL   call                                   40,239
+CALL   call                                   81,980
+CALL   call                                   67,294
+CREATE call                                2,746,407
+CALL   call                                  168,926
+CALL   call                                  151,826
+CALL   call                                   52,811
+CALL   call                                  240,733
+CALL   call                                   60,519
+CALL   call                                   60,519
+CALL   call                                   60,585
+CREATE GateReport                            411,751
+CALL   call                                   28,625
+CALL   call                                   41,516
+CALL   call                                   41,561
+CALL   call                                   41,538
+CALL   call                                   41,603
+CALL   call                                   41,443
+CALL   call                                   41,567
+CALL   call                                  151,825
+CALL   call                                   52,793
+39 transactions, 22,862,717 gas in all
+at US$0.01 per 21,000 gas: about US$10.89
+
+== 2. the suite as deployed
+token.version: "4.1.3"   name: "Card 15 Note"   paused: true
+token.owner: 0x95bD8D42f30351685e96C62EDdc0d0613bf9a87A (the timelock)
+registry.owner: 0x95bD8D42f30351685e96C62EDdc0d0613bf9a87A
+claim topics required: [1, 2]
+trusted issuers: [0xA62045beac3b7195393e3b6a5B0b0066c0ea0DF9]
+claim issuer: signer has claim key (3): true
+claim issuer: safe stand-in has management key (1): true
+claim issuer: deployer has management key (1): false
+agent is token agent: true   deployer is token agent: false
+
+== 3. the agent registers the investor (anvil 3) with an ONCHAINID, country 36
+identity: address 0x9eBb49B2004C753f6Fb8b3181C224a8972f70528
+  investor: 0x90F79bf6EB2c4f870365E785982E1f101E93b906
+  identity: 0x9eBb49B2004C753f6Fb8b3181C224a8972f70528
+  country: 36
+  topic: 1
+    data: 0x2abff845a11944b18188c349c1caf10d15f938c5e487b2e0287d842fe2536028
+    hash to sign: 0xab7eee0ad7328b6c0a3216951a5cc836942c1d06eb7cddc4179a0f109456d78e
+  topic: 2
+    data: 0x2dce57f8677df4b1a2fba9c6f2fbfaed936ab56a92958cdb78cb10622a674380
+    hash to sign: 0x78482cdc393ccaa3ec9f375fdabc49cb00d90759197347cec8b9ae88dc79ab33
+registered: true   verified before any claim: false
+
+== 4. the claim signer (anvil 5) signs each claim with eth_sign; the investor adds them to its ONCHAINID
+topic 1: signature 0x7f99b8f681b86b0352... (65 bytes)
+gasUsed              312037
+status               1 (success)
+topic 2: signature 0xe7b1b1a9e5d6c9e89d... (65 bytes)
+gasUsed              312025
+status               1 (success)
+verified after both claims: true
+
+== 5. the agent opens the register (T-REX tokens are born paused) and mints 1,000 units to the investor
+gasUsed              42678
+status               1 (success)
+paused: false
+gasUsed              285984
+status               1 (success)
+balance: 1000
+
+== 6. the investor transfers 10 units to a wallet with no claim (anvil 4): the token refuses
+Error: Failed to estimate gas: server returned an error response: error code 3: execution reverted: Transfer not possible, data: "0x08c379a0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000155472616e73666572206e6f7420706f737369626c650000000000000000000000": Error("Transfer not possible")
+stranger balance: 0   investor balance: 1000
+
+== 7. which layer refused: the network gate (permission.isAllowed) beside the register (isVerified)
+(on this fork the dev loop mocks the network gate at the real address and lets Anvil accounts 2 to 6 through;
+ the real gate on 153 would refuse every Anvil account. Anvil 9 is outside the mocked set.)
+investor 0x90F79bf6EB2c4f870365E785982E1f101E93b906
+  permission.isAllowed: true   registry.isVerified: true
+  GateReport.describe: "allowed by both layers"
+stranger 0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65
+  permission.isAllowed: true   registry.isVerified: false
+  GateReport.describe: "refused by the register (identityRegistry.isVerified is false); the network gate allows this wallet"
+outside-the-mock 0xa0Ee7A142d267C1f36714E4a8F75612F20a79720
+  permission.isAllowed: false   registry.isVerified: false
+  GateReport.describe: "refused by both layers: the network gate and the register"
+
+== 8. the issuer's safe stand-in (anvil 9) revokes the investor's topic-1 claim; a mint to the investor is now refused
+gasUsed              58255
+status               1 (success)
+claim revoked: true   verified: false
+Error: Failed to estimate gas: server returned an error response: error code 3: execution reverted: Identity is not verified., data: "0x08c379a0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000194964656e74697479206973206e6f742076657269666965642e00000000000000": Error("Identity is not verified.")
+  GateReport.describe(investor): "refused by the register (identityRegistry.isVerified is false); the network gate allows this wallet"
+
+== 9. the timelock: the safe stand-in cannot add a claim topic directly, and the timelock's delay is 172800 [1.728e5] s
+Error: Failed to estimate gas: server returned an error response: error code 3: execution reverted: Ownable: caller is not the owner, data: "0x08c379a0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000204f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e6572": Error("Ownable: caller is not the owner")
+
+== done. Nothing here touched a real network: chain 31337, unlocked test accounts only.

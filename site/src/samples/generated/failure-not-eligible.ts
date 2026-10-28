@@ -9,5 +9,6 @@
     topic: 'verifier-contract',
     status: 'measured',
     measured: 'Local loop, 14 September 2026: `cast send` from the NeverIssued wallet answered `custom error 0x879342fb` with the wallet and 18 encoded, decoded by cast as NotEligible(wallet, 18).',
+    record: 'packages/create-redbelly-dapp/reports/golden-path-dev-2026-09-14.md',
     match: [{ type: 'selector', value: NOT_ELIGIBLE_SELECTOR }, { type: 'text', value: 'NotEligible\\(' }],
   },

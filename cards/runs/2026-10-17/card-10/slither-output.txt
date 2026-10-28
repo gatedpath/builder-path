@@ -1,0 +1,138 @@
+
+> lint:slither
+> node scripts/slither.mjs
+
+
+Detector: weak-prng
+GatedPair._update(uint256,uint256,uint112,uint112) (src/pool/GatedPair.sol#195-220) uses a weak PRNG: "timestamp = block.timestamp % 2 ** 32 (src/pool/GatedPair.sol#201)" 
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#weak-PRNG
+
+Detector: incorrect-equality
+GatedPair.mint(address) (src/pool/GatedPair.sol#79-100) uses a dangerous strict equality:
+	- supply == 0 (src/pool/GatedPair.sol#88)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#dangerous-strict-equalities
+
+Detector: reentrancy-no-eth
+Reentrancy in GatedPairFactory.createPair(address,address) (src/pool/GatedPairFactory.sol#93-106):
+	External calls:
+	- GatedPair(pair).initialize(token0,token1) (src/pool/GatedPairFactory.sol#100)
+	State variables written after the call(s):
+	- getPair[token0][token1] = pair (src/pool/GatedPairFactory.sol#101)
+	GatedPairFactory.getPair (src/pool/GatedPairFactory.sol#45) can be used in cross function reentrancies:
+	- GatedPairFactory.createPair(address,address) (src/pool/GatedPairFactory.sol#93-106)
+	- GatedPairFactory.getPair (src/pool/GatedPairFactory.sol#45)
+	- getPair[token1][token0] = pair (src/pool/GatedPairFactory.sol#102)
+	GatedPairFactory.getPair (src/pool/GatedPairFactory.sol#45) can be used in cross function reentrancies:
+	- GatedPairFactory.createPair(address,address) (src/pool/GatedPairFactory.sol#93-106)
+	- GatedPairFactory.getPair (src/pool/GatedPairFactory.sol#45)
+Reentrancy in GatedPair.swap(uint256,uint256,address,bytes) (src/pool/GatedPair.sol#132-164):
+	External calls:
+	- IUniswapV2Callee(to).uniswapV2Call(msg.sender,amount0Out,amount1Out,data) (src/pool/GatedPair.sol#146)
+	State variables written after the call(s):
+	- _update(balance0,balance1,reserve0,reserve1) (src/pool/GatedPair.sol#162)
+		- _blockTimestampLast = blockTimestamp (src/pool/GatedPair.sol#218)
+	GatedPair._blockTimestampLast (src/pool/GatedPair.sol#43) can be used in cross function reentrancies:
+	- GatedPair._update(uint256,uint256,uint112,uint112) (src/pool/GatedPair.sol#195-220)
+	- GatedPair.getReserves() (src/pool/GatedPair.sol#70-74)
+	- _update(balance0,balance1,reserve0,reserve1) (src/pool/GatedPair.sol#162)
+		- _reserve0 = uint112(balance0) (src/pool/GatedPair.sol#215)
+	GatedPair._reserve0 (src/pool/GatedPair.sol#41) can be used in cross function reentrancies:
+	- GatedPair._update(uint256,uint256,uint112,uint112) (src/pool/GatedPair.sol#195-220)
+	- GatedPair.burn(address) (src/pool/GatedPair.sol#104-127)
+	- GatedPair.getReserves() (src/pool/GatedPair.sol#70-74)
+	- GatedPair.mint(address) (src/pool/GatedPair.sol#79-100)
+	- GatedPair.skim(address) (src/pool/GatedPair.sol#167-173)
+	- GatedPair.sync() (src/pool/GatedPair.sol#176-178)
+	- _update(balance0,balance1,reserve0,reserve1) (src/pool/GatedPair.sol#162)
+		- _reserve1 = uint112(balance1) (src/pool/GatedPair.sol#217)
+	GatedPair._reserve1 (src/pool/GatedPair.sol#42) can be used in cross function reentrancies:
+	- GatedPair._update(uint256,uint256,uint112,uint112) (src/pool/GatedPair.sol#195-220)
+	- GatedPair.burn(address) (src/pool/GatedPair.sol#104-127)
+	- GatedPair.getReserves() (src/pool/GatedPair.sol#70-74)
+	- GatedPair.mint(address) (src/pool/GatedPair.sol#79-100)
+	- GatedPair.skim(address) (src/pool/GatedPair.sol#167-173)
+	- GatedPair.sync() (src/pool/GatedPair.sol#176-178)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-2
+
+Detector: missing-zero-check
+GatedPair.initialize(address,address).token0_ (src/pool/GatedPair.sol#63) lacks a zero-check on :
+		- token0 = token0_ (src/pool/GatedPair.sol#65)
+GatedPair.initialize(address,address).token1_ (src/pool/GatedPair.sol#63) lacks a zero-check on :
+		- token1 = token1_ (src/pool/GatedPair.sol#66)
+GatedPairFactory.setFeeTo(address).newFeeTo (src/pool/GatedPairFactory.sol#117) lacks a zero-check on :
+		- feeTo = newFeeTo (src/pool/GatedPairFactory.sol#119)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#missing-zero-address-validation
+
+Detector: reentrancy-benign
+Reentrancy in GatedPairFactory.createPair(address,address) (src/pool/GatedPairFactory.sol#93-106):
+	External calls:
+	- GatedPair(pair).initialize(token0,token1) (src/pool/GatedPairFactory.sol#100)
+	State variables written after the call(s):
+	- allPairs.push(pair) (src/pool/GatedPairFactory.sol#104)
+	- isPair[pair] = true (src/pool/GatedPairFactory.sol#103)
+Reentrancy in GatedPair.swap(uint256,uint256,address,bytes) (src/pool/GatedPair.sol#132-164):
+	External calls:
+	- IUniswapV2Callee(to).uniswapV2Call(msg.sender,amount0Out,amount1Out,data) (src/pool/GatedPair.sol#146)
+	State variables written after the call(s):
+	- _update(balance0,balance1,reserve0,reserve1) (src/pool/GatedPair.sol#162)
+		- price0CumulativeLast += uint256(_uqdiv(_encode(reserve1),reserve0)) * timeElapsed (src/pool/GatedPair.sol#209)
+	- _update(balance0,balance1,reserve0,reserve1) (src/pool/GatedPair.sol#162)
+		- price1CumulativeLast += uint256(_uqdiv(_encode(reserve0),reserve1)) * timeElapsed (src/pool/GatedPair.sol#210)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-3
+
+Detector: reentrancy-events
+Reentrancy in GatedPairFactory.createPair(address,address) (src/pool/GatedPairFactory.sol#93-106):
+	External calls:
+	- GatedPair(pair).initialize(token0,token1) (src/pool/GatedPairFactory.sol#100)
+	Event emitted after the call(s):
+	- PairCreated(token0,token1,pair,allPairs.length) (src/pool/GatedPairFactory.sol#105)
+Reentrancy in GatedPair.swap(uint256,uint256,address,bytes) (src/pool/GatedPair.sol#132-164):
+	External calls:
+	- IUniswapV2Callee(to).uniswapV2Call(msg.sender,amount0Out,amount1Out,data) (src/pool/GatedPair.sol#146)
+	Event emitted after the call(s):
+	- Swap(msg.sender,amount0In,amount1In,amount0Out,amount1Out,to) (src/pool/GatedPair.sol#163)
+	- Sync(_reserve0,_reserve1) (src/pool/GatedPair.sol#219)
+		- _update(balance0,balance1,reserve0,reserve1) (src/pool/GatedPair.sol#162)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-4
+
+Detector: timestamp
+IssuerRegistry.setIssuer(address,uint64,uint64,uint256) (src/IssuerRegistry.sol#60-72) uses timestamp for comparisons
+	Dangerous comparisons:
+	- validFrom == 0 (src/IssuerRegistry.sol#67)
+	- validUntil <= validFrom || validUntil <= nowTs (src/IssuerRegistry.sol#68)
+IssuerRegistry.isActiveIssuer(address) (src/IssuerRegistry.sol#87-93) uses timestamp for comparisons
+	Dangerous comparisons:
+	- p.validUntil != 0 && block.timestamp >= p.validFrom && block.timestamp < p.validUntil (src/IssuerRegistry.sol#92)
+IssuerRegistry.canIssue(address,uint256) (src/IssuerRegistry.sol#103-105) uses timestamp for comparisons
+	Dangerous comparisons:
+	- isActiveIssuer(issuer) && remainingIssuance(issuer) >= amount (src/IssuerRegistry.sol#104)
+GatedPair.mint(address) (src/pool/GatedPair.sol#79-100) uses timestamp for comparisons
+	Dangerous comparisons:
+	- supply == 0 (src/pool/GatedPair.sol#88)
+	- require(bool,string)(liquidity > 0,UniswapV2: INSUFFICIENT_LIQUIDITY_MINTED) (src/pool/GatedPair.sol#94)
+GatedPair.burn(address) (src/pool/GatedPair.sol#104-127) uses timestamp for comparisons
+	Dangerous comparisons:
+	- require(bool,string)(amount0 > 0 && amount1 > 0,UniswapV2: INSUFFICIENT_LIQUIDITY_BURNED) (src/pool/GatedPair.sol#117)
+GatedPair.swap(uint256,uint256,address,bytes) (src/pool/GatedPair.sol#132-164) uses timestamp for comparisons
+	Dangerous comparisons:
+	- require(bool,string)(amount0Out < reserve0 && amount1Out < reserve1,UniswapV2: INSUFFICIENT_LIQUIDITY) (src/pool/GatedPair.sol#136)
+	- require(bool,string)(amount0In > 0 || amount1In > 0,UniswapV2: INSUFFICIENT_INPUT_AMOUNT) (src/pool/GatedPair.sol#152)
+	- require(bool,string)(balance0Adjusted * balance1Adjusted >= uint256(reserve0) * uint256(reserve1) * (1000 ** 2),UniswapV2: K) (src/pool/GatedPair.sol#156-159)
+	- balance0 > reserve0 - amount0Out (src/pool/GatedPair.sol#150)
+	- balance1 > reserve1 - amount1Out (src/pool/GatedPair.sol#151)
+GatedPair._update(uint256,uint256,uint112,uint112) (src/pool/GatedPair.sol#195-220) uses timestamp for comparisons
+	Dangerous comparisons:
+	- timeElapsed > 0 && reserve0 != 0 && reserve1 != 0 (src/pool/GatedPair.sol#207)
+GatedPair._mintFee(uint112,uint112) (src/pool/GatedPair.sol#226-244) uses timestamp for comparisons
+	Dangerous comparisons:
+	- rootK > rootKLast (src/pool/GatedPair.sol#234)
+	- liquidity > 0 (src/pool/GatedPair.sol#238)
+GatedPairERC20.permit(address,address,uint256,uint256,uint8,bytes32,bytes32) (src/pool/GatedPairERC20.sol#97-114) uses timestamp for comparisons
+	Dangerous comparisons:
+	- require(bool,string)(deadline >= block.timestamp,UniswapV2: EXPIRED) (src/pool/GatedPairERC20.sol#103)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#block-timestamp
+. analyzed (31 contracts with 81 detectors), 20 result(s) found
+'forge clean' running (wd: ~/code/card-10/contracts)
+'forge config --json' running
+'forge build --build-info --deny never --skip ./test/** ./script/** --force' running (wd: ~/code/card-10/contracts)
+wrote contracts/reports/slither.json and contracts/reports/slither.sources.sha256

@@ -1,0 +1,55 @@
+No files changed, compilation skipped
+
+Ran 15 tests for test/DeployPreflight.t.sol:DeployPreflightTest
+[PASS] test_mainnet_accepts_safe_with_threshold_two_and_verified_deployer_and_todays_ship_report() (gas: 363352)
+[PASS] test_mainnet_refuses_a_safe_lookalike_and_a_safe_that_cannot_sign() (gas: 490874)
+[PASS] test_mainnet_refuses_a_ship_report_that_does_not_say_so() (gas: 492572)
+[PASS] test_mainnet_refuses_eoa_admin() (gas: 65153)
+[PASS] test_mainnet_refuses_threshold_one() (gas: 276354)
+[PASS] test_mainnet_refuses_unverified_deployer() (gas: 251411)
+[PASS] test_mainnet_refuses_without_admin_safe() (gas: 57588)
+[PASS] test_mainnet_refuses_without_todays_ship_report() (gas: 351470)
+[PASS] test_mainnet_refuses_wrong_version_or_singleton() (gas: 303372)
+[PASS] test_other_chain_skips_identity() (gas: 22476)
+[PASS] test_redbelly_refuses_when_registry_missing() (gas: 19972)
+[PASS] test_refuses_when_the_simulated_chain_is_not_the_rpcs() (gas: 49684)
+[PASS] test_ship_report_path_is_todays_utc_date() (gas: 42329)
+[PASS] test_testnet_allows_eoa_admin_but_still_checks_identity() (gas: 87354)
+[PASS] test_testnet_warns_without_ship_report_and_accepts_with_one() (gas: 154896)
+Suite result: ok. 15 passed; 0 failed; 0 skipped; finished in 2.23ms (3.78ms CPU time)
+
+Ran 4 tests for test/GatedExample.t.sol:GatedExampleTest
+[PASS] testFuzz_ping_onlyValid(address,uint8) (runs: 512, μ: 56137, ~: 47020)
+[PASS] test_ping_inAllFiveStates() (gas: 151502)
+[PASS] test_ping_valid() (gas: 100615)
+[PASS] test_setVerifierAndRequestId_onlyOwner() (gas: 32892)
+Suite result: ok. 4 passed; 0 failed; 0 skipped; finished in 8.65ms (8.89ms CPU time)
+
+Ran 11 tests for test/TrexSuite.t.sol:TrexSuiteTest
+[PASS] testFuzz_claim_valid_anyAmountWithinBalance(uint256) (runs: 512, μ: 3029925, ~: 3030230)
+[PASS] test_adminCannotActDirectly_timelockCanAfterTheDelay() (gas: 133770)
+[PASS] test_claim_expired_isRefusedByTheExpiringIssuer() (gas: 4001205)
+[PASS] test_claim_expired_referenceIssuerNeverExpires() (gas: 2946628)
+[PASS] test_claim_none_isRefused() (gas: 2488927)
+[PASS] test_claim_revoked_isRefused() (gas: 3260490)
+[PASS] test_claim_untrustedIssuer_isRefused_untilTheTimelockTrustsIt() (gas: 6102064)
+[PASS] test_claim_valid_transfers() (gas: 3093358)
+[PASS] test_claim_wrongTopic_isRefused() (gas: 3398504)
+[PASS] test_gateReport_saysWhichLayerRefused() (gas: 906199)
+[PASS] test_suite_isWiredAndOwnedByTheTimelock() (gas: 279093)
+Suite result: ok. 11 passed; 0 failed; 0 skipped; finished in 83.81ms (88.90ms CPU time)
+
+Ran 1 test for test/GatedExample.invariants.t.sol:GatedExampleInvariants
+[PASS] invariant_pingsCountEligibleCallsOnly() (runs: 64, calls: 2048, reverts: 0)
+
+╭-------------+-----------+-------+---------+----------╮
+| Contract    | Selector  | Calls | Reverts | Discards |
++======================================================+
+| PingHandler | ping      | 1027  | 0       | 0        |
+|-------------+-----------+-------+---------+----------|
+| PingHandler | setStatus | 1021  | 0       | 0        |
+╰-------------+-----------+-------+---------+----------╯
+
+Suite result: ok. 1 passed; 0 failed; 0 skipped; finished in 109.16ms (108.82ms CPU time)
+
+Ran 4 test suites in 109.58ms (203.86ms CPU time): 31 tests passed, 0 failed, 0 skipped (31 total tests)

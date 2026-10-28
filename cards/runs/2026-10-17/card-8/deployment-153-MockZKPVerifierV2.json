@@ -1,0 +1,12 @@
+{
+  "admin": "0x38d8fd4d6bAd7Af440Ed5D35a4E381f5f2936B59",
+  "adminIsSafe": false,
+  "chainId": 153,
+  "constructorArgs": "0x00000000000000000000000087b7094051d38d00a150e394312c08c7700b6bf1",
+  "constructorSignature": "constructor(address)",
+  "contract": "0x68E07D5a913F9988240582a431acc1AEA4212461",
+  "contractName": "MockZKPVerifierV2",
+  "deployer": "0x38d8fd4d6bAd7Af440Ed5D35a4E381f5f2936B59",
+  "evmVersion": "prague",
+  "solc": "0.8.30"
+}

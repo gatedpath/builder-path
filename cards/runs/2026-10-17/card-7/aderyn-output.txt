@@ -1,0 +1,43 @@
+
+> lint:aderyn
+> cd contracts && aderyn .
+
+
+--------------------------------------------------------
+# Configuration
+--------------------------------------------------------
+Root - ~/code/card-7/contracts
+Source - ~/code/card-7/contracts/src
+Remappings - [
+    "forge-std/=lib/forge-std/src/",
+    "@openzeppelin/contracts/=node_modules/@openzeppelin/contracts/",
+    "@gatedpath/receptor-mock/=lib/receptor-mock/src/",
+    "@gatedpath/receptor-mock-test/=lib/receptor-mock/test/",
+    "receptor-mock/=lib/receptor-mock/src/",
+]
+EVM version - prague
+--------------------------------------------------------
+# Source Scope
+--------------------------------------------------------
+Include Filepaths Containing - No specific criteria.
+Exclude Filepaths Containing - [
+    "lib/",
+    "node_modules/",
+    "test/",
+    "script/",
+]
+Auto Excluding - No Files.
+--------------------------------------------------------
+# Compiling Abstract Syntax Trees
+--------------------------------------------------------
+Ingesting 3 compiled files [solc : v0.8.30]
+--------------------------------------------------------
+# Scanning Contracts
+--------------------------------------------------------
+Running 88 detectors
+Detectors run, printing report.
+Report printed to report.md
+
+✔  Done! Fast, clean, effective.
+⭐ Support the project with a star:
+https://github.com/Cyfrin/aderyn

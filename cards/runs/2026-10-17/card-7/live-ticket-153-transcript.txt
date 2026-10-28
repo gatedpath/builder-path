@@ -1,0 +1,71 @@
+Card 7's live use on testnet 153, 26 October 2026. The owner's dev wallet (0x38d8fd4d6bAd7Af440Ed5D35a4E381f5f2936B59)
+signed every transaction from her own Terminal; refusals are read-only eth_call against the live network state
+between the signed phases. One wallet is the buyer, the seller, the door and the organiser in turn. A resale to a
+second buyer cannot be shown live with one enabled wallet (the buyer must send the transaction); that path stays
+proven on the fork of 17 October.
+
+== Phase 1 (her signature): seed her wallet Valid on request 18 on the shared mock, buy ticket 0 at face value, list it at the cap
+   three transactions, block 3,056,856, 257,341 gas, 80.41 test RBNT at 312,460.94 gwei, plus 1 RBNT paid for the ticket
+   purchase: tx 0x75932b47595026f6ae94b5882a1ef197508bcdedf03a9db4200375df0bee2a99, 72,725 gas
+   read back: ownerOf(0) her wallet; totalSupply 1; contract balance 1 RBNT; isTransferable(0) true; canPurchase(her) true
+   nonce 36; balance 38,002.78 test RBNT
+
+== Live refusals after phase 1 (eth_call against 153, nothing signed)
+  a stranger (0x…dEaD) buys ticket 0 (the gate is checked before the price):
+    refused: NotEligible(0x000000000000000000000000000000000000dEaD, 18)  selector 0x879342fb
+  a stranger purchases:
+    refused: NotEligible(0x000000000000000000000000000000000000dEaD, 18)  selector 0x879342fb
+  her wallet buys its own listed ticket at the asking price:
+    refused: OwnTicket(0)  selector 0x7ff5a41b
+  her wallet lists ticket 0 at the cap plus one wei:
+    refused: AboveResaleCap(1100000000000000001, 1100000000000000000)  selector 0xc3b03ea2
+  her wallet transfers ticket 0 plainly to an ineligible address:
+    refused: NotEligible(0x000000000000000000000000000000000000dEaD, 18)  selector 0x879342fb
+    (the recipient's credential is checked first; the resale rule is shown against an eligible recipient after phase 3)
+  her wallet purchases another at half price:
+    refused: WrongPrice(1000000000000000000, 500000000000000000)  selector 0x6871963e
+
+== Phase 2 (her signature): delist ticket 0, the door checks it in, a second address (0x…d0C8, never transacts) seeded Valid on 18
+   three transactions, blocks 3,056,859 to 3,056,860, 139,513 gas, 43.59 test RBNT at 312,460.94 gwei
+   delist: tx 0x932365023571e7025b36d9fe4d595ff68cf03fe41b0fc929e58d1eded165a175, 35,266 gas
+   read back: isTransferable(0) false; ownerOf(0) her wallet; isEligible(second holder) true; nonce 39; balance 37,959.18
+
+== Live refusals after phase 2 (eth_call against 153, nothing signed)
+  her wallet lists the checked-in ticket 0:
+    refused: TicketUsed(0)  selector 0x1f5d53e3
+  her wallet transfers the checked-in ticket 0 to the eligible second holder:
+    refused: TicketUsed(0)  selector 0x1f5d53e3
+  the door checks ticket 0 in again:
+    refused: AlreadyCheckedIn(0)  selector 0x9ad62359
+  anyone buys ticket 0 (delisted):
+    refused: NotListed(0)  selector 0xd176cea0
+  the second holder (no door role) checks a ticket in:
+    refused: AccessControlUnauthorizedAccount(0x…d0C8, DOOR_ROLE)  selector 0xe2517d3f
+
+== Phase 3 (her signature): the organiser refunds ticket 0 at face value, buys ticket 1, her credential set Revoked on 18
+   three transactions, blocks 3,056,863 to 3,056,864, 259,263 gas, 81.01 test RBNT at 312,460.94 gwei (the 1 RBNT refund
+   in and the 1 RBNT purchase out net to zero)
+   purchase: tx 0x15cb90122f6daa5738e7d6e8ba12503b2aec1ae370e1fe6dd37cb5f283c599fb, 157,781 gas (a cold mint)
+   read back: ownerOf(0) reverts ERC721NonexistentToken (burned); ownerOf(1) her wallet; totalSupply 1; contract
+   balance 1 RBNT; canPurchase(her) false; nonce 42; balance 37,878.17
+
+== Live refusals after phase 3 (eth_call against 153, her credential Revoked)
+  her wallet purchases another ticket:
+    refused: NotEligible(0x38d8fd4d6bAd7Af440Ed5D35a4E381f5f2936B59, 18)  selector 0x879342fb
+  her wallet transfers ticket 1 plainly to the eligible second holder:
+    refused: TransferOnlyThroughResale(1)  selector 0x259456d5
+    (the resale rule for its own reason: the recipient is eligible, the ticket is not checked in, and still a plain transfer is refused)
+  her wallet lists ticket 1 at the cap: allowed by the read (listing needs no credential; the buyer does); not sent
+
+== Phase 4 (her signature): the organiser refunds ticket 1 to the revoked holder, then the credential is restored
+   two transactions, block 3,056,865, 107,094 gas, 33.46 test RBNT at 312,460.94 gwei; the 1 RBNT refund came back
+   refund: tx 0x9722bc8286262e63824c516d90aa785cd2973b275cebfb08b85798b11a4a0d4c, 74,659 gas (a burn checks nothing: it reached a holder whose credential was revoked)
+   read back: totalSupply 0; ownerOf(1) reverts ERC721NonexistentToken; contract balance 0; canPurchase(her) true; sale still open; nonce 44; balance 37,845.71
+
+== Totals, 26 October 2026, card 7's live use on 153
+   phase 1 (3 tx) 80.41; phase 2 (3 tx) 43.59; phase 3 (3 tx) 81.01; phase 4 (2 tx) 33.46: 238.47 test RBNT in gas for
+   eleven transactions; two tickets bought at 1 RBNT and both refunded, so the ticket money nets to zero. With the deploy
+   of 25 October (770.85), card 7 cost 1,009.32 test RBNT on testnet in all. Nothing touched mainnet. Shown live: the gate
+   on purchase and on buy, the cap, the own-ticket rule, the wrong price, the door, every rule a used ticket carries, a
+   purchase refused to a revoked holder, the resale rule for its own reason, and a refund that reaches a revoked holder.
+   Not shown live, by the nature of one enabled wallet: a resale to a second buyer; proven on the fork of 17 October.

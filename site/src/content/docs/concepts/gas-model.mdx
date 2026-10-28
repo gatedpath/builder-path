@@ -24,7 +24,7 @@ import Sample from '../../../components/Sample.astro';
 The unit price, the oracle, the registry ABI and the fee distribution are all on Vine. Fee split at 100k transactions a day: 30% Redbelly, 30% issuers, 40% operators; a 5% burn above 1M a day while supply exceeds 5B RBNT ([distribution page](https://vine.redbelly.network/network-fees/distribution/)).
 </VineAside>
 
-What I measured, 12 September 2026: `getLatestPrice()` returned 2427 on mainnet at 08:25 UTC, which reads as US$0.002427 per RBNT once `decimals()` on the feed answered 6. The base fee at that moment was 196,205,387,799,948 wei; times 21,000 gas that is 4.12 RBNT, which is US$0.01 at that price. `eth_gasPrice` was the base fee plus ten percent, and `eth_maxPriorityFeePerGas` was 0. How often the oracle updates is not stated anywhere I read (question 6, partial on cadence). The helper that does this arithmetic reproduces the measured transfer within one percent, and its test replays the exact values:
+What I measured, 12 September 2026: `getLatestPrice()` returned 2427 on mainnet at 08:25 UTC, which reads as US$0.002427 per RBNT once `decimals()` on the feed answered 6. The base fee at that moment was 196,205,387,799,948 wei; times 21,000 gas that is 4.12 RBNT, which is US$0.01 at that price. `eth_gasPrice` was the base fee plus ten percent, and `eth_maxPriorityFeePerGas` was 0. How often the oracle updates is not stated anywhere I read ([question 6](/research/#the-questions-this-site-cites), partial on cadence). The helper that does this arithmetic reproduces the measured transfer within one percent, and its test replays the exact values:
 
 <Sample id="helpers-gas-cost" />
 
@@ -34,12 +34,16 @@ Leave the fee fields alone. wagmi, viem and ethers will read `eth_gasPrice` or t
 
 Test gas, not fees. `forge snapshot` and gas-used assertions are stable; a fee assertion in wei changes with the RBNT price and, on an anvil fork, does not follow the oracle at all. When you need a number for a human, price it in USD with `gasCostUsd` from `@gatedpath/chains`.
 
-Budget in dollars. A year of operations is gas used times US$0.000000476 per gas unit. No token price forecast is needed, which is the point of the model. The RBNT balance you need to hold does move with the price, so keep a margin; pre-flight will check it.
+You can budget in dollars: a year of operations is gas used times US$0.000000476 per gas unit. No token price forecast is needed, which is the point of the model. The RBNT balance you need to hold does move with the price, so keep a margin; pre-flight will check it.
 
-Show the number yourself. Vine's own warning is that most wallets mishandle gas information on Redbelly. Read the feed and print the USD cost in your interface rather than trusting what the wallet shows.
+Vine's own warning is that most wallets mishandle gas information on Redbelly, so show the number yourself: read the feed and print the USD cost in your interface rather than trusting what the wallet shows.
 
-There is nothing to bid with. With a zero priority fee and an oracle-set base fee there is no fee auction, and therefore no fee-market griefing and no priority-fee games. Gas-limit denial of service inside one transaction still exists.
+With a zero priority fee and an oracle-set base fee there is no fee auction, and therefore no fee-market griefing and no priority-fee games. Gas-limit denial of service inside one transaction still exists.
+
+There is no hard-coded execution cap on a transaction. The founder's own benchmark found that Algorand, Diem and Solana refuse a compute-heavy transaction at a limit that paying more gas cannot lift, and that the geth EVM has no such limit (Diablo, EuroSys 2023); Redbelly confirmed to me on 12 October 2026 that the deployed network keeps that property. The ceilings a heavy transaction meets here are the block gas limit, which read as 60,000,000,000 on both networks that day, and your own balance.
+
+One consequence of pricing gas in dollars is that any number written in RBNT goes stale as the price moves, and Redbelly's own documentation is not immune. A 2024 guide of theirs put the cost of enabling an account at 20 RBNT, and it was right the day it was written: the first enables on mainnet, in October 2024, cost 20.4 RBNT each. When I enabled my own development wallet on 17 October 2026 the same call, the same 2.15 million gas, cost 568 RBNT. In between it cost 4 RBNT in December 2024, 41 in May 2025 and 212 in March 2026, read from the base fee at those blocks. In dollars it was about one dollar every time. Quote gas and dollars, never coins, and date whatever you quote.
 
 ## Where it comes from
 
-Vine's network-fees and distribution pages; `eth_call` against the registry and the feed; `eth_gasPrice`, `eth_maxPriorityFeePerGas` and `eth_feeHistory` on both networks, all on 12 September 2026 (research log, questions 5 and 6, and the chain-definitions rows).
+Vine's network-fees and distribution pages; `eth_call` against the registry and the feed; `eth_gasPrice`, `eth_maxPriorityFeePerGas` and `eth_feeHistory` on both networks, all on 12 September 2026 (research log, [questions 5 and 6](/research/#the-questions-this-site-cites), and the chain-definitions rows).

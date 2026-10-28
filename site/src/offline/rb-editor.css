@@ -33,18 +33,59 @@
 .rb-ed-bar button[disabled] { opacity: 0.45; cursor: default; }
 .rb-ed-bar__count { font-variant-numeric: tabular-nums; opacity: 0.85; }
 
-/* what can be edited, while editing is on */
+.rb-ed-bar__msg { max-width: 26rem; opacity: 0.92; }
+@media (max-width: 40em) { .rb-ed-bar { left: 0.5rem; right: 0.5rem; bottom: 0.5rem; flex-wrap: wrap; } .rb-ed-bar__msg { flex-basis: 100%; } }
+
+/* what can be edited: a faint dashed outline; the one in the box, a solid one */
 [data-rb-editing] [data-rb-marker] {
   cursor: text;
   border-radius: 0.25rem;
-  box-shadow: 0 0 0 1px rgb(47 109 94 / 35%);
+  outline: 1px dashed rgb(47 109 94 / 45%);
+  outline-offset: 3px;
+  transition: outline-color 0.2s;
 }
-[data-rb-editing] [data-rb-marker]:hover { box-shadow: 0 0 0 1px rgb(47 109 94 / 75%); }
-[data-rb-editing] [data-rb-marker]:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px #2f6d5e;
-  background: rgb(47 109 94 / 5%);
+[data-rb-editing] [data-rb-marker]:hover { outline-color: #2f6d5e; }
+[data-rb-editing] [data-rb-marker].rb-ed-now {
+  outline: 2px solid #2f6d5e;
+  background: rgb(47 109 94 / 8%);
 }
+
+/* the box the editing happens in, above the bar */
+.rb-ed-box {
+  position: fixed;
+  inset: auto 1rem 4.25rem 1rem;
+  max-width: 44rem;
+  margin-inline: auto;
+  z-index: 9999;
+  background: #fff;
+  color: #1f2a27;
+  border: 1px solid #cfe0db;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem 1rem;
+  box-shadow: 0 10px 40px rgb(0 0 0 / 22%);
+  font: 0.875rem/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.rb-ed-box[hidden] { display: none; }
+.rb-ed-box__hint { margin: 0 0 0.5rem; opacity: 0.8; }
+.rb-ed-box textarea {
+  width: 100%;
+  font: 1rem/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  border: 1px solid #cfe0db;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.625rem;
+  resize: vertical;
+}
+.rb-ed-box textarea:focus-visible { outline: 2px solid #2f6d5e; outline-offset: 1px; }
+.rb-ed-box__row { display: flex; gap: 0.5rem; margin-top: 0.625rem; justify-content: flex-end; }
+.rb-ed-box__row button {
+  appearance: none; border: 1px solid #2f6d5e; background: #2f6d5e; color: #fff;
+  font: inherit; padding: 0.4rem 0.75rem; border-radius: 0.5rem; cursor: pointer;
+}
+.rb-ed-box__row button.secondary { background: #fff; color: #2f6d5e; }
+
+/* the one line at the foot of a page opened from a folder without #edit */
+.rb-ed-hint { margin: 1rem 0 0; font-size: 0.8125rem; opacity: 0.75; }
+.rb-ed-hint a { color: inherit; }
 [data-rb-marker][data-rb-changed] {
   box-shadow: inset 3px 0 0 #c9963a;
   padding-left: 0.5rem;
@@ -98,10 +139,14 @@
   color: #9fd3c6;
   border-color: rgb(159 211 198 / 55%);
 }
-[data-theme='dark'] [data-rb-editing] [data-rb-marker]:focus { background: rgb(159 211 198 / 10%); }
+[data-theme='dark'] [data-rb-editing] [data-rb-marker].rb-ed-now { background: rgb(159 211 198 / 12%); outline-color: #9fd3c6; }
+[data-theme='dark'] [data-rb-editing] [data-rb-marker] { outline-color: rgb(159 211 198 / 45%); }
+[data-theme='dark'] .rb-ed-box { background: #10201d; color: #eaf3f0; border-color: rgb(234 243 240 / 22%); }
+[data-theme='dark'] .rb-ed-box textarea { background: #0b1715; color: #eaf3f0; border-color: rgb(234 243 240 / 22%); }
+[data-theme='dark'] .rb-ed-box__row button.secondary { background: transparent; color: #9fd3c6; border-color: rgb(159 211 198 / 55%); }
 
 /* Search needs a server it cannot reach from a folder on disk, so it is hidden offline. */
 [data-rb-offline] .sl-flex site-search,
 [data-rb-offline] site-search { display: none !important; }
 
-@media print { .rb-ed-bar, .rb-ed-panel { display: none !important; } }
+@media print { .rb-ed-bar, .rb-ed-panel, .rb-ed-box, .rb-ed-hint { display: none !important; } }

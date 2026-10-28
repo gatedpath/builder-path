@@ -5,7 +5,9 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-export const ENV_NAMES = { deployer: 'DEPLOYER', admin: 'ADMIN_SAFE', chain: 'CHAIN_ID', legacyAdmin: 'PREFLIGHT_ADMIN' } as const;
+// VERIFIER joined on 25 October 2026: the deploy script reads it with vm.envOr, which sees only the
+// process environment, so ship has to see it there too or the two disagree (card 9's run, 23 October).
+export const ENV_NAMES = { deployer: 'DEPLOYER', admin: 'ADMIN_SAFE', chain: 'CHAIN_ID', legacyAdmin: 'PREFLIGHT_ADMIN', verifier: 'VERIFIER' } as const;
 
 export function readDotEnv(project: string, env: NodeJS.ProcessEnv): Record<string, string> {
   const out: Record<string, string> = {};

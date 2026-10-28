@@ -1,0 +1,137 @@
+---
+// A terminal recording, shown as what it is: the run (PLAN.md 20.4).
+//
+// The id names an entry in casts.config.mjs. The recording is read at build from the run's own
+// folder under cards/runs/, never typed, and scripts/check-casts.mjs fails the build when its
+// commands are not the commands on the page, when it holds something the player cannot draw, or
+// when it holds a user's path or anything shaped like a key.
+//
+// With scripts off the reader gets everything the run printed, as coloured text. With scripts on
+// the box is a terminal window with no scrollbars, looking at the end of the run, with a button that
+// opens all of it and a Play button (no Play button when reduced motion is asked for). It never plays by
+// itself. Replay shortens long waits and says so; the recording file keeps the real timing.
+import Ext from './Ext.astro';
+import Tip from './Tip.astro';
+import { MAX_GAP_SECONDS } from '../../casts.config.mjs';
+import { createScreen, feed, toHtml } from '../lib/cast-term.js';
+import { loadCast } from '../lib/cast-data.js';
+import { formatDate } from '../data/site';
+
+interface Props { id: string }
+const { id } = Astro.props;
+const { entry, header, output } = loadCast(id);
+const screen = createScreen();
+for (const e of output) feed(screen, e[2]);
+const lastScreen = toHtml(screen);
+const date = new Date(header.timestamp * 1000).toISOString().slice(0, 10);
+const tools = Object.entries(header['x-tools'] ?? {}).filter(([, v]) => v).map(([k, v]) => `${k} ${String(v).replace(/^forge Version: /, '').replace(/^v/, '')}`).join(', ');
+const seconds = Number(header.duration).toFixed(1);
+// What a recording must show beside it (PLAN.md 20.4 and 20.5): its date, the versions it ran and
+// how long the run really took. That replay is not the run's timing must be said too, but once and
+// out of the way: it is a tooltip on three words, not a paragraph under every recording (the
+// owner's question, 21 September 2026).
+const smoothed = `Replay is not the run's real timing. The command is typed out, any wait over ${MAX_GAP_SECONDS} seconds (a silence or a spinner) is shortened, and a sudden burst of lines is let out a line at a time. The recording file keeps the real timing.`;
+// The replay data is not in the page. It is /casts/<id>.js, added when Play is pressed.
+---
+
+<figure class="rb-cast not-content" data-cast={id} data-src={`/casts/${id}.js`}>
+  <figcaption class="rb-cast__bar">
+    <span class="rb-cast__title">{entry.title}</span>
+    <span class="rb-cast__buttons">
+      <button type="button" class="rb-cast__all" hidden>Show all lines</button>
+      <button type="button" class="rb-cast__play" hidden>Play the recording</button>
+    </span>
+  </figcaption>
+  <pre class="rb-cast__screen"><code set:html={lastScreen} /></pre>
+  <p class="rb-cast__meta">
+    <span>{formatDate(date)}</span>
+    <span>{tools}</span>
+    <span>ran {seconds} s</span>
+    <span><Tip id={`tip-cast-${id}`} text={smoothed} class="rb-cast__tip" placement="top">replay is smoothed</Tip></span>
+    <span><Ext href={`https://github.com/gatedpath/builder-path/blob/main/${entry.file}`}>recording file</Ext></span>
+  </p>
+</figure>
+
+<script>
+  import { mountCasts } from '../lib/cast-player.js';
+  mountCasts();
+</script>
+
+<style>
+  /* The figure is a container so the screen's text can be sized from its width. */
+  .rb-cast { margin-block: 1.25rem; container-type: inline-size; }
+  .rb-cast__bar {
+    display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: center; justify-content: space-between;
+    padding: 0.5rem 0.75rem 0.5rem 1.25rem;
+    border-radius: var(--rb-radius-lg) var(--rb-radius-lg) 0 0;
+    background: var(--rb-color-code-block-bg);
+    border-bottom: 1px solid #395060;
+    color: #EFF3F6;
+    font-size: var(--sl-text-xs);
+  }
+  .rb-cast__title { font-weight: 600; }
+  .rb-cast__buttons { display: inline-flex; flex-wrap: wrap; gap: 0.5rem; }
+  .rb-cast__all {
+    font: inherit; font-weight: 600; cursor: pointer;
+    padding: 0.3125rem 0.75rem; min-height: 2rem;
+    border: 1px solid #5B7486; border-radius: var(--rb-radius-pill);
+    background: transparent; color: #EFF3F6;
+  }
+  .rb-cast__all:hover:not(:disabled) { border-color: #EFF3F6; }
+  .rb-cast__all:disabled { opacity: 0.5; cursor: default; }
+  .rb-cast__all:focus-visible { outline: var(--rb-focus-width) solid var(--rb-color-focus); outline-offset: var(--rb-focus-offset); }
+  .rb-cast__play {
+    font: inherit; font-weight: 600; cursor: pointer;
+    padding: 0.3125rem 0.75rem; min-height: 2rem;
+    border: 1px solid #5EEAD4; border-radius: var(--rb-radius-pill);
+    background: transparent; color: #5EEAD4;
+  }
+  .rb-cast__note {
+    margin: 0.5rem 0 0;
+    font-size: var(--sl-text-xs);
+    color: var(--rb-color-text-muted);
+  }
+  .rb-cast__play:hover { background: #5EEAD4; color: #0C1A24; }
+  .rb-cast__play:focus-visible { outline: var(--rb-focus-width) solid var(--rb-color-focus); outline-offset: var(--rb-focus-offset); }
+  @media (prefers-reduced-motion: reduce) { .rb-cast__play { display: none; } }
+
+  .rb-cast__screen {
+    margin: 0; padding: 1rem 1.25rem;
+    /* No scrollbars. Long lines wrap to the width of the view, as they would in a terminal window
+       dragged to this size. With scripts off the whole run is shown; the script turns the box into
+       a window of about 22 rows looking at the end of the run (see cast-player.js). */
+    overflow: hidden;
+    border-radius: 0 0 var(--rb-radius-lg) var(--rb-radius-lg);
+    background: var(--rb-color-code-block-bg);
+    color: #E6EDF3;
+    font-family: var(--sl-font-mono); line-height: 1.5;
+    /* Recordings are made 80 columns wide. The text is sized so that 80 columns fit the box (a
+       character of the mono font is 0.6 of its size wide; 2.5rem is the padding), never larger
+       than the site's code text and never smaller than 11px. Below that, on a phone, lines wrap,
+       as they would in a terminal window that narrow. */
+    font-size: clamp(11px, calc((100cqw - 2.5rem) / (80 * 0.6)), var(--sl-text-code));
+    white-space: pre-wrap; overflow-wrap: anywhere;
+  }
+  .rb-cast--window .rb-cast__screen { max-height: calc(24 * 1.5em + 2rem); }
+  .rb-cast__screen code { font: inherit; color: inherit; background: none; padding: 0; }
+  .rb-cast__meta { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.125rem 0; margin: 0.375rem 0 0; font-size: var(--sl-text-2xs); line-height: 1.4; color: var(--rb-color-text-muted); }
+  .rb-cast__meta > span:not(:last-child)::after { content: '·'; margin-inline: 0.5rem; display: inline-block; }
+  .rb-cast__meta a { color: inherit; }
+  .rb-cast__meta :global(.rb-cast__tip) { text-decoration: underline dotted; text-underline-offset: 0.2em; }
+
+  /* The sixteen terminal colours, chosen to clear 4.5:1 on the code block's dark ground, which is
+     dark in both themes. Spans are written by cast-term.js, so the rules are global. */
+  .rb-cast :global(.rb-t-f0) { color: #8A9BA8; } .rb-cast :global(.rb-t-f8) { color: #9FB0BD; }
+  .rb-cast :global(.rb-t-f1) { color: #FF8A80; } .rb-cast :global(.rb-t-f9) { color: #FFA198; }
+  .rb-cast :global(.rb-t-f2) { color: #7EE787; } .rb-cast :global(.rb-t-f10) { color: #A5F3A0; }
+  .rb-cast :global(.rb-t-f3) { color: #F2CC60; } .rb-cast :global(.rb-t-f11) { color: #F8E3A1; }
+  .rb-cast :global(.rb-t-f4) { color: #79C0FF; } .rb-cast :global(.rb-t-f12) { color: #A5D6FF; }
+  .rb-cast :global(.rb-t-f5) { color: #D2A8FF; } .rb-cast :global(.rb-t-f13) { color: #E2C5FF; }
+  .rb-cast :global(.rb-t-f6) { color: #76E3EA; } .rb-cast :global(.rb-t-f14) { color: #B3F0FF; }
+  .rb-cast :global(.rb-t-f7) { color: #E6EDF3; } .rb-cast :global(.rb-t-f15) { color: #FFFFFF; }
+  .rb-cast :global(.rb-t-b) { font-weight: 700; }
+  .rb-cast :global(.rb-t-d) { color: #9FB0BD; }
+  .rb-cast :global(.rb-t-i) { font-style: italic; }
+  .rb-cast :global(.rb-t-u) { text-decoration: underline; }
+  .rb-cast :global([class*='rb-t-g']) { background: #395060; }
+</style>

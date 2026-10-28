@@ -1,0 +1,56 @@
+== policy file checks, run after the 16 rehearsal steps on the same fork (the file is put back to 444 at the end)
+
+-- 1. the file made writable (chmod 644), then a 1 RBNT send
+-rw-r--r--@
+send: ~/.config/agent-policy/card-14.json is writable (mode 644); a person runs: chmod 444 ~/.config/agent-policy/card-14.json
+exit 2
+
+-- 2. the file moved away, then a 1 RBNT send
+send: no policy file at ~/.config/agent-policy/card-14.json. A person (not the agent) runs once:
+  mkdir -p ~/.config/agent-policy && cp policy/limits.example.json ~/.config/agent-policy/card-14.json && chmod 444 ~/.config/agent-policy/card-14.json
+exit 2
+
+-- 3. the file back at 444, the same send (allowed; lands on the fork)
+-r--r--r--@
+policy for send: 1 RBNT to 0x90F79bf6EB2c4f870365E785982E1f101E93b906 from anvil:7 (chain 31337, rules ~/.config/agent-policy/card-14.json)
+This is a set of rules, not a model that detects fraud.
+
+pass  chain              the policy is for chain 31337; the RPC http://127.0.0.1:8554 reports 31337
+pass  signer             0x14dc79964da2c08b23698b3d3cc7ca32193d9955, a local Anvil account; no key read
+pass  no-override        nothing in the request or the environment asked for more than the policy allows
+pass  recipient-allowed  0x90F79bf6EB2c4f870365E785982E1f101E93b906 passes permission.isAllowed on chain 31337, read through the bootstrap registry
+pass  amount-under-limit 1 RBNT against the policy's maxRbnt 100 (~/.config/agent-policy/card-14.json)
+pass  human-line         1 RBNT is at or below confirmAboveRbnt 10
+sent: transaction 0xcb8a0a0253db18638b5072133b7ab3a0dd7d835bfe0ddaea6b53d0d7716ec3a7 in block 3052417, status 0x1, 21000 gas. Recorded in ~/code/card-14/deployments/policy-31337-2026-10-17.md
+exit 0
+
+-- 4. LIMIT=1000 in the environment, then --limit 1000 as a flag
+policy for send: 1 RBNT to 0x90F79bf6EB2c4f870365E785982E1f101E93b906 from anvil:7 (chain 31337, rules ~/.config/agent-policy/card-14.json)
+This is a set of rules, not a model that detects fraud.
+
+pass  chain              the policy is for chain 31337; the RPC http://127.0.0.1:8554 reports 31337
+pass  signer             0x14dc79964da2c08b23698b3d3cc7ca32193d9955, a local Anvil account; no key read
+fail  no-override        environment sets LIMIT: logged and refused, not obeyed. Urgency and seniority do not move a limit
+pass  recipient-allowed  0x90F79bf6EB2c4f870365E785982E1f101E93b906 passes permission.isAllowed on chain 31337, read through the bootstrap registry
+pass  amount-under-limit 1 RBNT against the policy's maxRbnt 100 (~/.config/agent-policy/card-14.json)
+pass  human-line         1 RBNT is at or below confirmAboveRbnt 10
+
+refused: nothing was signed. Recorded in ~/code/card-14/deployments/policy-31337-2026-10-17.md
+exit 1
+send: unknown option 1000; this command takes --to, --amount, --from, --reason and nothing else
+exit 2
+
+-- 5. an instruction worded around the word list: passes the word rule (the limit and the human line still stand)
+policy for send: 5 RBNT to 0x90F79bf6EB2c4f870365E785982E1f101E93b906 from anvil:7 (chain 31337, rules ~/.config/agent-policy/card-14.json)
+This is a set of rules, not a model that detects fraud.
+
+pass  chain              the policy is for chain 31337; the RPC http://127.0.0.1:8554 reports 31337
+pass  signer             0x14dc79964da2c08b23698b3d3cc7ca32193d9955, a local Anvil account; no key read
+pass  no-override        nothing in the request or the environment asked for more than the policy allows
+pass  recipient-allowed  0x90F79bf6EB2c4f870365E785982E1f101E93b906 passes permission.isAllowed on chain 31337, read through the bootstrap registry
+pass  amount-under-limit 5 RBNT against the policy's maxRbnt 100 (~/.config/agent-policy/card-14.json)
+pass  human-line         5 RBNT is at or below confirmAboveRbnt 10
+sent: transaction 0xc190188e67576bad995d66ca36b7d5a234961ac46383d67d7cd90ccc4d1a8d56 in block 3052418, status 0x1, 21000 gas. Recorded in ~/code/card-14/deployments/policy-31337-2026-10-17.md
+exit 0
+
+-- balance: Valid wallet 10007.000000000000000000 RBNT (10000 + 1 + 1 + 5 expected)

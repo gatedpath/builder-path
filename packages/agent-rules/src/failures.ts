@@ -52,6 +52,8 @@ export interface FailureEntry {
   readonly reportedBy?: { readonly who: string; readonly url: string; readonly date: string };
   /** Where and when the shape was seen, or what is still missing. */
   readonly measured: string;
+  /** The record behind `measured`, as a path in the repository, when one exists. The /errors page links it. */
+  readonly record?: string;
   readonly match: readonly FailureMatcher[];
 }
 
@@ -98,6 +100,7 @@ export const failures: readonly FailureEntry[] = [
     topic: 'verifier-contract',
     status: 'measured',
     measured: 'Local loop, 14 September 2026: `cast send` from the NeverIssued wallet answered `custom error 0x879342fb` with the wallet and 18 encoded, decoded by cast as NotEligible(wallet, 18).',
+    record: 'packages/create-redbelly-dapp/reports/golden-path-dev-2026-09-14.md',
     match: [{ type: 'selector', value: NOT_ELIGIBLE_SELECTOR }, { type: 'text', value: 'NotEligible\\(' }],
   },
   {
@@ -111,6 +114,7 @@ export const failures: readonly FailureEntry[] = [
     topic: 'eligibility-sdk',
     status: 'measured',
     measured: 'Local loop, 14 September 2026: wallet 2 (NeverIssued) calling subscribe() reverted NotEligible; the dev state panel and `eligibilityStatus` read 0.',
+    record: 'packages/create-redbelly-dapp/reports/golden-path-dev-2026-09-14.md',
     match: [],
   },
   {
@@ -124,6 +128,7 @@ export const failures: readonly FailureEntry[] = [
     topic: 'accredited-issuers',
     status: 'measured',
     measured: 'Local loop, 14 September 2026: wallet 4 seeded Expired reverted NotEligible; the panel flipped wallet 3 to Expired and the gate re-rendered without a reload.',
+    record: 'packages/create-redbelly-dapp/reports/golden-path-dev-2026-09-14.md',
     match: [],
   },
   {
@@ -137,6 +142,7 @@ export const failures: readonly FailureEntry[] = [
     topic: 'revocation',
     status: 'measured',
     measured: 'Card 1 re-run, 14 September 2026: the panel set wallet 3 to Revoked for request id 708 and the gate read "Not eligible for this action".',
+    record: 'cards/runs/2026-09-14/card-01.md',
     match: [],
   },
   {
@@ -150,6 +156,7 @@ export const failures: readonly FailureEntry[] = [
     topic: 'eligibility-criteria',
     status: 'measured',
     measured: 'Local loop, 14 September 2026: wallet 6 seeded WrongJurisdiction reverted NotEligible.',
+    record: 'packages/create-redbelly-dapp/reports/golden-path-dev-2026-09-14.md',
     match: [],
   },
   {
@@ -163,6 +170,7 @@ export const failures: readonly FailureEntry[] = [
     topic: 'verifier-contract',
     status: 'measured',
     measured: 'receptor-mock tests, 12 September 2026: `test_zeroVerifierReverts` expects the custom error.',
+    record: 'packages/receptor-mock/test',
     match: [{ type: 'selector', value: ZERO_VERIFIER_SELECTOR }, { type: 'text', value: 'ZeroVerifier\\(' }],
   },
 
@@ -178,6 +186,7 @@ export const failures: readonly FailureEntry[] = [
     topic: 'safe',
     status: 'measured',
     measured: 'Scaffolder integration test, 12 September 2026: the cheatcode test for the mainnet path expects this revert; the fork run rehearsed the refusal.',
+    record: 'packages/create-redbelly-dapp/test',
     match: [{ type: 'text', value: 'ADMIN_SAFE is not set' }],
   },
   {
@@ -191,6 +200,7 @@ export const failures: readonly FailureEntry[] = [
     topic: 'safe',
     status: 'measured',
     measured: 'Scaffolder integration test, 12 September 2026: an EOA admin on the mainnet path reverts with this message.',
+    record: 'packages/create-redbelly-dapp/test',
     match: [{ type: 'text', value: 'ADMIN_SAFE is not a contract' }],
   },
   {
@@ -204,6 +214,7 @@ export const failures: readonly FailureEntry[] = [
     topic: 'safe',
     status: 'measured',
     measured: 'Scaffolder integration test, 12 September 2026: a contract that is not a Safe proxy reverts with this message on the mainnet path.',
+    record: 'packages/create-redbelly-dapp/test',
     match: [{ type: 'text', value: 'ADMIN_SAFE is not a Safe 1\\.4\\.1' }],
   },
   {
@@ -217,6 +228,7 @@ export const failures: readonly FailureEntry[] = [
     topic: 'safe',
     status: 'measured',
     measured: 'Scaffolder integration test, 12 September 2026: the real Safe 1.4.1 bytecode on Anvil with threshold 1 reverts on the mainnet path and passes with threshold 2.',
+    record: 'packages/create-redbelly-dapp/test',
     match: [{ type: 'text', value: 'ADMIN_SAFE threshold must be at least 2' }, { type: 'text', value: 'threshold is 1' }],
   },
   {
@@ -230,6 +242,7 @@ export const failures: readonly FailureEntry[] = [
     topic: 'wallet-verification',
     status: 'measured',
     measured: 'Scaffolder integration test, 12 September 2026: a deployer the mocked permission contract denies reverts here; the same read passes for the known allowed address on the real testnet.',
+    record: 'packages/create-redbelly-dapp/test',
     match: [{ type: 'text', value: 'deployer fails permission\\.isAllowed' }],
   },
   {
@@ -243,6 +256,7 @@ export const failures: readonly FailureEntry[] = [
     topic: 'chain-ids',
     status: 'measured',
     measured: 'Scaffolder integration test, 12 September 2026: chain 153 on Anvil without the mocked registry reverts here.',
+    record: 'packages/create-redbelly-dapp/test',
     match: [{ type: 'text', value: 'bootstrap registry has no code' }, { type: 'text', value: "registry did not resolve 'permission'" }],
   },
   {
@@ -256,6 +270,7 @@ export const failures: readonly FailureEntry[] = [
     topic: 'verifier-contract',
     status: 'measured',
     measured: 'Scaffolder integration test, 12 September 2026: the gated-erc20 script reverts with this message on the mainnet path when VERIFIER is unset.',
+    record: 'packages/create-redbelly-dapp/test',
     match: [{ type: 'text', value: 'VERIFIER is not set' }],
   },
   {
@@ -269,6 +284,7 @@ export const failures: readonly FailureEntry[] = [
     topic: 'verifier-contract',
     status: 'measured',
     measured: 'Scaffolder cheatcode test, 12 September 2026.',
+    record: 'packages/create-redbelly-dapp/test',
     match: [{ type: 'text', value: 'VERIFIER is not a contract' }],
   },
 
@@ -277,7 +293,7 @@ export const failures: readonly FailureEntry[] = [
     group: 'deploy-script',
     title: 'No ship report dated today for chain 151',
     plainWords: "The deploy script refused to broadcast on mainnet because `deployments/ship-151-<today>.md` isn't there.",
-    cause: "Mainnet is gated by the ship report (PLAN.md 18.3): `redbelly ship` runs pre-flight, the Slither check, the five-state tests and the gas report, and writes the file only when every check passed. The script looks for today's date in UTC, so yesterday's report doesn't count. A dry run without `--broadcast` says so and continues; 153 warns instead.",
+    cause: "Mainnet is gated by the ship report: `redbelly ship` runs pre-flight, the Slither check, the five-state tests and the gas report, and writes the file only when every check passed. The script looks for today's date in UTC, so yesterday's report doesn't count. A dry run without `--broadcast` says so and continues; 153 warns instead.",
     fix: { command: 'redbelly ship --chain 151 --account <keystore-name> --admin <safe>   # in a scaffold: npm run ship -- --chain 151 --account <keystore-name> --admin <safe>' },
     docsPage: '/review/',
     status: 'measured',
@@ -296,6 +312,7 @@ export const failures: readonly FailureEntry[] = [
     topic: 'chain-ids',
     status: 'measured',
     measured: 'Pre-flight tests, 12 September 2026: a profile pinned to 153 against an Anvil on 151 fails with the two ids in the line.',
+    record: 'packages/preflight/test',
     match: [{ type: 'preflight', id: 'chain-id' }],
   },
   {
@@ -303,12 +320,13 @@ export const failures: readonly FailureEntry[] = [
     group: 'preflight',
     title: 'deployer-verified',
     plainWords: "The deployer wallet fails `permission.isAllowed` on this chain, or it's one of Anvil's ten default accounts.",
-    cause: "Every transaction on Redbelly goes through the network's permission contract. A wallet that has never been through access.redbelly.network fails it; Anvil's default accounts 0 and 1 pass it on both real networks under an identity you don't control (RESEARCH.md question 30), so pre-flight warns on all ten.",
+    cause: "Every transaction on Redbelly goes through the network's permission contract. A wallet that has never been through access.redbelly.network fails it; Anvil's default accounts 0 and 1 pass it on both real networks under an identity you don't control (an open question put to Redbelly on 12 September 2026), so pre-flight warns on all ten.",
     fix: { command: 'cast wallet address --account <keystore-name>   # verify that address at https://access.redbelly.network; never deploy from an Anvil default account', link: ACCESS },
     docsPage: '/concepts/identity-gate/',
     topic: 'is-allowed',
     status: 'measured',
     measured: 'Read-only run against the real testnet, 12 and 14 September 2026: the known allowed address passes; the zero address fails; Anvil account 0 warns.',
+    record: 'packages/preflight/reports',
     match: [{ type: 'preflight', id: 'deployer-verified' }],
   },
   {
@@ -322,6 +340,7 @@ export const failures: readonly FailureEntry[] = [
     topic: 'safe',
     status: 'measured',
     measured: 'Pre-flight tests, 12 September 2026, with the real Safe 1.4.1 bytecode on Anvil at threshold 1 and 2.',
+    record: 'packages/preflight/test',
     match: [{ type: 'preflight', id: 'admin-safe' }],
   },
   {
@@ -335,6 +354,7 @@ export const failures: readonly FailureEntry[] = [
     topic: 'evm-version',
     status: 'measured',
     measured: 'Pre-flight tests, 12 September 2026: cancun and 0.8.28 fail with the offending setting named.',
+    record: 'packages/preflight/test',
     match: [{ type: 'preflight', id: 'compiler-pins' }],
   },
   {
@@ -361,6 +381,7 @@ export const failures: readonly FailureEntry[] = [
     topic: 'faucet',
     status: 'measured',
     measured: 'Read-only run against the real testnet, 14 September 2026, at 3,000,000 gas and again at the measured 1,899,210.',
+    record: 'packages/preflight/reports',
     match: [{ type: 'preflight', id: 'balance' }],
   },
   {
@@ -373,6 +394,7 @@ export const failures: readonly FailureEntry[] = [
     docsPage: '/review/',
     status: 'measured',
     measured: 'Pre-flight tests, 12 September 2026; the sidecar rule was added the same day after the card runs.',
+    record: 'packages/preflight/test',
     match: [{ type: 'preflight', id: 'slither-report' }],
   },
   {
@@ -386,6 +408,7 @@ export const failures: readonly FailureEntry[] = [
     topic: 'keys',
     status: 'measured',
     measured: 'MCP and pre-flight tests, 12 September 2026: five tools and the CLI refuse a 64-hex argument by its name, never its value.',
+    record: 'packages/mcp/test',
     match: [{ type: 'text', value: 'looks like a (private key|secret)' }],
   },
 
@@ -401,6 +424,7 @@ export const failures: readonly FailureEntry[] = [
     topic: 'is-allowed',
     status: 'measured',
     measured: 'Read on both real networks, 12 and 14 September 2026: true for the known allowed addresses, false for the zero address and Anvil accounts 2 to 9.',
+    record: 'phase-0/results',
     match: [{ type: 'text', value: 'fails permission\\.isAllowed' }, { type: 'text', value: 'isAllowed[^\\n]*false' }],
   },
   {
@@ -417,6 +441,19 @@ export const failures: readonly FailureEntry[] = [
     measured: 'Not captured by us. Reported on 9 July 2026 as `Sender not authorised to write transactions`, on a first transaction from a wallet not yet enabled on testnet; added here on 19 September 2026. The first of us to see it on the real network replaces this line with where and when.',
     match: [{ type: 'text', value: 'sender not authori[sz]ed to write' }],
   },
+  {
+    kind: 'no-receipt-after-30-seconds',
+    group: 'network',
+    title: 'No receipt after 30 seconds',
+    plainWords: 'The transaction was accepted and has no receipt half a minute later. It is not lost: the endpoint is about to send it again to another governor.',
+    cause: 'The RPC endpoint fronts many governors. It tries one for 5 seconds, then another at random, and a transaction not committed after 30 seconds is sent again to another randomly chosen governor (Redbelly, in writing, 12 October 2026). So silence past 30 seconds usually means a resend is under way, and the receipt arrives at 35 or 40 seconds. A client that gives up at 30 marks a healthy transaction failed; one that resends it with a fresh nonce can land it twice.',
+    fix: { command: 'cast receipt <tx-hash> --rpc-url ' + TESTNET_RPC + ' --confirmations 0   # wait to 45 seconds first; then cast nonce <wallet> and txpool_status before resending yourself, with the same nonce', link: vine('consensus/') },
+    docsPage: '/concepts/blocks-on-demand/',
+    topic: 'rpc',
+    status: 'pending',
+    measured: "Pending: described by Redbelly's CTO in writing on 12 October 2026 (the 5-second try and the 30-second resend). Not yet observed by us on 151 or 153; every transaction of ours so far landed in the first few seconds.",
+    match: [{ type: 'text', value: 'no receipt after \\d+ ?s' }, { type: 'text', value: 'receipt[^\\n]*timed out' }],
+  },
 
   // ---- wallets and viem in the browser ----
   {
@@ -430,6 +467,7 @@ export const failures: readonly FailureEntry[] = [
     topic: 'wallet-gas-display',
     status: 'measured',
     measured: 'Frontend kit tests, 14 September 2026, over a mocked transport that raises the viem error.',
+    record: 'packages/frontend-kit/test',
     match: [{ type: 'error-name', value: 'UserRejectedRequestError' }, { type: 'text', value: 'User rejected the request' }],
   },
   {
@@ -443,6 +481,7 @@ export const failures: readonly FailureEntry[] = [
     topic: 'chain-ids',
     status: 'measured',
     measured: 'Frontend kit tests, 14 September 2026, over a mocked transport.',
+    record: 'packages/frontend-kit/test',
     match: [{ type: 'error-name', value: 'ChainMismatchError' }, { type: 'error-name', value: 'SwitchChainError' }, { type: 'text', value: 'current chain of the wallet' }],
   },
   {
@@ -456,6 +495,7 @@ export const failures: readonly FailureEntry[] = [
     topic: 'gas',
     status: 'measured',
     measured: 'Anvil, 14 September 2026: `cast send` from an empty account answered error code -32003 with that message.',
+    record: 'packages/create-redbelly-dapp/reports/golden-path-dev-2026-09-14.md',
     match: [{ type: 'error-name', value: 'InsufficientFundsError' }, { type: 'text', value: 'insufficient funds for gas' }],
   },
 
@@ -466,7 +506,7 @@ export const failures: readonly FailureEntry[] = [
     title: 'No keystore of that name',
     plainWords: "forge or cast found no keystore with the name you gave under ~/.foundry/keystores.",
     cause: "`--account <name>` names a file in the Foundry keystore directory. The name is wrong, the keystore was created under another `$HOME`, or it was never imported. Nothing was signed.",
-    fix: { command: 'ls ~/.foundry/keystores && cast wallet import <keystore-name> --interactive   # paste the key into the prompt, never into a file or a command line', link: 'https://getfoundry.sh/cast/reference/cast-wallet-import' },
+    fix: { command: 'ls ~/.foundry/keystores && cast wallet import <keystore-name> --interactive   # paste the key into the prompt, never into a file or a command line', link: 'https://getfoundry.sh/reference/cast/wallet/import' },
     docsPage: '/start/',
     status: 'measured',
     measured: 'cast 1.7.1, 14 September 2026: `cast wallet address --account nosuch` answered `Error: Keystore file "…/nosuch" does not exist`.',
@@ -478,7 +518,7 @@ export const failures: readonly FailureEntry[] = [
     title: 'Wrong keystore password',
     plainWords: "forge or cast couldn't decrypt the keystore with the password it was given.",
     cause: 'The password file holds the wrong password, or the keystore was encrypted with another one. The error names the keystore path and ends with `Mac Mismatch`. Nothing was signed.',
-    fix: { command: 'cast wallet address --account <keystore-name>   # type the password at the prompt; then check what the --password-file holds', link: 'https://getfoundry.sh/cast/reference/cast-wallet-address' },
+    fix: { command: 'cast wallet address --account <keystore-name>   # type the password at the prompt; then check what the --password-file holds', link: 'https://getfoundry.sh/reference/cast/wallet/address' },
     docsPage: '/start/',
     status: 'measured',
     measured: 'cast 1.7.1, 14 September 2026: a wrong `--password-file` answered `Error: Failed to decrypt keystore "…" Context: - Mac Mismatch`.',
@@ -490,7 +530,7 @@ export const failures: readonly FailureEntry[] = [
     title: 'The password file does not exist',
     plainWords: "forge or cast couldn't find the file named by --password-file.",
     cause: 'The path is wrong or relative to another directory. Nothing was signed.',
-    fix: { command: 'ls -l <password-file>', link: 'https://getfoundry.sh/cast/reference/cast-wallet-address' },
+    fix: { command: 'ls -l <password-file>', link: 'https://getfoundry.sh/reference/cast/wallet/address' },
     docsPage: '/start/',
     status: 'measured',
     measured: 'cast 1.7.1, 14 September 2026: `Error: Keystore password file "…" does not exist`.',
@@ -507,7 +547,21 @@ export const failures: readonly FailureEntry[] = [
     topic: 'chain-ids',
     status: 'measured',
     measured: 'MCP tests, 12 September 2026: `deploy_testnet` against an Anvil on 151 is refused before pre-flight runs.',
+    record: 'packages/mcp/test',
     match: [{ type: 'text', value: 'this RPC reports chain 151' }, { type: 'text', value: 'reports chain \\d+, which is neither' }],
+  },
+  // Before rpc-unreachable: the same transport error with an alias name in it is this, not an outage.
+  {
+    kind: 'forge-rpc-alias-outside-project',
+    group: 'forge',
+    title: 'The RPC alias is unknown because forge was run outside the project',
+    plainWords: '`forge script --rpc-url redbelly_testnet` failed before touching the network with "Internal transport error" and the alias name in the message. Nothing was sent.',
+    cause: 'An alias like `redbelly_testnet` is defined in the project\'s `contracts/foundry.toml` under `[rpc_endpoints]`, and forge only reads that file from the folder it is run in. Run from anywhere else, the alias isn\'t a URL, so forge treats the word itself as the endpoint and fails to connect.',
+    fix: { command: 'cd <your-project>/contracts && forge script <the same command>' },
+    docsPage: '/start/',
+    status: 'measured',
+    measured: 'Card 8\'s deploy, 25 October 2026: the first attempt ran from the wrong folder and failed with "Internal transport error ... redbelly_testnet" before any transaction; the same command from `contracts/` deployed both contracts. The rule since: every deploy command is one line that starts with `cd`.',
+    match: [{ type: 'text', value: 'Internal transport error[\\s\\S]*\\b[a-z][a-z0-9]*_[a-z0-9_]+\\b' }],
   },
   {
     kind: 'rpc-unreachable',
@@ -570,6 +624,7 @@ export const failures: readonly FailureEntry[] = [
     docsPage: '/start/',
     status: 'measured',
     measured: 'dev.mjs exit 3 and node `spawn forge ENOENT`, both in the scaffolder tests of 14 September 2026.',
+    record: 'packages/create-redbelly-dapp/test/dev.test.mjs',
     match: [{ type: 'text', value: 'spawn (forge|cast) ENOENT' }, { type: 'text', value: '(forge|cast): command not found' }, { type: 'text', value: 'forge is not installed or not on PATH' }, { type: 'doctor', id: 'forge' }, { type: 'doctor', id: 'cast' }],
   },
   {
@@ -582,6 +637,7 @@ export const failures: readonly FailureEntry[] = [
     docsPage: '/start/',
     status: 'measured',
     measured: 'Scaffolder test `test/dev.test.mjs`, 14 September 2026: exit 3 with `[dev] … not found on PATH`.',
+    record: 'packages/create-redbelly-dapp/test/dev.test.mjs',
     match: [{ type: 'text', value: 'spawn anvil ENOENT' }, { type: 'text', value: 'anvil: command not found' }, { type: 'text', value: 'not found on PATH; forge and anvil are needed' }, { type: 'doctor', id: 'anvil' }],
   },
   {
@@ -606,6 +662,7 @@ export const failures: readonly FailureEntry[] = [
     docsPage: '/start/',
     status: 'measured',
     measured: 'Scaffolder test `test/dev.test.mjs`, 14 September 2026: exit 2 on a second run.',
+    record: 'packages/create-redbelly-dapp/test/dev.test.mjs',
     match: [{ type: 'text', value: 'npm run dev is already running' }],
   },
   {
@@ -643,6 +700,7 @@ export const failures: readonly FailureEntry[] = [
     docsPage: '/start/',
     status: 'measured',
     measured: 'Wave 7, 14 September 2026: `forge build` with a failed compiler run exited 0 through the shim; the same day `cast --this-flag-does-not-exist` exited 0 through the shim and 2 through the real binary, which is the probe redbelly-doctor runs.',
+    record: 'packages/mcp/reports/wave-7-run-2026-09-14.md',
     match: [{ type: 'doctor', id: 'foundry-exit-code' }],
   },
   {
@@ -704,6 +762,20 @@ export const failures: readonly FailureEntry[] = [
     status: 'measured',
     measured: "redbelly-doctor, 14 September 2026, in the build environment where Aderyn's npm wrapper cannot fetch its binary: `warn  aderyn  not found on PATH`.",
     match: [{ type: 'doctor', id: 'aderyn' }, { type: 'text', value: 'aderyn: command not found' }, { type: 'text', value: 'spawn aderyn ENOENT' }],
+  },
+  // Two shapes met during the real deploys of 23 to 25 October 2026 (site audit item 9, for 0.2.4).
+  {
+    kind: 'forge-total-paid-wrong',
+    group: 'forge',
+    title: 'Forge\'s closing "Total Paid" line disagrees with its own receipts',
+    plainWords: 'After a broadcast, `forge script` prints a summary with a "Total Paid" figure that doesn\'t match the per-transaction "Paid" lines above it, and sometimes labels the contracts the wrong way round. The receipts are right; the summary is not.',
+    cause: 'The closing summary is Forge\'s own arithmetic over the sequence and it has been wrong on this network every time we deployed. Each transaction\'s "Paid" line, the receipt on chain and the wallet\'s balance agree with each other. Nothing about your deploy is wrong.',
+    fix: { command: 'cast receipt <tx-hash> --rpc-url <rpc>   # gasUsed times effectiveGasPrice is what you paid' },
+    docsPage: '/start/',
+    status: 'measured',
+    measured: 'Three deploys on 153: the scaffold token on 23 October 2026 (summary 3.87 RBNT against receipts of 601.27 and 214.26, 815.53 confirmed by the balance), card 8 on 25 October (4.60 against 502.66, with the two contracts\' labels swapped) and card 7 the same day (14.53 against 770.85).',
+    record: 'cards/runs/2026-10-23/scaffold-token.md',
+    match: [{ type: 'text', value: 'Total Paid:' }],
   },
 ];
 

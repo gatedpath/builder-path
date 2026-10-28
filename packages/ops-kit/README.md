@@ -114,6 +114,36 @@ Run against both live networks on 17 September 2026, read-only (`reports/system-
 baseline then silence on each, and a replay of the log reader over the previous 6,000 mainnet
 blocks found the three events of 14 September that nobody announced, to the second.
 
+## Reading a register
+
+```
+node scripts/register.mjs 0xToken --network mainnet [--wallet 0x…] [--json]
+```
+
+The real assets on this network are ERC-3643 registers: T-REX tokens whose every transfer asks an
+identity registry whether both parties are verified holders (44 of them on mainnet on 12 October 2026,
+share classes and fund units). A holder meets three gates here, in order: the network's
+(`permission.isAllowed`), a dApp's recipe (the Receptor verifier) and the register's
+(`identityRegistry.isVerified`). The kit reads the first two elsewhere; this reads the third.
+
+`readRegister({ rpc, token, wallet })` first asks whether the token is a register at all (does
+`identityRegistry()` answer with a contract; `isErc3643` on its own does only this), then reads the
+token (name, symbol, decimals, supply, T-REX version, paused, ONCHAINID, compliance), the registry
+(identity storage, the trusted-issuers and claim-topics registries), every trusted issuer with the
+claim topics it is trusted for, the claim topics the token requires, and, for a wallet, whether the
+registry has verified it, its identity contract and country code, whether it is frozen, how many of
+its tokens are frozen, and its balance. A function the deployed version lacks reads as `null`; a token
+that is not a register throws `NotARegister` (exit code 3 from the command).
+
+One word it adds: `gate`. A registry that requires no claim topics verifies any wallet the issuer has
+registered with an identity and no other, so the gate is `registration only`; with topics it is
+`claims`. The largest register on mainnet is registration only (12 October 2026). The interface was
+confirmed against that register before this was written; nothing here is typed from a document.
+
+`describeRegister` gives the read in plain words, one fact a line, ending with what it cannot say:
+who holds the identity behind an address, and that only the issuer can register one. Read-only
+throughout; nothing signs. The frontend kit's `useRegister` makes the same reads from a page.
+
 ## The Routescan scripts
 
 Routescan has two API surfaces for Redbelly and both were exercised read-only on 12 September

@@ -1,7 +1,7 @@
 ---
 title: '3. Read the gated token'
 description: 'The ERC-20 the scaffold gives you: where the gate sits, who may do what, what happens to a holder whose credential lapses, and the invariants that hold it together.'
-lastVerified: '2026-09-17'
+lastVerified: '2026-09-26'
 tableOfContents: false
 prev: false
 next: false
@@ -21,11 +21,11 @@ import StepPart from '../../../components/StepPart.astro';
     'GatedERC20 is OpenZeppelin 5.6.1 ERC20, ERC20Pausable and AccessControl on the Gated base. The gate is in _update: from is checked unless minting, to is checked unless burning. A spender in transferFrom is never checked.',
     'forceTransfer (COMPLIANCE_ROLE) skips the check on from, still requires to to be eligible, and requires a non-zero justification hash. A lapsed holder keeps the balance and can do nothing with it, including burn.',
     'Roles: DEFAULT_ADMIN_ROLE (unpause, verifier, request id, roles), PAUSER_ROLE (pause), COMPLIANCE_ROLE (forceTransfer), ISSUER_ADMIN_ROLE (setIssuer, revokeIssuer). Design notes are in packages/contract-kit/docs/.',
-    'packages/contract-kit: 53 tests in 6 suites, 12 of them invariants at 64 runs and 2,048 calls each (2026-09-19, version 0.2.0).',
+    'packages/contract-kit: 53 tests in 6 suites, 12 of them invariants at 64 runs and 2,048 calls each (measured 2026-09-26, version 0.2.1).',
   ]}
 />
 
-The scaffold does not give you a toy. It copies a token from the contract kit, with roles, a pause, issuers and a compliance path, and every project starts from it. You do not need to write it; you need to be able to read it, because the first thing a real product does is change it. This tutorial is a reading, with the tests run at the end.
+The scaffold copies a token from the contract kit, with roles, a pause, issuers and a compliance path, and every project starts from it. You do not need to write it; you need to be able to read it, because the first thing a real product does is change it. This tutorial is a reading, with the tests run at the end.
 
 <ProjectSteps slug="solidity-the-gated-token" title="3. Read the gated token" backHref="/solidity/" backLabel="Writing Solidity">
 
@@ -104,7 +104,7 @@ forge test --match-path test/GatedERC20.invariants.t.sol
 ```
 </StepPart>
 <StepPart kind="worked">
-`53 tests passed, 0 failed` across 6 test suites, then `12 tests passed` for the invariants alone, each line reading `runs: 64, calls: 2048, reverts: 0`. One suite lets credentials lapse and proves that nobody ever receives tokens while ineligible. The other forbids lapses and proves the stronger thing, that no ineligible wallet ever holds tokens.
+`53 tests passed, 0 failed` across 6 test suites (measured again on 26 September 2026 in `packages/contract-kit` at 0.2.1; the 17 September run showed 51 before two tests were added), then `12 tests passed` for the invariants alone, each line reading `runs: 64, calls: 2048, reverts: 0`. One suite lets credentials lapse and proves that nobody ever receives tokens while ineligible. The other forbids lapses and proves the stronger thing, that no ineligible wallet ever holds tokens.
 </StepPart>
 <StepPart kind="ifnot">
 A missing `lib/receptor-mock` or `node_modules/@openzeppelin` means `npm run setup` has not run in this package.

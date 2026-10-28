@@ -1,18 +1,20 @@
 ---
 // Two-speed banner. The copy is fixed here so PLAN section 12.3's promise lives in one place.
 import StatusPill from './StatusPill.astro';
+interface Props { links?: boolean }
+const { links = true } = Astro.props;
 ---
 
 <div class="rb-twospeed not-content" role="group" aria-label="Two speeds">
   <div class="rb-twospeed__pane rb-twospeed__pane--testnet">
     <StatusPill variant="testnet" label="Testnet, chain 153" />
-    <p><strong>Fast lane.</strong> Scaffold, deploy, try it with an ineligible wallet. An afternoon.</p>
-    <a href="/start/">Start on testnet</a>
+    <p>On testnet you can scaffold, deploy and try it with an ineligible wallet in an afternoon.</p>
+    {links && <a href="/start/">Start on testnet</a>}
   </div>
   <div class="rb-twospeed__pane rb-twospeed__pane--mainnet">
     <StatusPill variant="mainnet" label="Mainnet, chain 151" />
-    <p><strong>Gated.</strong> Pre-flight and the ship report first. Never promised in an afternoon for anything that holds value.</p>
-    <a href="/review/">What the gate checks</a>
+    <p>Mainnet comes after pre-flight and the ship report, and I never promise it in an afternoon for anything that holds value.</p>
+    {links && <a href="/review/">What the gate checks</a>}
   </div>
 </div>
 

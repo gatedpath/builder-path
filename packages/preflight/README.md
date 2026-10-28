@@ -90,10 +90,31 @@ Recorded runs against the real feeds, read-only, on 14 September 2026: `reports/
 and `reports/gas-151-2026-09-14.md`. On both, 21,000 gas came to 1.000 US cents and the scaffold's
 `GatedERC20` deploys for 1,898,391 gas, 383.7 RBNT, 90.4 cents at a feed price of US$0.002356 per RBNT.
 
+## redbelly fees
+
+What the calls a builder meets cost today, the command-line twin of the site's fee checker (`/fees/`,
+"What it costs"). `redbelly fees` reads both chains and prints, for each, the head block and its time,
+the base fee in gwei, RBNT in US dollars from the on-chain feed with the feed's time, then four
+measured calls (a native transfer, deploying the recipient guard, deploying the gated token, enabling
+a wallet) in gas, RBNT and US cents at today's base fee through the same integer arithmetic as
+`redbelly gas`, and the enable line against the network's fixed rate of US$0.01 per 21,000 gas. On
+mainnet it also reads the base fee at nine block heights from the first week to the head and prices
+the enable call at each, which is the site's two-year chart as a table. The gas figures are the ones
+measured on 17 October 2026 and carried in the report with the run that measured each. `--chain`
+limits it to one chain, `--rpc` names another endpoint (a fork works; with no `--chain` the RPC says
+which chain it is), `--no-history` skips the mainnet history, `--json` for agents. Exit 0 when every
+chain was read, 1 when one could not be (the line says which and why), 2 on bad arguments. Read-only,
+no key, nothing written.
+
+```
+redbelly fees [--chain 151|153] [--rpc <url>] [--timeout <ms>] [--no-history] [--json]
+```
+
 ## redbelly ship
 
 The mainnet gate that produces the document you wanted anyway (PLAN.md 18.3). `redbelly ship --chain
-<151|153> --account <keystore-name> [--admin <safe>] [--gas <n>]` (also `npm run ship` in a scaffold
+<151|153> --account <keystore-name> [--admin <safe>] [--gas <n>]` (or `--address <0x…>` in place of
+`--account`, or `DEPLOYER` in `.env`; also `npm run ship` in a scaffold
 and the MCP server's `ship_report` tool) runs the gas report first (its deployment row is the gas the
 balance check prices), then pre-flight's seven checks with the keystore's address, checks the verifier
 (`--verifier` or `VERIFIER` in `.env`; required on 151, where a missing one fails and on 153 warns that
@@ -104,7 +125,16 @@ the deployer and admin readings, the contracts from `deployments/<chain>-*.json`
 constructor arguments and the exact `forge verify-contract` command, the gas table, the tests, the
 Slither line, the compiler pins, and the list of what the report does not prove. It refuses to write
 when any check fails and exits 1 with the failing lines. Run it again after the deploy to fill in the
-contract section; the file is dated in UTC.
+contract section; the file is dated in UTC. On 153 the report also says how many faucet claims the
+deployment needs at today's base fee (the deployment rows plus the 25% margin, 500 test RBNT a claim,
+one a day); `redbelly gas` prints the same line.
+
+Two things learnt on the first real deploy (17 October 2026). `cast wallet address --account` asks for
+the keystore password on a terminal, so run `redbelly ship` in one, not from an editor's run button;
+without a terminal pass `--password-file`, or `--address` and no cast call is made. And the deploy
+command itself needs `--sender <your address>` beside `--account`: without it forge rehearses as its
+default sender, which fails `isAllowed`, and the scaffold's deploy script now says so and refuses to
+broadcast.
 
 The scaffold's `RedbellyDeployScript.sol` refuses to broadcast on 151 without `deployments/ship-151-<today>.md`
 (a dry run says so and continues; 153 warns), and the Hardhat deploy script does the same. Tested on

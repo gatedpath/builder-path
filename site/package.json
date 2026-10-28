@@ -14,7 +14,7 @@
     "check:samples": "node scripts/check-samples.mjs",
     "check:errors": "node scripts/check-errors.mjs",
     "dev": "npm run samples && astro dev",
-    "build": "npm run check:samples && astro build",
+    "build": "npm run check:samples && npm run check:casts && astro build",
     "check": "astro check",
     "preview": "astro preview",
     "show": "node scripts/show.mjs",
@@ -22,10 +22,15 @@
     "budget": "node scripts/budget.mjs",
     "text:extract": "node scripts/extract-text.mjs",
     "text:apply": "node scripts/apply-text.mjs",
-    "test:text": "node --test scripts/text-merge.test.mjs scripts/text-apply.test.mjs",
+    "test:text": "node --test scripts/text-merge.test.mjs scripts/text-apply.test.mjs scripts/text-tooltips.test.mjs",
     "check:editor": "node scripts/check-editor.mjs",
     "offline": "node scripts/build-offline.mjs",
-    "check:tips": "node scripts/check-tips.mjs"
+    "check:tips": "node scripts/check-tips.mjs",
+    "check:overflow": "node scripts/check-overflow.mjs",
+    "check:casts": "node scripts/check-casts.mjs",
+    "check:copy": "node scripts/check-copy.mjs",
+    "check:motion": "node scripts/check-motion.mjs",
+    "record": "node scripts/record-cast.mjs"
   },
   "dependencies": {
     "@astrojs/starlight": "0.42.0",

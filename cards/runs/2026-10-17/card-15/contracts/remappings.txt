@@ -1,0 +1,9 @@
+node_modules/@tokenysolutions/t-rex/:@openzeppelin/contracts/=node_modules/oz4-contracts/
+node_modules/@tokenysolutions/t-rex/:@openzeppelin/contracts-upgradeable/=node_modules/oz4-contracts-upgradeable/
+node_modules/@onchain-id/solidity/:@openzeppelin/contracts/=node_modules/oz4-contracts/
+forge-std/=lib/forge-std/src/
+@openzeppelin/contracts/=node_modules/@openzeppelin/contracts/
+@gatedpath/receptor-mock/=lib/receptor-mock/src/
+@gatedpath/receptor-mock-test/=lib/receptor-mock/test/
+@tokenysolutions/t-rex/=node_modules/@tokenysolutions/t-rex/
+@onchain-id/solidity/=node_modules/@onchain-id/solidity/

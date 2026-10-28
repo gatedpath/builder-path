@@ -112,7 +112,7 @@ describe('status', { skip: hasForge ? false : 'forge is not installed' }, () => 
     assert.equal(r.preflight.ran, true);
     assert.equal(r.preflight.ok, true, JSON.stringify(r.preflight.failing));
     assert.equal(r.next.step, 'testnet deploy');
-    assert.match(r.next.command, /forge script script\/Deploy\.s\.sol --rpc-url redbelly_testnet --account <keystore-name> --broadcast/);
+    assert.match(r.next.command, /forge script script\/Deploy\.s\.sol --rpc-url redbelly_testnet --account <keystore-name> --sender <your-address> --broadcast/);
     assert.match(r.next.why, /never signs/);
     assert.match(r.next.why, /local loop/);
     // what the tool tells a builder is about the builder's project, never about this repository's own state

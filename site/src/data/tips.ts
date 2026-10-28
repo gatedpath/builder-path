@@ -8,6 +8,15 @@
 //
 // A key is used at most once per page, because it becomes the tooltip's element id.
 export const pillTips: { key: string; tip: string }[] = [
+  // ---- the page pill beside a title (PageTitle.astro): which network the page is written for
+  {
+    key: 'page-mainnet',
+    tip: 'This page is written for a contract on mainnet, chain 151. Every run recorded on it so far was read-only or on a local chain; nothing of mine is deployed there yet.',
+  },
+  {
+    key: 'page-testnet',
+    tip: 'This page is written for testnet, chain 153. The runs on it were on a fork or read-only against the real RPC; the real deploy is still yours to make.',
+  },
   // ---- steps that are the reader's alone (the "Your step" pills on the golden path)
   {
     key: 'verify-wallet',
@@ -33,18 +42,6 @@ export const pillTips: { key: string; tip: string }[] = [
   {
     key: 'keystore-entry',
     tip: 'Run this on your own machine. The encrypted keystore holds the key, and the config file never does.',
-  },
-  {
-    key: 'ship-real',
-    tip: 'Yours to run once you hold a verified, funded wallet in a keystore. Until then the proof is the local chain 151 run beside this pill.',
-  },
-  {
-    key: 'deploy-real',
-    tip: 'Rehearse it first in step 6, on a fork. The real deploy needs a verified, funded wallet, and it is signed from a keystore you name.',
-  },
-  {
-    key: 'verify-submit',
-    tip: 'Submit it yourself once your contract is live on 153. The dry run beside this pill shows exactly what will be sent.',
   },
   {
     key: 'verify-hardhat',

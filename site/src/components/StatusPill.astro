@@ -38,11 +38,16 @@ if (tipKey && !tip) throw new Error(`StatusPill: no tip with key "${tipKey}" in 
     font-family: var(--sl-font);
     font-size: var(--sl-text-2xs);
     font-weight: 600;
-    line-height: 1;
     letter-spacing: 0.01em;
     padding: 0.3125rem 0.625rem;
-    border-radius: var(--rb-radius-pill);
-    white-space: nowrap;
+    /* A pill that says when and how something was run is longer than a phone is wide. It used to be
+       nowrap, and the page scrolled sideways (audit of 19 September 2026; check-overflow.mjs now
+       fails the build on it). A pill still moves to the next line whole when it can; it only wraps
+       inside when it is wider than the column, and then its corners stop being a full pill. */
+    max-width: 100%;
+    line-height: 1.25;
+    text-align: left;
+    border-radius: min(var(--rb-radius-pill), 0.875rem);
     vertical-align: middle;
   }
   :global(.rb-pill--testnet) { background: var(--rb-color-testnet-bg); color: var(--rb-color-testnet-text); }

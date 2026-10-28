@@ -1,0 +1,17 @@
+
+> preflight
+> node scripts/preflight.mjs
+
+pre-flight for chain 153 (Redbelly Network Testnet)
+
+ok   chain id is a Redbelly network
+ok   foundry.toml pins solc 0.8.30 and prague
+ok   no .env or keystore is tracked by git
+ok   no .env ever committed in history
+ok   no key-shaped value in the project's files, tracked or not (89 read)
+FAIL DEPLOYER is a public address: set DEPLOYER in .env to the wallet you sign with
+note ADMIN_SAFE is empty: the deployer will hold admin roles on testnet. Put a Safe there before mainnet.
+ok   RPC reports the configured chain id: https://governors.testnet.redbelly.network says 153
+
+6 of 7 checks passed.
+Fix the failures above before deploying.

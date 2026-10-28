@@ -14,7 +14,7 @@ const landing = data.template === 'splash' && !data.hero && (entry.id === 'index
 <div class="rb-page-title">
   <h1 id="_top">
     {data.title}
-    {data.status && <StatusPill variant={data.status} label={data.statusLabel} />}
+    {data.status && <StatusPill variant={data.status} label={data.statusLabel} tipKey={data.status === 'mainnet' ? 'page-mainnet' : data.status === 'testnet' ? 'page-testnet' : undefined} />}
   </h1>
   {
     data.lastVerified && (

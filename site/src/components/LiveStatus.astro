@@ -121,7 +121,7 @@ const when = (iso: string) => iso.replace('T', ' ').replace(/\.\d+Z$/, ' UTC');
   .rb-status__grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); }
   .rb-status__card { border: 1px solid var(--rb-color-hairline); border-left: 4px solid var(--rb-color-accent); border-radius: var(--rb-radius-lg); padding: 1rem 1.25rem; background: var(--rb-color-bg); }
   .rb-status__card--down { border-left-color: var(--rb-color-caution-border); }
-  .rb-status__title { margin: 0; font-size: var(--sl-text-lg); font-weight: 600; color: var(--rb-color-heading); }
+  .rb-status__title { margin: 0; font-size: var(--sl-text-lg); font-weight: var(--rb-weight-card-title); color: var(--rb-color-heading); }
   .rb-status__rpc { margin: 0.25rem 0 0.5rem; font-size: var(--sl-text-2xs); color: var(--rb-color-text-muted); overflow-wrap: anywhere; }
   .rb-status__rpc code { font-size: inherit; background: none; padding: 0; color: inherit; }
   .rb-status__state { margin: 0 0 0.75rem; font-size: var(--sl-text-sm); font-weight: 600; color: var(--rb-color-text); }

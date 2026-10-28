@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
@@ -55,7 +55,14 @@ test('compiler-pins fails on the wrong solc, the wrong EVM and a missing config'
   assert.equal(bad.status, 'fail');
   assert.match(bad.reason, /solc is 0\.8\.24, not 0\.8\.30 and evm version is cancun, not prague/);
   assert.equal(checkCompilerPins(readProjectConfig(makeProject({ hardhat: true, evm: 'shanghai', git: false, slither: false }))).status, 'fail');
-  assert.equal(checkCompilerPins({ kind: 'none', file: null, profile: null, solc: null, evmVersion: null, optimizerRuns: null, sourceDir: 'src', chainId: null, rpcEndpoints: {}, rpcUrl: null }).status, 'fail');
+  const detect = makeProject({ git: false, slither: false });
+  writeFileSync(join(detect, 'foundry.toml'), '[profile.default]\nsrc = "src"\nauto_detect_solc = true\nevm_version = "prague"\n');
+  const warned = checkCompilerPins(readProjectConfig(detect));
+  assert.equal(warned.status, 'warn');
+  assert.match(warned.reason, /detects solc per file/);
+  writeFileSync(join(detect, 'foundry.toml'), '[profile.default]\nsrc = "src"\nauto_detect_solc = true\n');
+  assert.equal(checkCompilerPins(readProjectConfig(detect)).status, 'fail');
+  assert.equal(checkCompilerPins({ kind: 'none', file: null, profile: null, solc: null, autoDetectSolc: false, evmVersion: null, optimizerRuns: null, sourceDir: 'src', chainId: null, rpcEndpoints: {}, rpcUrl: null }).status, 'fail');
 });
 
 test('scanLine: hashes stay quiet, key shapes do not', () => {

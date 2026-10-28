@@ -27,7 +27,7 @@ import ProjectPager from '../../../components/ProjectPager.astro';
   ]}
 />
 
-A warm-up, fifteen to thirty minutes, and it changes no code. You are going to try to put this project on mainnet, today, with no preparation, and watch it be refused. Nothing in this project can sign or send anything: there is no wallet in it, and every command only reads. The refusals are worth having seen once while nothing is at stake, because each one is a requirement you will have to meet for real.
+Fifteen to thirty minutes on the scaffold, and it changes no code. You are going to try to put this project on mainnet, today, with no preparation, and watch it be refused. Nothing in this project can sign or send anything: there is no wallet in it, and every command only reads. The refusals are worth having seen once while nothing is at stake, because each one is a requirement you will have to meet for real.
 
 I ran the agent track on 12 September 2026 and did the same three attempts by hand on 17 September 2026.
 
@@ -44,7 +44,7 @@ Three refusals, from three tools, in the order a builder would meet them.
 <TabItem label="Directing an agent">
 <ProjectPrompt n={4} />
 
-This is exactly what an agent should try with the tools at hand, and every path it can take is a refusal. Watch what it reaches for. It should not add `--broadcast`, should not ask you for a key, and should not edit the code to get past a check; if it does any of those, stop it and read [What never goes into an agent](/agents-guide/what-never-goes-in/).
+This is exactly what an agent should try with the tools at hand, and every path it can take is a refusal. Watch what the agent reaches for: it should not add `--broadcast`, should not ask you for a key, and should not edit the code to get past a check; if it does any of those, stop it and read [What never goes into an agent](/agents-guide/what-never-goes-in/).
 
 <StatusPill variant="verified" label="Run 12 Sep 2026, Claude Code" /> Three refusals in 5 minutes 18 seconds, all read-only against the real mainnet RPC. The transcript is in the <Ext href="https://github.com/gatedpath/builder-path/blob/main/cards/runs/2026-09-12/card-04.md">run record</Ext>. One agent so far; the plan asks for two.
 </TabItem>
@@ -94,7 +94,7 @@ You can list the four requirements without looking, and say which tool checks ea
 The right ending.
 </StepPart>
 <StepPart kind="do">
-Do not fix anything. The point of this project is that the quick path to mainnet does not exist, by design: testnet is fast, and mainnet is gated by pre-flight and a ship report written on the day. When you are ready for the real thing, [Review before mainnet](/review/) is the list, and it is longer than these four.
+Leave everything as it is. This project is here to show that there is no quick path to mainnet, and that is deliberate: testnet is fast, and mainnet is gated by pre-flight and a ship report written on the day. When you are ready for the real thing, [Review before mainnet](/review/) is the list, and it is longer than these four.
 </StepPart>
 <StepPart kind="worked">
 `git status` shows no change. There is nothing to commit, which for once is the correct result.

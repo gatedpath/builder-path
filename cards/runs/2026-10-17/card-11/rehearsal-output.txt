@@ -1,0 +1,130 @@
+chain id 31337; block 3052543
+verifier (ReceptorMock) 0x37cA242a94945CdC3d3F155452a82Af6374bebD7, request id 708
+deployer (Anvil 7) 0x14dC79964da2C08b23698B3D3cc7Ca32193d9955   Safe stand-in (Anvil 9) 0xa0ee7a142d267c1f36714e4a8f75612f20a79720   second holder (Anvil 8) 0x23618e81e3f5cdf7f54c3d65f7fbc0abf5b21e8f
+Valid (Anvil 3) 0x90F79bf6EB2c4f870365E785982E1f101E93b906   Expired (4) 0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65   Revoked (5) 0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc   WrongJurisdiction (6) 0x976EA74026E726554dB657fA54763abd0C3a0aa9
+
+== 1. deploy the vehicle through its script: timelock (48 h), units, distributor, vote; the seeded mock as verifier
+  chain id: 31337
+  deployer: 0x14dC79964da2C08b23698B3D3cc7Ca32193d9955
+  chain is not 151 or 153: identity check skipped (local anvil without the registry?)
+  ADMIN_SAFE is not a contract; allowed on this chain but put a Safe there before mainnet
+  admin: 0xa0Ee7A142d267C1f36714E4a8F75612F20a79720
+  STABLE not set: DEPLOYING MOCK STABLECOIN (mUSD, 6 decimals). Not for mainnet.
+  the Safe's seat (timelock proposer and executor, operational roles) is held by: 0xa0Ee7A142d267C1f36714E4a8F75612F20a79720
+  on a real deploy that is ADMIN_SAFE, a Safe 1.4.1 with threshold >= 2; here it is a stand-in
+  TimelockController: 0x7B31b399a224aD30D48838F55B41b6A6F1e033ED
+  PropertyUnits: 0x47690CC4C0c91be612A643D85195F4D57488dE97
+  RentDistributor: 0xe01c6c0E0997fa433357ec80BC21B1031CA7d4Cc
+  SaleVote: 0x0bca6353f80bBe401233d5Ed7732cEACEb13bc88
+  verifier: 0x37cA242a94945CdC3d3F155452a82Af6374bebD7
+  stable: 0xf282a3C68A2505a79Fc99f94CE43D9c83230CaE5
+  safe seat: 0xa0Ee7A142d267C1f36714E4a8F75612F20a79720
+ONCHAIN EXECUTION COMPLETE & SUCCESSFUL.
+units 0x47690cc4c0c91be612a643d85195f4d57488de97 requestId() = 708, CLOCK_MODE "mode=timestamp"
+rent  0xe01c6c0e0997fa433357ec80bc21b1031ca7d4cc  requestId() = 708
+vote  0x0bca6353f80bbe401233d5ed7732ceaceb13bc88  requestId() = 708
+scripts/rehearse-property.sh: line 56: ZERO: unbound variable
+scripts/rehearse-property.sh: line 56: ZERO: unbound variable
+timelock 0x7b31b399a224ad30d48838f55b41b6a6f1e033ed getMinDelay() = 172800 [1.728e5] s; units admin is timelock: ; deployer is admin: 
+Safe stand-in holds ISSUER_ROLE: true, MANAGER_ROLE: true, PROPOSER_ROLE: true
+
+== 2. the Safe opens property 1 with 1,000 units and the hash of the offer document
+status 0x1 gas 73162 tx 0xfdb12edcf745f8f905e868ebb04fc3fe99744ac60ceaed80082b72718421db21
+
+== 3. the second holder (Anvil 8) is made Valid for request 708 on the mock; 600 units to Anvil 3, 400 to Anvil 8
+status 0x1 gas 49547 tx 0x7a246309834fc4a0100f9cb89bebdd5b93c34dc2a4c5f05f234b0e0aa487d6f0
+status 0x1 gas 225851 tx 0x5288c56cbe686806606858c71f584d71e313983bf91a811ec8ad455110bdbd1c
+status 0x1 gas 159840 tx 0xa795f32520f758be1d674b936aef71d5ab487d8f4fbc19eb70dacc6a3a2e32bb
+balances: Anvil 3 600, Anvil 8 400, totalSupply(1) 1000
+
+== 4. mint gate: issue into Expired, Revoked, WrongJurisdiction and NeverIssued wallets, each refused
+refused: custom error 0x879342fb NotEligible(0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65, 708)
+   decoded: 0x879342fb
+refused: custom error 0x879342fb NotEligible(0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc, 708)
+   decoded: 0x879342fb
+refused: custom error 0x879342fb NotEligible(0x976EA74026E726554dB657fA54763abd0C3a0aa9, 708)
+   decoded: 0x879342fb
+refused: custom error 0x879342fb NotEligible(0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC, 708)
+   decoded: 0x879342fb
+
+== 5. transfer gate: Anvil 3 sends 100 units to Anvil 8 (both Valid), then tries a Revoked recipient
+status 0x1 gas 114316 tx 0xdc175e94a0d400c09055cc80e57da3ee6db3921dc0011c59be82f2249219ba14
+refused: custom error 0x879342fb NotEligible(0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc, 708)
+   decoded: 0x879342fb
+balances: Anvil 3 500, Anvil 8 500
+
+== 6. rent: the Safe gets 100,000 mUSD, approves the distributor and deposits 10,000 mUSD for property 1
+status 0x1 gas 68391 tx 0x44e638243464bb2851495099e0c62a80bc91e33eeee5995799a620c146d714d7
+status 0x1 gas 46342 tx 0x208e73e7b7e08a93aa3784a904e8c739a079b946c844775c6e70ec223cc35f4b
+status 0x1 gas 187663 tx 0x871a8003b09433b732f096a7819907fdd4744dc2b73030ef69d404121e170137
+round 1: (1, 10000000000 [1e10], 1792275653 [1.792e9], 1000, 0)
+claimable: Anvil 3 (500 units) 5000000000 [5e9], Anvil 8 (500 units) 5000000000 [5e9]
+
+== 7. Anvil 3 claims; Anvil 8's credential is revoked and the claim is refused; restored, it pays
+status 0x1 gas 127301 tx 0x00aaf74784a81069ebdbd7169d3a114a48e351074cc4c99edac95751eb6d900c
+Anvil 3 mUSD 5000000000 [5e9]
+status 0x1 gas 32447 tx 0x8a6bb652887003c508c3815f303c7b7cb385a2850e3d997da31b9b646e36be2c
+refused: custom error 0x879342fb NotEligible(0x23618e81E3f5cdF7f54C3d65f7FBc0aBf5B21E8f, 708)
+   decoded: 0x879342fb
+status 0x1 gas 32447 tx 0xaa82117ae639573509a25bb847b6e779cdb1231c00f096b0e4c085ee8b1456f2
+status 0x1 gas 105401 tx 0xb042b99a159c8d42e4eb9f022d905a8bb09037e406c5c373028a529371ba8684
+Anvil 8 mUSD 5000000000 [5e9]; unclaimed(1) = 0; a second claim:
+refused: custom error 0xa9214540 AlreadyClaimed(1, 0x90F79bf6EB2c4f870365E785982E1f101E93b906)
+   decoded: AlreadyClaimed(uint256,address)
+RentClaimed events:
+- address: 0xe01c6c0E0997fa433357ec80BC21B1031CA7d4Cc
+  blockHash: 0xb950bebc32920dec12577ed1862ea9d45b6e8661ef3345a1516e8846a9ddb083
+  blockNumber: 3052555
+  data: 0x00000000000000000000000000000000000000000000000000000000000001f4000000000000000000000000000000000000000000000000000000012a05f200
+  logIndex: 1
+  removed: false
+  topics: [
+  	0xe6c895c94245554dc0af3b57ec3c991fcde7d8d4365025960bcbf906bd624dc6
+  	0x0000000000000000000000000000000000000000000000000000000000000001
+  	0x00000000000000000000000090f79bf6eb2c4f870365e785982e1f101e93b906
+  ]
+  transactionHash: 0x00aaf74784a81069ebdbd7169d3a114a48e351074cc4c99edac95751eb6d900c
+  transactionIndex: 0
+- address: 0xe01c6c0E0997fa433357ec80BC21B1031CA7d4Cc
+  blockHash: 0x2dad2f4dcdc74fed57267a38439604f33622e77b020a1ed7f0c505efdd4e21aa
+  blockNumber: 3052558
+
+== 8. the vote: the Safe proposes a sale (7 days); Anvil 3 votes for with 500 units, Anvil 8 against with 500: not a majority
+status 0x1 gas 152574 tx 0x1ac673d63f1bd5342c44a7ecd1ab218b5d4bf474ffa931a28e188daef9f2039d
+state(1) = 0 (0 = Active)
+status 0x1 gas 91446 tx 0xe9cd315ab81153baabb3264986eccde8a39636d29a30547d15b9ad3e4f810620
+status 0x1 gas 91421 tx 0x1beaa4cf94b8e66a53dd831a1cdc04720fce34d08dcfba76f17d6f3caf3ee32b
+refused: custom error 0x04f9da63 AlreadyVoted(1, 0x90F79bf6EB2c4f870365E785982E1f101E93b906)
+   decoded: AlreadyVoted(uint256,address)
+refused: custom error 0x879342fb NotEligible(0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc, 708)
+   decoded: 0x879342fb
+after the deadline: state(1) = 2 (2 = Defeated); proposal: (1, 0x44204385392a1b11c1717e4dd8fa8a15d91db09cacdb6995f56752349b39903a, 1792275656 [1.792e9], 1792880457 [1.792e9], 1000, 500, 500)
+
+== 9. a second proposal: Anvil 8 sends 100 units to Anvil 3 in the proposal's own second; Anvil 3 still votes with 500
+status 0x1 gas 135474 tx 0x26f17eb16a7a0a77c54f7bf150231a58e5f51d6d14ff00cf12966738a679a6ac
+status 0x1 gas 114316 tx 0xe833abc50d3862ab61973ec2128f133f3035a53c659fd1a7805a71ce2f21a7f5
+status 0x1 gas 93733 tx 0x9292eb39a45c628049ebb8fa53ab7b8024f78b2dbe9151c140ffd311ed728ccf
+Anvil 3 voted with:  500 units (held 500 at the snapshot, holds 600 now)
+state(2) = 2 (2 = Defeated: 500 of 1,000 is not a majority; 1 would be Passed)
+
+== 10. admin behind the timelock: the Safe cannot change the request id directly; it schedules it; execution before 48 h is refused
+refused: custom error 0xe2517d3f AccessControlUnauthorizedAccount(0xa0Ee7A142d267C1f36714E4a8F75612F20a79720, 0x0000000000000000000000000000000000000000000000000000000000000000)
+   decoded: AccessControlUnauthorizedAccount(address,bytes32)
+status 0x1 gas 56626 tx 0x79d727b8058e98b4082b7814c944431f0654d61f40bd8fab6a4316a9a7dd5365
+refused: custom error 0x5ead8eb5 TimelockUnexpectedOperationState(0xedca8811997e14453bbfb87855c37f65e7e45aa8b28962cf109b6acfe5a0460a, 0x0000000000000000000000000000000000000000000000000000000000000004)
+   decoded: TimelockUnexpectedOperationState(bytes32,bytes32)
+at 47 h 59 min:
+refused: custom error 0x5ead8eb5 TimelockUnexpectedOperationState(0xedca8811997e14453bbfb87855c37f65e7e45aa8b28962cf109b6acfe5a0460a, 0x0000000000000000000000000000000000000000000000000000000000000004)
+   decoded: TimelockUnexpectedOperationState(bytes32,bytes32)
+at 48 h:
+status 0x1 gas 49986 tx 0xc17ec735eb8a89c8d13da360c1f52222b59fefc1239029613d35e194a614a53e
+units requestId() = 18; a stranger cannot schedule:
+refused: custom error 0xe2517d3f AccessControlUnauthorizedAccount(0x23618e81E3f5cdF7f54C3d65f7FBc0aBf5B21E8f, 0xb09aa5aeb3702cfd50b6b62bc4532604938f21248a27a1d5ca736082b6819cc1)
+   decoded: AccessControlUnauthorizedAccount(address,bytes32)
+
+== 11. hold gate after the change: the gate is now request 18, which nobody here has; a transfer is refused and the units stay
+refused: custom error 0x879342fb NotEligible(0x90F79bf6EB2c4f870365E785982E1f101E93b906, 18)
+   decoded: 0x879342fb
+Anvil 3 still holds 600 units
+
+done: every signer was an unlocked Anvil account on chain 31337; nothing was signed on a real network

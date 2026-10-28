@@ -1,0 +1,24 @@
+{
+  "purpose": "The holder gate of CarbonCreditRegistry: request 18 as the card asks for it, the over-18 recipe's query with residency in AU or NZ added as a predicate. setZKPRequest(18, request) on the dApp's verifier is what turns this file into the gate; the contract only ever sees the id and a boolean.",
+  "from": "recipes/over-18/recipe.json, query.request, with one predicate added",
+  "request": {
+    "id": 18,
+    "circuitId": "credentialAtomicQuerySigV2OnChain",
+    "query": {
+      "allowedIssuers": ["did:receptor:redbelly:testnet:31K82iKCtE6ciDc7oAr3T5EpjZb4S1EFM7c4xJaWkM2"],
+      "context": "https://raw.githubusercontent.com/redbellynetwork/receptor-schema/refs/heads/main/schemas/json-ld/PassportCredential.jsonld",
+      "type": "PassportCredential",
+      "credentialSubject": {
+        "birthDate": { "$lt": 20081018 },
+        "country": { "$in": ["AU", "NZ"] }
+      }
+    }
+  },
+  "cutoff": "20081018 is today (2026-10-17) minus eighteen years plus one day, the recipe's cutoff rule; re-set on a schedule or document the lag.",
+  "verify": [
+    {
+      "what": "a residency predicate inside the over-18 query",
+      "why": "Written as the card's prompt asks. Not runnable as one on-chain query today, for two reasons read on 2026-10-17. First, PassportCredential (receptor-schema commit 3b37c11) has no residency field: its fields are name, passportNumber, nationality, birthDate, expiryDate and publicAddress, and nationality is not residence. Country of residence is the `country` field of ProofOfAddressCredential, a different credential type, free text with no stated code list (so AU might be written Australia). Second, the recipe itself records that on-chain verification supports a single query, one credential type and one field per request. The honest shapes are a second request on ProofOfAddressCredential (country $in [...]) with an AND in the contract, which the prompt rules out, or an off-chain multi-query through the Eligibility SDK, which the contract cannot see. The record for this run says so; the prompt is the lead's to reword."
+    }
+  ]
+}

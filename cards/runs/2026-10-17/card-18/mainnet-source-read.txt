@@ -1,0 +1,18 @@
+# Mainnet source read, re-fetched Sat Oct 17 22:39:27 BST 2026 (the first read was at block 3228539, 17:20 BST; results identical)
+block now: 3228695
+AUDD-proxy 0x54a210e824B0F89dA988E4B5586440aB354f0e46 | Routescan ContractName: 'AdminUpgradeabilityProxy' | compiler: v0.8.21+commit.d9974bed | Proxy: 1 | Implementation: 0xe28f29A76ee1f0fDC438EA6176ee8996B1fd1A4f
+AUDD-impl 0xe28f29a76ee1f0fdc438ea6176ee8996b1fd1a4f | Routescan ContractName: '(not verified)' | compiler: - | Proxy: 0 | Implementation: -
+AUDM-proxy 0x081599E4936D12c46Bd48913B2329115Cd26cbdd | Routescan ContractName: 'UUPSUpgradeableProxy' | compiler: v0.8.22+commit.4fc1097e | Proxy: 1 | Implementation: 0xeBAdAf3d0Ee4bBaA94717bD9029244b1Df2f47AA
+AUDM-impl 0xebadaf3d0ee4bbaa94717bd9029244b1df2f47aa | Routescan ContractName: 'ERC20FGasless' | compiler: v0.8.20+commit.a1b79de6 | Proxy: 0 | Implementation: -
+AUDM-accessRegistry-proxy 0xe97323c3AE72c67a739b3E640fBFfd83C7De0585 | Routescan ContractName: 'UUPSUpgradeableProxy' | compiler: v0.8.22+commit.4fc1097e | Proxy: 1 | Implementation: 0x0D7D2f28AB186CD706878c9943221B001bcFC3D7
+AUDM-accessRegistry-impl 0x0D7D2f28AB186CD706878c9943221B001bcFC3D7 | Routescan ContractName: 'DenyList' | compiler: v0.8.20+commit.a1b79de6 | Proxy: 0 | Implementation: -
+rAUD-1 0xf950b1beA7AB1688e1EAA96c0Ff0ccBAB087BB54 | Routescan ContractName: 'Stablecoin' | compiler: v0.8.22+commit.4fc1097e | Proxy: 0 | Implementation: -
+rAUD-2 0x3347618acc92226B2eFA6eb8c35e5cc3d56eAB1f | Routescan ContractName: '(not verified)' | compiler: - | Proxy: 0 | Implementation: -
+
+live reads (eth_call):
+AUDD decimals 6, paused false, totalSupply 50251000000 [5.025e10]
+AUDM decimals 18, paused false, accessRegistry 0xe97323c3AE72c67a739b3E640fBFfd83C7De0585
+AUDM accessRegistry.hasAccess(0x1111..., 0x1111..., 0x) = true  (true for an address on no list: a deny list)
+rAUD-1 decimals 6, totalSupply 1000000000000000 [1e15]
+code at the Aave aAUDD contract 0x73654a261fb3d07f56b6285595e3259eff026045 (a sender of AUDD in Routescan's transfer list): 3561 hex chars
+code at the Aave aAUDM contract 0x5aedfe9e6f800eb48e3dcb758bd0575b4bdd5b2e (a sender of AUDM): 3561 hex chars

@@ -3,7 +3,7 @@
 # Goldsky supports subgraphs on Redbelly mainnet and testnet as a partner-sponsored product,
 # "if approved by the Redbelly team": you need an access code from Goldsky's developer relations
 # team for the private signup form before `goldsky subgraph deploy` will accept a Redbelly
-# network (docs.goldsky.com/chains/redbelly, read 12 September 2026; RESEARCH.md question 11).
+# network (docs.goldsky.com/chains/redbelly, read 12 September 2026; research question 11 on the builder site).
 # Edge RPC and Mirror are not offered for Redbelly. Until you have the approval, Routescan's
 # API (scripts/routescan-*.mjs) is the indexing route.
 #

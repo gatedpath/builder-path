@@ -69,7 +69,7 @@ async function main() {
     console.log("ADMIN_SAFE not set: the deployer holds the admin roles. Fine on testnet, refused on mainnet.");
   }
 
-  // The ship report gate (PLAN.md 18.3): `redbelly ship` writes contracts/deployments/ship-<chain>-<date>.md
+  // The ship report gate (the ship-report gate): `redbelly ship` writes contracts/deployments/ship-<chain>-<date>.md
   // only when every check passed; mainnet refuses to deploy without today's, testnet warns.
   const today = new Date().toISOString().slice(0, 10);
   const shipReport = [join("..", "contracts", "deployments", `ship-${chainId}-${today}.md`), join("deployments", `ship-${chainId}-${today}.md`)].find((p) => existsSync(p));

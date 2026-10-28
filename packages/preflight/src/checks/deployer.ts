@@ -23,10 +23,10 @@ export async function resolveDeployer(src: DeployerSource): Promise<{ address: s
     if (!ACCOUNT_NAME.test(src.account)) return { address: null, how: '--account', error: 'Keystore names may only use letters, digits, dot, dash and underscore.' };
     const args = ['wallet', 'address', '--account', src.account];
     if (src.passwordFile) args.push('--password-file', src.passwordFile);
-    const r = await run('cast', args, { cwd: src.cwd, env: src.env, timeoutMs: 60_000, stdin: '' });
+    const r = await run('cast', args, { cwd: src.cwd, env: src.env, timeoutMs: 180_000, stdin: '' });
     if (r.spawnError) return { address: null, how: '--account', error: `cast is not installed or not on PATH (${r.spawnError}); install Foundry or pass --address for a read-only run.` };
     const m = /0x[0-9a-fA-F]{40}/.exec(r.stdout);
-    if (r.code !== 0 || !m) return { address: null, how: '--account', error: `cast wallet address --account ${src.account} failed: ${(r.stderr || r.stdout).trim().split('\n').pop() ?? 'no output'}.` };
+    if (r.code !== 0 || !m) return { address: null, how: '--account', error: `cast wallet address --account ${src.account} failed: ${(r.stderr || r.stdout).trim().split('\n').pop() ?? 'no output'}. cast asks for the keystore password on a terminal; without one pass --password-file or --address.` };
     return { address: m[0], how: `cast wallet address --account ${src.account}` };
   }
   return { address: null, how: 'none' };

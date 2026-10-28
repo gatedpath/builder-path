@@ -1,0 +1,73 @@
+chain id 31337; block 3052411
+verifier (ReceptorMock) 0x37cA242a94945CdC3d3F155452a82Af6374bebD7, request id 100
+deployer/admin (Anvil 7) 0x14dC79964da2C08b23698B3D3cc7Ca32193d9955
+funder (Anvil 8) 0x23618e81e3f5cdf7f54c3d65f7fbc0abf5b21e8f   reviewer (Anvil 9) 0xa0ee7a142d267c1f36714e4a8f75612f20a79720
+grantee, Valid (Anvil 3) 0x90F79bf6EB2c4f870365E785982E1f101E93b906   a Revoked wallet (Anvil 5) 0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc
+
+== 1. deploy the mock stablecoin (tests and rehearsal only)
+MockStable 0xf282a3c68a2505a79fc99f94ce43d9c83230cae5, "mUSD", 6 decimals
+
+== 2. deploy GrantEscrow through its deploy script, pointed at the seeded verifier
+  chain id: 31337
+  deployer: 0x14dC79964da2C08b23698B3D3cc7Ca32193d9955
+  chain is not 151 or 153: identity check skipped (local anvil without the registry?)
+  ADMIN_SAFE not set: the deployer holds the admin roles. Fine on testnet, refused on mainnet.
+  admin: 0x14dC79964da2C08b23698B3D3cc7Ca32193d9955
+  GrantEscrow: 0x7B31b399a224aD30D48838F55B41b6A6F1e033ED
+  verifier: 0x37cA242a94945CdC3d3F155452a82Af6374bebD7
+  reviewer: 0xa0Ee7A142d267C1f36714E4a8F75612F20a79720
+ONCHAIN EXECUTION COMPLETE & SUCCESSFUL.
+GrantEscrow 0x7b31b399a224ad30d48838f55b41b6a6f1e033ed; requestId() = 100; reviewer has REVIEWER_ROLE: true
+
+== 3. the funder gets 100,000 mUSD and approves the escrow
+status 0x1 gas 68391 tx 0xbb92855b32c88cfe34a549a30e9bdd9851d594c6969b11e0c670c9d828762f4c
+status 0x1 gas 46342 tx 0x87d1f5061741bc244f661ee64634af9a77c53260cc3697f2841527b669e3d052
+
+== 4. deposit: 30,000 mUSD for the Valid grantee in three tranches (10,000 / 15,000 / 5,000)
+status 0x1 gas 280925 tx 0x1269d03e0f4704b56fe32793eca4ad50af6f72ca421baca301c7f52141be4871
+escrow holds 30000000000 [3e10]; remainder(1) = 30000000000 [3e10]; canRelease(1) = false
+
+== 5. refusal: the reviewer tries to release before the grantee has accepted
+refused: custom error 0x8f1edda8 NotAccepted(1)
+   decoded: NotAccepted(uint256)
+
+== 6. the grantee proves eligibility and accepts (gate: request 100, wallet is Valid)
+status 0x1 gas 58353 tx 0xb50556443f3c1d07b05d8cbfaa2da3aef5b9a31227f232259e4723e6c39f3f34
+canRelease(1) = true
+
+== 7. refusal: the funder (not a reviewer) tries to release
+refused: custom error 0xe2517d3f AccessControlUnauthorizedAccount(0x23618e81E3f5cdF7f54C3d65f7FBc0aBf5B21E8f, 0xc10c77be35aff266144ed64c26a1fa104bae2f284ae99ac4a34203454704a185)
+   decoded: AccessControlUnauthorizedAccount(address,bytes32)
+
+== 8. release tranche 1 with its note
+status 0x1 gas 216801 tx 0x1fb1f31baef8fbdd8d69978b2112acb5158e70594fa02ecb36fecd2eb5592f29
+
+== 9. release tranche 2 with its note
+status 0x1 gas 165609 tx 0x4b1bb0d6589faa967bcd23afc51e5961ff38ff8ecc5bb9331dbbb788dcd25d28
+grantee balance 25000000000 [2.5e10]; remainder(1) = 5000000000 [5e9]
+notes read back from the contract:
+(10000000000 [1e10], true, "milestone 1: repository public, CI green")
+(15000000000 [1.5e10], true, "milestone 2: testnet deploy verified on Routescan")
+(5000000000 [5e9], false, "")
+Released events on the log:
+  data: 0x00000000000000000000000000000000000000000000000000000002540be4000000000000000000000000000000000000000000000000000000000000000060000000000000000000000000a0ee7a142d267c1f36714e4a8f75612f20a7972000000000000000000000000000000000000000000000000000000000000000286d696c6573746f6e6520313a207265706f7369746f7279207075626c69632c20434920677265656e000000000000000000000000000000000000000000000000
+  topics: [
+  data: 0x000000000000000000000000000000000000000000000000000000037e11d6000000000000000000000000000000000000000000000000000000000000000060000000000000000000000000a0ee7a142d267c1f36714e4a8f75612f20a7972000000000000000000000000000000000000000000000000000000000000000316d696c6573746f6e6520323a20746573746e6574206465706c6f79207665726966696564206f6e20526f7574657363616e000000000000000000000000000000
+  topics: [
+
+== 10. refusal: a second grant for a wallet whose credential is Revoked; its accept fails the gate
+status 0x1 gas 190953 tx 0x45b42158822315ad8f33bff894e92d49d74ceb6c31adbb7b60773cf2dbf4892f
+refused: custom error 0x879342fb NotEligible(0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc, 100)
+   decoded: 0x879342fb
+
+== 11. the remainder: the reviewer cancels grant 2 and the 2,000 mUSD goes back to the funder
+status 0x1 gas 74912 tx 0xe2a4b2c1c637d6097a6a7c7e21c78a89e5654a942a2b586c68df5c728954d767
+funder before 68000000000 [6.8e10] after 70000000000 [7e10]; remainder(2) = 0
+
+== 12. the grantee's credential is revoked after two tranches: the third waits in the escrow
+status 0x1 gas 32435 tx 0xf69a59ef8b37a76ef6a526c5bd2f900ffa15b749ec63d48a4cd6c85bb2d03102
+refused: custom error 0x879342fb NotEligible(0x90F79bf6EB2c4f870365E785982E1f101E93b906, 100)
+   decoded: 0x879342fb
+escrow still holds 5000000000 [5e9] (grant 1's remainder, 5,000 mUSD)
+
+done: 30,000 deposited, 25,000 released in two tranches with notes, 2,000 returned to the funder, 5,000 held.

@@ -3,7 +3,7 @@ pragma solidity 0.8.30;
 
 /// @notice Smallest useful contract for walking the deploy path by hand.
 /// One state variable, one write, one event. Nothing gated yet; gating comes
-/// after the Receptor verifier address is confirmed (RESEARCH.md question 8).
+/// after the Receptor verifier address is confirmed (research question 8 on the builder site).
 contract Hello {
     string public greeting;
     address public immutable deployer;

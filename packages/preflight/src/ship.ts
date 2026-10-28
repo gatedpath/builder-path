@@ -6,7 +6,7 @@
 // refuses to write when any check fails; the deploy script refuses to broadcast on 151 without a
 // report dated today. Nothing here signs: the account name resolves to an address through cast,
 // the RPC is read, forge runs tests on the local machine.
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { basename, join, relative, resolve } from 'node:path';
 import { chainById, decodeWords, ethCall, isAllowed, toCaller } from '@gatedpath/chains';
@@ -14,7 +14,7 @@ import { readProjectConfig } from './config.js';
 import { readDotEnv } from './dotenv.js';
 import { readAdmin } from './checks/admin.js';
 import type { AdminReading } from './checks/admin.js';
-import { parseGasReportJson, priceRows, quoteGas } from './gas.js';
+import { faucetDays, parseGasReportJson, priceRows, quoteGas } from './gas.js';
 import type { GasQuote, PricedRow } from './gas.js';
 import { run } from './proc.js';
 import { DEFAULT_GAS, runPreflight } from './run.js';
@@ -29,8 +29,10 @@ export interface ShipOptions {
   /** Foundry project or scaffold root (its contracts/ is used). Default: cwd. */
   project?: string;
   chain: 151 | 153;
-  /** Foundry keystore name; cast resolves the address, nothing else is read from it. */
-  account: string;
+  /** Foundry keystore name; cast resolves the address, nothing else is read from it. One of account, address or DEPLOYER in .env. */
+  account?: string;
+  /** The deployer's address given directly: no cast call, no password prompt. */
+  address?: string;
   passwordFile?: string;
   /** The Safe that receives every role. Required on 151; ADMIN_SAFE in .env fills it in. */
   admin?: string;
@@ -55,6 +57,8 @@ export interface ShipContract {
   readonly name: string;
   readonly address: string;
   readonly record: string;
+  /** When the record file was last written, so a report made before a deploy is read as such. */
+  readonly writtenAt: string;
   readonly deployer: string | null;
   readonly admin: string | null;
   readonly verifier: string | null;
@@ -144,9 +148,13 @@ export function readShipContracts(dir: string, chain: 151 | 153, pins: ShipRepor
   const out: ShipContract[] = [];
   for (const name of readdirSync(dep).sort()) {
     if (!(name === `${chain}.json` || (name.startsWith(`${chain}-`) && name.endsWith('.json')))) continue;
+    // The deploy script writes a dry run's record as <chain>-<Name>.dry-run.json (0.2.3) and says
+    // "broadcast": false inside it; neither describes a contract anyone can verify.
+    if (name.endsWith('.dry-run.json')) continue;
     const record = readJson(join(dep, name));
     const address = str(record?.['contract']);
-    if (!record || !address) continue;
+    if (!record || !address || record['broadcast'] === false) continue;
+    const writtenAt = statSync(join(dep, name)).mtime.toISOString();
     const contractName = str(record['contractName']) ?? basename(name, '.json').replace(new RegExp(`^${chain}-`), '');
     const sig = str(record['constructorSignature']);
     const args = str(record['constructorArgs']);
@@ -156,6 +164,7 @@ export function readShipContracts(dir: string, chain: 151 | 153, pins: ShipRepor
       name: contractName,
       address,
       record: join(dep, name),
+      writtenAt,
       deployer: str(record['deployer']),
       admin: str(record['admin']),
       verifier: str(record['verifier']),
@@ -226,13 +235,13 @@ export async function runShip(opts: ShipOptions): Promise<ShipReport> {
   // 2. pre-flight, seven checks, with the keystore's address and the measured deployment gas
   const gasForBalance = opts.gas !== undefined ? BigInt(opts.gas) : (deploymentGas ?? DEFAULT_GAS);
   const admin = opts.admin ?? rootEnv['ADMIN_SAFE'];
-  const preflight = await runPreflight({ project: dir, chain, rpc, account: opts.account, ...(opts.passwordFile ? { passwordFile: opts.passwordFile } : {}), ...(admin ? { admin } : {}), gas: gasForBalance, env });
+  const preflight = await runPreflight({ project: dir, chain, rpc, ...(opts.account ? { account: opts.account } : {}), ...(opts.address ? { address: opts.address } : {}), ...(opts.passwordFile ? { passwordFile: opts.passwordFile } : {}), ...(admin ? { admin } : {}), gas: gasForBalance, env });
   for (const c of preflight.checks) checks.push({ id: c.id, status: c.status, reason: c.reason, ...(c.data ? { data: c.data } : {}) });
   if (chain === 151 && !admin) checks.push({ id: 'admin-required', status: 'fail', reason: 'Chain 151 needs --admin <safe> (or ADMIN_SAFE in .env): the Safe 1.4.1 that receives every role.' });
 
   // 3. the verifier the deploy script will bind
   const verifierAddr = opts.verifier ?? rootEnv['VERIFIER'] ?? null;
-  const verifierSource = opts.verifier ? '--verifier' : rootEnv['VERIFIER'] ? 'VERIFIER in .env' : 'none';
+  const verifierSource = opts.verifier ? '--verifier' : env['VERIFIER'] ? 'VERIFIER in the environment' : rootEnv['VERIFIER'] ? 'VERIFIER in .env' : 'none';
   let verifierIsContract: boolean | null = null;
   if (verifierAddr) {
     if (!/^0x[0-9a-fA-F]{40}$/.test(verifierAddr)) checks.push({ id: 'verifier', status: 'fail', reason: `${verifierSource} is not a 20-byte hex address.` });
@@ -282,7 +291,7 @@ export async function runShip(opts: ShipOptions): Promise<ShipReport> {
   const deployerCheck = preflight.checks.find((c) => c.id === 'deployer-verified');
   const deployer = {
     address: preflight.deployer,
-    how: (deployerCheck?.data?.['how'] as string | undefined) ?? (opts.account ? `cast wallet address --account ${opts.account}` : 'none'),
+    how: (deployerCheck?.data?.['how'] as string | undefined) ?? (opts.account ? `cast wallet address --account ${opts.account}` : opts.address ? '--address' : 'none'),
     isAllowed: typeof deployerCheck?.data?.['allowed'] === 'boolean' ? (deployerCheck.data['allowed'] as boolean) : null,
     wellKnownDevAccount: deployerCheck?.data?.['wellKnownDevAccount'] === true,
   };
@@ -356,7 +365,23 @@ export class ShipUsageError extends Error {}
 const fmt = (n: bigint | number) => n.toLocaleString('en-US');
 const short = (s: string | null | undefined) => (s && s.includes('.') ? s.replace(/(\.\d{4})\d+$/, '$1') : s ?? '');
 
+/** The document goes into deployments/, which is committed and, for a public project, published. So it
+ * names the project by its last two path segments, never by a path on the machine that wrote it, and
+ * says `<keystore-name>` where the terminal said the real one (found 25 October 2026 by the project
+ * export's scan on the escrow's report). The JSON and the terminal keep both. */
+function forTheRecord(text: string, r: ShipReport): string {
+  const shown = r.project.split(/[\\/]/).filter(Boolean).slice(-2).join('/');
+  let out = text.split(r.project).join(shown);
+  const account = /--account (\S+)/.exec(r.deployer.how)?.[1];
+  if (account) out = out.split(`--account ${account}`).join('--account <keystore-name>');
+  return out;
+}
+
 export function renderShipMarkdown(r: ShipReport): string {
+  return forTheRecord(renderShipBody(r), r);
+}
+
+function renderShipBody(r: ShipReport): string {
   const L: string[] = [];
   const fails = r.checks.filter((c) => c.status === 'fail');
   const warns = r.checks.filter((c) => c.status === 'warn');
@@ -383,12 +408,14 @@ export function renderShipMarkdown(r: ShipReport): string {
   L.push('## Contracts');
   L.push('');
   if (r.contracts.length === 0) {
-    L.push(`No deployment record for chain ${r.chain} under \`deployments/\` yet. Deploy with \`forge script script/Deploy.s.sol --rpc-url ${r.network === 'mainnet' ? 'redbelly_mainnet' : 'redbelly_testnet'} --account <keystore-name> --broadcast\`, then run \`redbelly ship\` again today: this section fills in with the address, the constructor arguments and the exact verify command.`);
+    L.push(`No deployment record for chain ${r.chain} under \`deployments/\` yet. Deploy with \`forge script script/Deploy.s.sol --rpc-url ${r.network === 'mainnet' ? 'redbelly_mainnet' : 'redbelly_testnet'} --account <keystore-name> --sender ${r.deployer.address ?? '<your-address>'} --broadcast\`, then run \`redbelly ship\` again today: this section fills in with the address, the constructor arguments and the exact verify command.`);
   } else {
     for (const c of r.contracts) {
       L.push(`### ${c.name} at ${c.address}`);
       L.push('');
       L.push(`Record \`${relative(r.project, c.record)}\`${c.deployer ? `, deployed by ${c.deployer}` : ''}${c.admin ? `, admin ${c.admin}` : ''}${c.verifier ? `, verifier ${c.verifier}` : ''}${c.requestId ? `, request id ${c.requestId}` : ''}. Explorer: ${c.explorer}`);
+      L.push('');
+      L.push(`This section describes the record as it stood at ${c.writtenAt}. A deploy made after that rewrites the record; run \`redbelly ship\` again afterwards and the command below follows the new address.`);
       L.push('');
       if (c.constructorSignature) L.push(`Constructor \`${c.constructorSignature}\`, arguments as encoded by the deploy script:`);
       else L.push('The record carries no constructor arguments (written by an older deploy script); encode them with `cast abi-encode` for the command below.');
@@ -406,6 +433,8 @@ export function renderShipMarkdown(r: ShipReport): string {
     const q = r.gas.quote;
     L.push(`Priced at block ${fmt(q.block)}: base fee ${(Number(q.baseFeeWei) / 1e9).toLocaleString('en-US', { maximumFractionDigits: 2 })} gwei, RBNT US$${q.usdPerRbnt} on the feed at ${q.priceFeed} (${q.priceTimestamp}). Gas is priced in US dollars on this chain and converted to RBNT at execution, so the cents column is the stable one.`);
     L.push('');
+    const faucet = faucetDays(r.gas.rows, r.gas.quote);
+    if (faucet) L.push(`Faucet: the deployment rows with pre-flight's 25% margin come to ${fmt(faucet.gasWithMargin)} gas = ${faucet.rbnt.toFixed(1)} test RBNT at this base fee, ${faucet.claims} claim${faucet.claims === 1 ? '' : 's'} of ${faucet.perClaimRbnt} from the faucet (${faucet.days} day${faucet.days === 1 ? '' : 's'}, one claim a day). The base fee moves; re-run on the day.`, '');
     if (r.gas.deployment) L.push(`Deployment of ${r.gas.deployment.contract}: ${fmt(r.gas.deployment.gas)} gas = ${short(r.gas.deployment.rbnt)} RBNT = ${r.gas.deployment.cents.toFixed(2)} US cents. Pre-flight's balance check used ${fmt(BigInt((r.preflight.checks.find((c) => c.id === 'balance')?.data?.['gas'] as string | undefined) ?? '0'))} gas with 25% on top.`);
     L.push('');
     L.push('| Function | Gas | RBNT | US cents |');

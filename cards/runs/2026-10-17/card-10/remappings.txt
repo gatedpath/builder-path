@@ -1,0 +1,5 @@
+forge-std/=lib/forge-std/src/
+@openzeppelin/contracts/=node_modules/@openzeppelin/contracts/
+@gatedpath/receptor-mock/=lib/receptor-mock/src/
+@gatedpath/receptor-mock-test/=lib/receptor-mock/test/
+@uniswap/v2-core/=lib/v2-core/contracts/

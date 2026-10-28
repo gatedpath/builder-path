@@ -1,0 +1,52 @@
+Card 8, route B, step 2: the life of invoice 1 on testnet 153 through the live-shape adapters, 25 October 2026.
+The owner's dev wallet (0x38d8fd4d6bAd7Af440Ed5D35a4E381f5f2936B59) signed every transaction from her own
+Terminal; refusals are read-only eth_call against the live network state between the signed phases.
+
+== Phase 1 (her signature): mint 48,250.00 mUSD to the sender, approve, list invoice 1
+   face 48,250.00 mUSD, 250 bps, due 1796820936 (45 days), document keccak256("INV-2026-1042.pdf")
+   three transactions, blocks 3,056,735 to 3,056,737, 268,340 gas, 83.90 test RBNT at 312,666.10 gwei
+   list: tx 0x13eb26d37abf50187890485ab683a66d5834a60111bf5c3856eaa1956c6e7492, 46,354 gas
+   read back: invoiceCount 1; invoice 1 Listed by her wallet, investor none, advanceFor = 47,043.75 mUSD
+   her mUSD 48,250.00, allowance to the contract 48,250.00; nonce 24; balance 38,231.84 test RBNT
+
+== Live refusals after phase 1 (eth_call against 153, nothing signed)
+  her wallet funds invoice 1 with no proof for 708:
+    refused: NotEligible(0x38d8fd4d6bAd7Af440Ed5D35a4E381f5f2936B59, 708)  selector 0x879342fb
+  a stranger (0x…dEaD) lists:
+    refused: NotEligible(0x000000000000000000000000000000000000dEaD, 0)  selector 0x879342fb
+  a stranger funds invoice 1:
+    refused: NotEligible(0x000000000000000000000000000000000000dEaD, 708)  selector 0x879342fb
+  her wallet: isLister true (representative on the identifier, read through the business adapter)
+              isEligible false (no proof for 708 on the ZKP verifier, read through the Iden3 adapter)
+
+== Phase 2 (her signature): record her proof for 708, fund invoice 1, approve the face value, repay, withdraw the proof
+   five transactions, all in block 3,056,740, 260,644 gas, 81.49 test RBNT at 312,666.10 gwei
+   fund:   tx 0x0ee07f5a3216e27b306f08095796c3eee31caceffa53186b98b6d982d2420cdc, 29,254 gas (warm adapter read)
+   repay:  tx 0x0ccdb1d8d0f0a190f05db7628f2b4f89006c4260161a73ae7e20314b57940db0, 29,532 gas
+   recordProof(true): tx 0xcad9fcb4a874e03f6c7cd7ae9792acea42a96673e898a2ef0eeb441a5dee466d, 85,775 gas
+   read back: invoice 1 Repaid, investor = her wallet; her mUSD 0 (she funded herself: the advance moved from
+   her to her); contract holds 48,250.00 mUSD; proof(her, 708) false; isEligible(her) false; nonce 29;
+   balance 38,150.34 test RBNT
+   A fix the dry run caught before anything was signed: the funding step consumed phase 1's allowance, so the
+   repayment needed its own approval (added to the script as a second approve of the face value).
+
+== Live refusal after phase 2 (eth_call against 153, nothing signed)
+  her wallet releases invoice 1 with the proof withdrawn:
+    refused: NotEligible(0x38d8fd4d6bAd7Af440Ed5D35a4E381f5f2936B59, 708)  selector 0x879342fb
+  the face value stays in the contract until the proof is restored: the card's policy, shown on the real network
+
+== Phase 3 (her signature): restore the proof, release, add a second delegate on the identifier, remove it
+   four transactions, all in block 3,056,742, 211,589 gas, 66.16 test RBNT at 312,666.10 gwei
+   release: tx 0x361a5c1b816e8fafb5d2b4c1e6074c4fd8940ea27fa5e6a082c9eaeb04829795, 79,527 gas
+   addAuthorisedDelegate([0x…d0C8]): tx 0x9132f1da7eac3c8d0c5cb03166f248dd16fefbfcca9925ff049d7a26955db1a6, 46,644 gas
+   removeAuthorisedDelegate: tx 0x325fa11b9aa9edd44fc47c358ffe79ace51c176d9b917379168275f08680bdc2, 51,329 gas
+   the script read isLister(second delegate) between the two: true while added, false after removal (the live role read)
+   read back: invoice 1 Released; her mUSD 48,250.00 (paid 47,043.75 as the investor, received 48,250.00: the
+   discount earned, from herself to herself on this run); contract 0; isEligible(her) true; isLister(0x…d0C8) false;
+   two RoleUpdated events on the identifier since block 3,056,740; nonce 33; balance 38,084.18 test RBNT
+
+== Totals, 25 October 2026, route B on 153
+   step 1 (four contracts and two repoints, 7 tx) 524.01; phase 1 (3 tx) 83.90; phase 2 (5 tx) 81.49; phase 3 (4 tx) 66.16
+   755.56 test RBNT for 19 transactions; with the morning's deploy of the contract and its stablecoin (502.66), card 8
+   cost 1,258.22 test RBNT on testnet in all. Nothing touched mainnet; the shared ReceptorMock of 23 October is no
+   longer read by this contract (both gates point at the adapters) and stays in place for the other projects.

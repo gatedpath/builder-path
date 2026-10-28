@@ -5,25 +5,24 @@
 Facts verified 2026-09-12. This index links to Redbelly's own reference pages and lists the rules an agent must hold. The full text is in llms-full.txt.
 
 - Mainnet is chain 151. RPC https://governors.mainnet.redbelly.network. Explorer https://redbelly.routescan.io.
-- Testnet is chain 153. RPC https://governors.testnet.redbelly.network. Explorer https://redbelly.testnet.routescan.io.
+- Testnet is chain 153. RPC https://governors.testnet.redbelly.network. Explorer https://redbelly.testnet.routescan.io. Redbelly's devnet is deprecated; don't target any other chain ID.
 - Routescan's Etherscan-style API is at https://api.routescan.io/v2/network/mainnet/evm/151/etherscan/api and https://api.routescan.io/v2/network/testnet/evm/153/etherscan/api. Keyless calls get 2 requests a second. Use it for contract verification and indexing.
 - Other mainnet RPCs Vine lists: Ankr at https://rpc.ankr.com/redbelly_mainnet (keyless) and Uniblock at https://api.uniblock.dev/uni/v1/json-rpc?chainId=151 with the key on the x-api-key header. Vine lists no third-party RPC for testnet.
-- Redbelly's devnet is deprecated. Don't target any chain ID except 151 and 153.
 - The native coin is RBNT with 18 decimals.
 - The EVM is Prague on both networks. Compile with solc 0.8.30 and evm_version prague. If a dependency cannot build for Prague, cancun is the lowest acceptable target.
 - PUSH0, transient storage, MCOPY and the Prague precompiles all work. Use transient storage for reentrancy locks.
-- Blocks are produced on demand. No traffic, no block. A transaction lands within seconds or not at all, so poll for the receipt and never sleep for a block time.
+- Blocks are produced on demand. No traffic, no block. Poll for the receipt and never sleep for a block time. A transaction usually lands within seconds. If it has not after 30 seconds, the RPC endpoint sends it again to another governor (Redbelly, 12 October 2026), so wait past that mark, 45 seconds is a fair line, before treating silence as a failure, and keep the same nonce so a late first attempt and the resend cannot both land.
 - Finality is deterministic (DBFT, no forks). Don't write confirmation-count or reorg handling; make off-chain consumers idempotent instead.
 - The governors RPC doesn't serve debug_*, trace_* or net_version. Don't plan on traces. eth_getLogs, eth_feeHistory and txpool_status do work.
 - The block gas limit reports as 60,000,000,000. No per-transaction limit is documented.
 - There is no local node. For local work fork testnet with anvil and mock the identity layer, and say so in the README.
 - A 21,000-gas transfer costs US$0.01. The base fee is converted to RBNT at execution from an on-chain price feed, so the fee in RBNT moves with the RBNT price and the fee in USD does not.
-- The priority fee is always zero. eth_maxPriorityFeePerGas returns 0 and eth_feeHistory rewards are 0. There is nothing to buy position with.
-- eth_gasPrice returns the base fee plus ten percent of headroom.
+- The priority fee is always zero. eth_maxPriorityFeePerGas returns 0 and eth_feeHistory rewards are 0. There is nothing to buy position with. eth_gasPrice returns the base fee plus ten percent of headroom.
 - In wagmi, viem and ethers, leave the fee fields unset and let the client estimate. If you must set them, use maxPriorityFeePerGas 0 with a maxFeePerGas at or above the latest base fee, or take gasPrice straight from eth_gasPrice.
 - Never hardcode a gas price in wei in config or code. It changes with the RBNT price.
 - In tests, assert gas used, never a fee in wei or RBNT. When a number is needed, price it in USD with gasCostUsd from @gatedpath/chains. On an anvil fork the base fee does not follow the oracle, so fee assertions there mean nothing.
 - Vine warns that most wallets show gas information wrongly on Redbelly. Show the USD cost in your own UI from the price feed.
+- eth_estimateGas runs against the last block, and with blocks on demand the real transaction lands in a new block a second later. A call whose cost depends on whether a block has passed is under-estimated: a Uniswap v2 swap, mint or burn writes the price accumulators in a new block, about 44,000 gas more than the estimate (measured on a fork of 153, 17 October 2026). Add a margin to the estimate for such calls; 50 percent is a fair line.
 - The price feed is the contract the bootstrap registry names pricefeed: mainnet 0x0CD42d829F88fe539f710E9b7692C70b94aaEad4, testnet 0xBf207257412D3672F9C772ef263583611B98039a. getLatestPrice() returns USD per RBNT with six decimals.
 - The gate is permission.isAllowed(address) on the contract the bootstrap registry names permission. The registry is 0xDAFEA492D9c6733ae3d56b7Ed1ADB60692c98Bc5 on both chains; permission is 0xcb385cD90ca6b219798F57B4a7958897e91A9163 on mainnet and 0x519ba1b48D571FD92FAF6FE4D20fe74Ca435B690 on testnet.
 - Read isAllowed for the deployer before every deploy and for the user before every send. False means the wallet has not been verified at https://access.redbelly.network. Send the person there. Don't retry, and don't switch to another wallet without telling them.
@@ -43,8 +42,14 @@ Facts verified 2026-09-12. This index links to Redbelly's own reference pages an
 - Pre-flight means at least: the deployer passes isAllowed on the target chain, the configured chain ID matches what the RPC reports, the issuer registry address matches the target chain, no secret is in git history, and the RBNT balance covers deployment with margin.
 - Never promise mainnet in an afternoon for anything that holds value. Not in copy, comments, commit messages or chat.
 - Safe 1.4.1, Multicall3 and the deterministic deployers sit at their canonical addresses on both networks. Put admin roles behind a Safe from the first testnet deploy so mainnet changes nothing.
+- Sodax (swaps, money market) is mainnet only on every network, Redbelly included (its FAQ, read 2026-10-15), so "testnet first" cannot cover that call path. Test your own contracts on 153; rehearse a Sodax integration with read-only quotes on 151 before any signed call, and never sign from a wallet that holds more than the test amount.
+- forge or cast is not installed. The command needs forge, cast or anvil and none was found on PATH. Run: curl -L https://foundry.paradigm.xyz | bash && foundryup   # or: npm install -g @foundry-rs/forge @foundry-rs/anvil @foundry-rs/cast
+- No keystore of that name. forge or cast found no keystore with the name you gave under ~/.foundry/keystores. Run: ls ~/.foundry/keystores && cast wallet import <keystore-name> --interactive   # paste the key into the prompt, never into a file or a command line
+- The RPC is not the chain this was meant for. The RPC you pointed at reports a different chain from the one the command, the config or the tool expected. Run: cast chain-id --rpc-url <rpc>
+- permission.isAllowed is false. This wallet hasn't been verified on this network, so it can't send any transaction here. Run: cast call 0x519ba1b48D571FD92FAF6FE4D20fe74Ca435B690 "isAllowed(address)(bool)" <wallet> --rpc-url https://governors.testnet.redbelly.network   # send the person to https://access.redbelly.network with this same wallet
+- NotEligible(wallet, requestId). The contract refused this wallet: its verifier doesn't hold an accepted credential for the request id the gate is bound to. Run: cast call <verifier> "eligibilityStatus(address,uint64)(uint8)" <wallet> <requestId> --rpc-url <rpc>   # on ReceptorMock the answer names the state; a real verifier answers Valid or NeverIssued only
 - No private key in files, environment variables, chat or agent context. Not in .env, not in foundry.toml, not in hardhat.config, not in a test fixture.
-- Sign with a Foundry keystore account (forge script --account NAME, cast send --account NAME) or a hardware wallet path (--ledger, --trezor). forge and cast sign locally.
+- Sign with a Foundry keystore account (forge script --account NAME --sender ITS_ADDRESS, cast send --account NAME) or a hardware wallet path (--ledger, --trezor). forge and cast sign locally. Without --sender, forge script rehearses as its default sender, which fails isAllowed; the first real deploy stopped there.
 - On the Hardhat path use its encrypted keystore or a hardware signer. Never a key in the config file.
 - Never ask the person for a key, a seed phrase or a keystore password. When a step needs a signature, print the exact command and let them run it.
 - Keep .env.example free of secrets, with a comment on every line saying what the value is for.
@@ -90,14 +95,12 @@ Facts verified 2026-09-12. This index links to Redbelly's own reference pages an
 - [Redbelly docs](https://docs.redbelly.network/): Receptor and the Eligibility SDK
 - [Routescan mainnet](https://redbelly.routescan.io)
 - [Routescan testnet](https://redbelly.testnet.routescan.io)
-- [Access dApp](https://access.redbelly.network)
-- [FAUCETME](https://redbelly.faucetme.pro/)
 - [receptor-schema](https://github.com/redbellynetwork/receptor-schema)
 - [@gatedpath/chains](https://www.npmjs.com/package/@gatedpath/chains)
 
 ## Rules files
 
-- [Rendered samples](https://www.npmjs.com/package/@gatedpath/agent-rules?activeTab=code): CLAUDE.md, AGENTS.md, Cursor, Copilot, Gemini
+- [Rendered samples](https://www.npmjs.com/package/@gatedpath/agent-rules?activeTab=code): CLAUDE.md, AGENTS.md, Cursor, Copilot, Gemini, SKILL.md
 - [Generator](https://www.npmjs.com/package/@gatedpath/agent-rules): @gatedpath/agent-rules, run `npx -y @gatedpath/agent-rules --out .`
 
 <!-- TODO(site): the builder site does not exist yet. When it does, add these site-relative links here: /agents (rules files, MCP install, llms.txt); /start (golden path); /recipes (eligibility recipes); /tutorials (prompt cards). -->

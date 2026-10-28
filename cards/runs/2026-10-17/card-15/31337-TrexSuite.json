@@ -1,0 +1,27 @@
+{
+  "admin": "0xa0Ee7A142d267C1f36714E4a8F75612F20a79720",
+  "adminIsSafe": false,
+  "agent": "0x14dC79964da2C08b23698B3D3cc7Ca32193d9955",
+  "chainId": 31337,
+  "claimIssuer": "0xA62045beac3b7195393e3b6a5B0b0066c0ea0DF9",
+  "claimSigner": "0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc",
+  "claimTopics": [
+    1,
+    2
+  ],
+  "claimTopicsRegistry": "0xBe0F340075060F856612d91e17cAe599dE92C745",
+  "compliance": "0x446Ae0F4BE2110a900B6506f5E1379C1E4BDfC57",
+  "deployer": "0x23618e81E3f5cdF7f54C3d65f7FBc0aBf5B21E8f",
+  "gateReport": "0xF940b30E23De6Fcf8c38e56a6399679D2c948410",
+  "identityRegistry": "0x3495fa1C4C2Ae290CF20ED1745395663b6189911",
+  "identityRegistryStorage": "0xE0e0Dd37299c2d019658639fb01db4c312528d73",
+  "implementationAuthority": "0x98eDDadCfde04dC22a0e62119617e74a6Bc77313",
+  "onchainid": "@onchain-id/solidity 2.2.1",
+  "permission": "0x519ba1b48D571FD92FAF6FE4D20fe74Ca435B690",
+  "timelock": "0x95bD8D42f30351685e96C62EDdc0d0613bf9a87A",
+  "timelockDelay": 172800,
+  "token": "0x2B8380FCA14b5F5C4a763bf38573A3c36a548c56",
+  "tokenOnchainId": "0x67EBb5690d1Fc1Bc0fa67cBD6Fe944515c5e7F93",
+  "trex": "@tokenysolutions/t-rex 4.1.3",
+  "trustedIssuersRegistry": "0x1B0Fd9Df9c444A4CeEC9863B88e1D7Cb3db621c0"
+}

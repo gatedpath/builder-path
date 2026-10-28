@@ -1,0 +1,101 @@
+
+> lint:slither
+> node scripts/slither.mjs
+
+
+Detector: arbitrary-send-erc20
+RegisterDistributor._attempt(RegisterDistributor.Distribution,uint256,address,uint256,uint256) (src/RegisterDistributor.sol#207-226) uses arbitrary from in transferFrom: result = IERC20(d.stablecoin).transferFrom(d.payer,holder,amount) (src/RegisterDistributor.sol#210-215)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#arbitrary-from-in-transferfrom
+
+Detector: reentrancy-no-eth
+Reentrancy in RegisterDistributor._attempt(RegisterDistributor.Distribution,uint256,address,uint256,uint256) (src/RegisterDistributor.sol#207-226):
+	External calls:
+	- result = IERC20(d.stablecoin).transferFrom(d.payer,holder,amount) (src/RegisterDistributor.sol#210-215)
+	State variables written after the call(s):
+	- d.paid += amount (src/RegisterDistributor.sol#218)
+	RegisterDistributor._distributions (src/RegisterDistributor.sol#49) can be used in cross function reentrancies:
+	- RegisterDistributor.close(uint256) (src/RegisterDistributor.sol#177-183)
+	- RegisterDistributor.distribution(uint256) (src/RegisterDistributor.sol#185-187)
+	- RegisterDistributor.holderAt(uint256,uint256) (src/RegisterDistributor.sol#189-199)
+	- RegisterDistributor.onlyPayer(uint256) (src/RegisterDistributor.sol#87-92)
+	- RegisterDistributor.open(address,address,uint256,uint256,address[],uint256[]) (src/RegisterDistributor.sol#96-135)
+	- d.paidCount += 1 (src/RegisterDistributor.sol#219)
+	RegisterDistributor._distributions (src/RegisterDistributor.sol#49) can be used in cross function reentrancies:
+	- RegisterDistributor.close(uint256) (src/RegisterDistributor.sol#177-183)
+	- RegisterDistributor.distribution(uint256) (src/RegisterDistributor.sol#185-187)
+	- RegisterDistributor.holderAt(uint256,uint256) (src/RegisterDistributor.sol#189-199)
+	- RegisterDistributor.onlyPayer(uint256) (src/RegisterDistributor.sol#87-92)
+	- RegisterDistributor.open(address,address,uint256,uint256,address[],uint256[]) (src/RegisterDistributor.sol#96-135)
+	- d.failedCount += 1 (src/RegisterDistributor.sol#223)
+	RegisterDistributor._distributions (src/RegisterDistributor.sol#49) can be used in cross function reentrancies:
+	- RegisterDistributor.close(uint256) (src/RegisterDistributor.sol#177-183)
+	- RegisterDistributor.distribution(uint256) (src/RegisterDistributor.sol#185-187)
+	- RegisterDistributor.holderAt(uint256,uint256) (src/RegisterDistributor.sol#189-199)
+	- RegisterDistributor.onlyPayer(uint256) (src/RegisterDistributor.sol#87-92)
+	- RegisterDistributor.open(address,address,uint256,uint256,address[],uint256[]) (src/RegisterDistributor.sol#96-135)
+Reentrancy in RegisterDistributor.pay(uint256,uint256) (src/RegisterDistributor.sol#139-163):
+	External calls:
+	- _attempt(d,id,holder,amount,balance) (src/RegisterDistributor.sol#156)
+		- result = IERC20(d.stablecoin).transferFrom(d.payer,holder,amount) (src/RegisterDistributor.sol#210-215)
+	State variables written after the call(s):
+	- d.due += amount (src/RegisterDistributor.sol#155)
+	RegisterDistributor._distributions (src/RegisterDistributor.sol#49) can be used in cross function reentrancies:
+	- RegisterDistributor.close(uint256) (src/RegisterDistributor.sol#177-183)
+	- RegisterDistributor.distribution(uint256) (src/RegisterDistributor.sol#185-187)
+	- RegisterDistributor.holderAt(uint256,uint256) (src/RegisterDistributor.sol#189-199)
+	- RegisterDistributor.onlyPayer(uint256) (src/RegisterDistributor.sol#87-92)
+	- RegisterDistributor.open(address,address,uint256,uint256,address[],uint256[]) (src/RegisterDistributor.sol#96-135)
+	- d.cursor = end (src/RegisterDistributor.sol#158)
+	RegisterDistributor._distributions (src/RegisterDistributor.sol#49) can be used in cross function reentrancies:
+	- RegisterDistributor.close(uint256) (src/RegisterDistributor.sol#177-183)
+	- RegisterDistributor.distribution(uint256) (src/RegisterDistributor.sol#185-187)
+	- RegisterDistributor.holderAt(uint256,uint256) (src/RegisterDistributor.sol#189-199)
+	- RegisterDistributor.onlyPayer(uint256) (src/RegisterDistributor.sol#87-92)
+	- RegisterDistributor.open(address,address,uint256,uint256,address[],uint256[]) (src/RegisterDistributor.sol#96-135)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-2
+
+Detector: uninitialized-local
+RegisterDistributor.open(address,address,uint256,uint256,address[],uint256[]).totalBalance (src/RegisterDistributor.sol#113) is a local variable never initialized
+RegisterDistributor._attempt(RegisterDistributor.Distribution,uint256,address,uint256,uint256).reason (src/RegisterDistributor.sol#209) is a local variable never initialized
+RegisterDistributor._attempt(RegisterDistributor.Distribution,uint256,address,uint256,uint256).ok (src/RegisterDistributor.sol#208) is a local variable never initialized
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#uninitialized-local-variables
+
+Detector: calls-loop
+RegisterDistributor._attempt(RegisterDistributor.Distribution,uint256,address,uint256,uint256) (src/RegisterDistributor.sol#207-226) has external calls inside a loop: result = IERC20(d.stablecoin).transferFrom(d.payer,holder,amount) (src/RegisterDistributor.sol#210-215)
+	Calls stack containing the loop:
+		RegisterDistributor.pay(uint256,uint256)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation/#calls-inside-a-loop
+
+Detector: reentrancy-benign
+Reentrancy in RegisterDistributor._attempt(RegisterDistributor.Distribution,uint256,address,uint256,uint256) (src/RegisterDistributor.sol#207-226):
+	External calls:
+	- result = IERC20(d.stablecoin).transferFrom(d.payer,holder,amount) (src/RegisterDistributor.sol#210-215)
+	State variables written after the call(s):
+	- _status[id][holder] = Status.Paid (src/RegisterDistributor.sol#217)
+	- _status[id][holder] = Status.Failed (src/RegisterDistributor.sol#222)
+Reentrancy in RegisterDistributor.pay(uint256,uint256) (src/RegisterDistributor.sol#139-163):
+	External calls:
+	- _attempt(d,id,holder,amount,balance) (src/RegisterDistributor.sol#156)
+		- result = IERC20(d.stablecoin).transferFrom(d.payer,holder,amount) (src/RegisterDistributor.sol#210-215)
+	State variables written after the call(s):
+	- _status[id][holder] = Status.Skipped (src/RegisterDistributor.sol#150)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-3
+
+Detector: timestamp
+IssuerRegistry.setIssuer(address,uint64,uint64,uint256) (src/IssuerRegistry.sol#60-72) uses timestamp for comparisons
+	Dangerous comparisons:
+	- validFrom == 0 (src/IssuerRegistry.sol#67)
+	- validUntil <= validFrom || validUntil <= nowTs (src/IssuerRegistry.sol#68)
+IssuerRegistry.isActiveIssuer(address) (src/IssuerRegistry.sol#87-93) uses timestamp for comparisons
+	Dangerous comparisons:
+	- p.validUntil != 0 && block.timestamp >= p.validFrom && block.timestamp < p.validUntil (src/IssuerRegistry.sol#92)
+IssuerRegistry.canIssue(address,uint256) (src/IssuerRegistry.sol#103-105) uses timestamp for comparisons
+	Dangerous comparisons:
+	- isActiveIssuer(issuer) && remainingIssuance(issuer) >= amount (src/IssuerRegistry.sol#104)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#block-timestamp
+. analyzed (20 contracts with 81 detectors), 12 result(s) found
+'forge clean' running (wd: ~/code/card-18/contracts)
+'forge config --json' running
+'forge build --build-info --deny never --skip ./test/** ./script/** --force' running (wd: ~/code/card-18/contracts)
+wrote contracts/reports/slither.json and contracts/reports/slither.sources.sha256
+exit 255

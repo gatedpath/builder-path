@@ -81,6 +81,30 @@ for (const width of WIDTHS) {
   }
   await page.close();
 }
+
+// WCAG 1.4.13, on one tooltip at desktop width where the bubble sits beside its trigger: the pointer
+// can move onto the bubble, Escape closes it without moving pointer or focus, and leaving and coming
+// back opens it again (a tooltip that stayed closed for good would be worse than the fault it fixes).
+{
+  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  await page.goto(BASE + '/start/', { waitUntil: 'load' });
+  const trigger = page.locator('.rb-tip__trigger').first();
+  await trigger.scrollIntoViewIfNeeded();
+  const shown = async () => (await trigger.evaluate((el) => getComputedStyle(el.nextElementSibling).visibility)) === 'visible';
+  const settle = () => page.waitForTimeout(250);
+  const expect = async (want, what) => { await settle(); if ((await shown()) !== want) problems.push(`1440px /start/ first tooltip: ${what}`); };
+  await trigger.hover(); await expect(true, 'not shown on hover');
+  const mid = await trigger.evaluate((el) => { const b = el.nextElementSibling.getBoundingClientRect(); return { x: b.left + b.width / 2, y: b.top + b.height / 2 }; });
+  await page.mouse.move(mid.x, mid.y, { steps: 12 }); await expect(true, 'vanished when the pointer moved onto the bubble');
+  await page.keyboard.press('Escape'); await expect(false, 'Escape did not close it under the pointer');
+  await page.mouse.move(5, 5); await settle();
+  await trigger.hover(); await expect(true, 'stayed closed after Escape, pointer away and back');
+  await page.mouse.move(5, 5);
+  await trigger.focus(); await page.keyboard.press('Shift+Tab'); await page.keyboard.press('Tab'); await expect(true, 'not shown when reached by Tab');
+  await page.keyboard.press('Escape'); await expect(false, 'Escape did not close it under the focus');
+  await page.keyboard.press('Shift+Tab'); await page.keyboard.press('Tab'); await expect(true, 'stayed closed after Escape, focus away and back');
+  await page.close();
+}
 await browser.close();
 stop();
 

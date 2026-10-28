@@ -24,7 +24,11 @@ export type {
   LastCheckedProps,
   GasWarningProps,
 } from './components.js';
-export { verifierAbi, permissionAbi, receptorMockAbi, receptorMockStatusAbi } from './abi.js';
+export { checkRecipient, useRecipientCheck } from './checkRecipient.js';
+export type { RecipientCheck, RecipientReason, RecipientReasonKind, RecipientVerdict, CheckRecipientOptions, UseRecipientCheckOptions, RecipientCheckResult } from './checkRecipient.js';
+export { verifierAbi, permissionAbi, bootstrapRegistryAbi, receptorMockAbi, receptorMockStatusAbi, registerTokenAbi, identityRegistryAbi, trustedIssuersRegistryAbi, claimTopicsRegistryAbi } from './abi.js';
+export { useRegister } from './useRegister.js';
+export type { RegisterState, RegisterResult, UseRegisterOptions } from './useRegister.js';
 export { ACCESS_URL, FAUCET_URL, VINE_INTERACTION_URL, VINE_FEES_URL } from './urls.js';
 export { explainError } from './explainError.js';
 export type { ExplainedError, ExplainErrorOptions } from './explainError.js';

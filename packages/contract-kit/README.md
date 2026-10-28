@@ -13,7 +13,7 @@ For agents
   registry, admin pattern). Reports: `npm run slither`, `npm run aderyn`, `forge snapshot`.
 - The scaffolder copies `src/` and `test/` from here into every `gated-erc20` project; keep
   `abi/GatedERC20.json` in step with `npm run abi:export`.
-- No private keys, no funded transactions, nothing signed here. Deploy with `--account <keystore>`.
+- No private keys, no funded transactions, nothing signed here. Deploy with `--account <keystore> --sender <its address>` (without `--sender`, forge rehearses as its default sender and pre-flight refuses it).
 ```
 
 The contract kit from `PLAN.md` section 5.5, first release: a gated ERC-20 that is small, on
@@ -48,7 +48,7 @@ Deploy to a fork or testnet with a keystore name, never a key:
 
 ```
 anvil --fork-url https://governors.testnet.redbelly.network --chain-id 153
-ADMIN_SAFE=0x... forge script script/Deploy.s.sol --rpc-url http://127.0.0.1:8545 --account <keystore-name> --broadcast
+ADMIN_SAFE=0x... forge script script/Deploy.s.sol --rpc-url http://127.0.0.1:8545 --account <keystore-name> --sender <your-address> --broadcast
 ```
 
 On chain 151 the script refuses unless `ADMIN_SAFE` answers `VERSION()` `1.4.1` with a threshold of

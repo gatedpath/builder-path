@@ -1,0 +1,53 @@
+# Stablecoin sender probe on a LOCAL Anvil fork of Redbelly mainnet (chain 31337 on 127.0.0.1:8558). Nothing signed on 151.
+fork block: 3228694   fork chain id: 31337   Sat Oct 17 22:38:03 BST 2026
+anvil account 2 (deploys the probe contract): 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
+anvil account 3 (recipient): 0x90F79bf6EB2c4f870365E785982E1f101E93b906
+Forwarder (a plain contract that calls token.transfer / transferFrom): 0x2e983a1ba5e8b38aaaec4b440b9ddcfbf72e15d1
+
+== AUDD 0x54a210e824B0F89dA988E4B5586440aB354f0e46, real holder impersonated locally: 0xd0eb9c0a33588eeacf4350375e62ad068380ee60
+holder balance before: 83226757 [8.322e7]
+-- 1. holder -> Forwarder contract (a contract as RECIPIENT):
+   status 0x1 gasUsed 61181
+   forwarder balance: 1000000 [1e6]
+-- 2. Forwarder contract -> anvil account 3 (a contract as SENDER, token.transfer):
+   status 0x1 gasUsed 61056
+   account 3 balance: 1000000 [1e6]
+-- 3. holder approves Forwarder; Forwarder pulls to account 3 (a contract as SPENDER, token.transferFrom):
+   status 0x1 gasUsed 53572
+   status 0x1 gasUsed 52274
+   account 3 balance: 2000000 [2e6]
+-- 4. account 3 (a fresh Anvil EOA, on no list) -> account 2 (an unlisted EOA as sender and recipient):
+   status 0x1 gasUsed 61145
+   account 2 balance: 1
+
+== AUDM 0x081599E4936D12c46Bd48913B2329115Cd26cbdd, real holder impersonated locally: 0xd0eb9c0a33588eeacf4350375e62ad068380ee60
+holder balance before: 929998772915055254423 [9.299e20]
+-- 1. holder -> Forwarder contract (a contract as RECIPIENT):
+   status 0x1 gasUsed 79857
+   forwarder balance: 1000000000000000000 [1e18]
+-- 2. Forwarder contract -> anvil account 3 (a contract as SENDER, token.transfer):
+   status 0x1 gasUsed 79732
+   account 3 balance: 1000000000000000000 [1e18]
+-- 3. holder approves Forwarder; Forwarder pulls to account 3 (a contract as SPENDER, token.transferFrom):
+   status 0x1 gasUsed 55661
+   status 0x1 gasUsed 70635
+   account 3 balance: 2000000000000000000 [2e18]
+-- 4. account 3 (a fresh Anvil EOA, on no list) -> account 2 (an unlisted EOA as sender and recipient):
+   status 0x1 gasUsed 79785
+   account 2 balance: 1
+
+== rAUD 0xf950b1beA7AB1688e1EAA96c0Ff0ccBAB087BB54, real holder impersonated locally: 0xc9129Bea5F66A7E14A9016414f97fC728FA85D29
+holder balance before: 994400000000000 [9.944e14]
+-- 1. holder -> Forwarder contract (a contract as RECIPIENT):
+   status 0x1 gasUsed 52124
+   forwarder balance: 1000000 [1e6]
+-- 2. Forwarder contract -> anvil account 3 (a contract as SENDER, token.transfer):
+   status 0x1 gasUsed 51999
+   account 3 balance: 1000000 [1e6]
+-- 3. holder approves Forwarder; Forwarder pulls to account 3 (a contract as SPENDER, token.transferFrom):
+   status 0x1 gasUsed 46917
+   status 0x1 gasUsed 41507
+   account 3 balance: 2000000 [2e6]
+-- 4. account 3 (a fresh Anvil EOA, on no list) -> account 2 (an unlisted EOA as sender and recipient):
+   status 0x1 gasUsed 52088
+   account 2 balance: 1

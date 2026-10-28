@@ -1,7 +1,7 @@
 ---
 title: 'Project 2: Prove the pause'
 description: 'The token already pauses. Prove who can flip it, that every flip is on the log, and that nothing the token holds changes while it is paused, by directing an agent or by writing the tests yourself.'
-lastVerified: '2026-09-17'
+lastVerified: '2026-09-26'
 tableOfContents: false
 prev: false
 next: false
@@ -29,9 +29,9 @@ import ProjectPager from '../../../components/ProjectPager.astro';
   ]}
 />
 
-A warm-up, fifteen to thirty minutes, and the first project where the right answer is to write no contract code at all. The token the scaffold gives you already has an emergency pause. What it needs is proof, and writing that proof teaches the two things the card is for: admin power lives behind roles, and an invariant says more than a unit test.
+Fifteen to thirty minutes on the scaffold, and the first project where the right answer is to write no contract code at all. The token the scaffold gives you already has an emergency pause. What it needs is proof, and writing that proof teaches the two things the card is for: admin power lives behind roles, and an invariant says more than a unit test.
 
-I ran the agent track on 12 September 2026 and did the Solidity track by hand on 17 September 2026. Every count below comes from those runs.
+I ran the agent track on 12 September 2026 and again on 18 September 2026 on the reworded prompt, and did the Solidity track by hand on 17 September 2026; the counts were measured again on scaffolder 0.2.1 on 26 September 2026. Every count below comes from those runs.
 
 <ProjectSteps slug="prove-the-pause" title="Project 2: Prove the pause">
 
@@ -44,7 +44,7 @@ The discovery that changes what this project is.
 <StepPart kind="do">
 Open `contracts/src/GatedERC20.sol` and find `pause()` and `unpause()`. They are guarded by two different roles: the pauser stops the token and only the admin starts it again. Stopping must never wait and restarting must never be one person's quick decision; [Writing Solidity 5](/solidity/admin-safe-and-timelock/) is about why.
 
-This matters for the card's own wording. Until 18 September 2026 the prompt said "only the admin Safe can flip the pause". That holds when one Safe holds both roles, which is what the deploy script does by default, and not otherwise: the scaffold's own test shows the admin being refused when it tries to pause. The contract kit split the roles after the prompt was written. I reworded it to "only the pauser can pause and only the admin can unpause", and ran it again on a fresh scaffold before this page changed, because a reworded prompt is an unrun prompt.
+It changed the card's own wording too. Until 18 September 2026 the prompt said "only the admin Safe can flip the pause". That holds when one Safe holds both roles, which is what the deploy script does by default, and not otherwise: the scaffold's own test shows the admin being refused when it tries to pause. The contract kit split the roles after the prompt was written. I reworded it to "only the pauser can pause and only the admin can unpause", and ran it again on a fresh scaffold before this page changed, because a reworded prompt is an unrun prompt.
 </StepPart>
 <StepPart kind="worked">
 You can say who pauses and who unpauses, and why they are not the same.
@@ -76,7 +76,7 @@ The whole file is in the <Ext href="https://github.com/gatedpath/builder-path/bl
 </Tabs>
 </StepPart>
 <StepPart kind="worked">
-`forge test --match-contract PauseProofTest` reports `3 passed; 0 failed`, and `npm run test` ends `0 failed`: 71 tests if you started from a fresh project, 75 if you carried on from project 1 as I did. An agent's count may differ by a test or two.
+`forge test --match-contract PauseProofTest` reports `3 passed; 0 failed`, and `npm run test` ends `0 failed`: 71 tests if you started from a fresh project, 75 if you carried on from project 1 as I did (both measured again on 26 September 2026 on scaffolder 0.2.1). An agent's count may differ by a test or two.
 </StepPart>
 <StepPart kind="ifnot">
 A revert of `AccessControlUnauthorizedAccount` where you expected the pause to work means the wrong account is calling: the pauser pauses, the admin unpauses. [When something fails](/errors/) has the rest.

@@ -1,6 +1,6 @@
 ---
 title: '2. Test all five states'
-description: 'A credential is not valid or invalid; it is in one of five states. The GatedTest base walks a gated function through all of them so that you cannot forget one.'
+description: 'A credential is in one of five states, and a test that treats it as valid or invalid misses the ones that fail in other ways. The GatedTest base walks a gated function through all of them so that you cannot forget one.'
 lastVerified: '2026-09-17'
 tableOfContents: false
 prev: false
@@ -81,7 +81,7 @@ If a five-state test of your own fails on the Valid leg with `AlreadySubscribed`
 
 <StepCard n={4} title="Know what the mock cannot tell you">
 <StepPart kind="gets">
-An honest boundary around what these tests prove.
+The boundary of what these tests prove.
 </StepPart>
 <StepPart kind="do">
 The helpers set states on `ReceptorMock`. A real verifier cannot be told to expire or revoke a credential, so against a real one you can test Valid and NeverIssued and nothing else. The mock refuses to deploy on chain 151, so it cannot reach mainnet by accident. What the five-state tests prove is that your contract treats every failing answer as a refusal. What they cannot prove is that the real verifier gives the answers you expect; that is the [eligibility recipes'](/identity/) job and needs a verifier key I do not have yet.

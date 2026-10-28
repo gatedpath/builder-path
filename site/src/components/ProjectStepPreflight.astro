@@ -18,10 +18,10 @@ const { n, message } = Astro.props;
     <Code lang="sh" code="npm run preflight" />
   </StepPart>
   <StepPart kind="worked">
-    <p>Six of seven checks pass. The one that fails is <code>DEPLOYER is a public address</code>, because you have not told the project which wallet you will sign with. That is the correct result here: the project ends at the fork.</p>
+    <p>Six of seven checks pass, and the one that fails is <code>DEPLOYER is a public address</code>, because you have not told the project which wallet you will sign with. Here that is what should happen, because the project ends at the fork.</p>
   </StepPart>
   <StepPart kind="ifnot">
-    <p>Any other failure is real. The two about <code>.env</code> and key-shaped values mean a secret is tracked by git; fix that before anything else, and treat the secret as compromised.</p>
+    <p>Treat any other failure as real. The two about <code>.env</code> and key-shaped values mean a secret is tracked by git; fix that before anything else, and treat the secret as compromised.</p>
   </StepPart>
   <SaveYourWork when="again" message={message} />
   <p class="rb-stop"><StatusPill variant="pending" label="Testnet deploy: not part of this project yet" /> Deploying to testnet needs a verified wallet, and I have not run that step myself; <a href="/start/">Start here</a> says why and marks where it will go.</p>

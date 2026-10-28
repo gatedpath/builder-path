@@ -23,7 +23,7 @@ import ProjectPrompt from '../../../components/ProjectPrompt.astro';
   ]}
 />
 
-You are the reviewer. An agent can write a contract faster than you can read one, and the reading is the part that is yours. You do not need to write Solidity to do it well. You need to know what a good result looks like, what should stop you, and how to check a claim without trusting it.
+An agent can write a contract faster than you can read one, and the reading is the part that is yours. You do not need to write Solidity to do it well. You need to know what a good result looks like, what should stop you, and how to check a claim without trusting it.
 
 <ProjectSteps slug="agents-read-what-comes-back" title="Read what comes back" backHref="/agents/" backLabel="Directing an agent">
 
@@ -49,11 +49,11 @@ A line you cannot explain is not automatically wrong. In both runs the list incl
 A short list you can check without reading Solidity fluently.
 </StepPart>
 <StepPart kind="do">
-1. **The gate changed.** Anything in `Gated`, in the token's `_update`, or in `_authorizeVerifierChange` decides who may hold and move the asset. [Writing Solidity 3](/solidity/the-gated-token/) shows what those look like.
-2. **A test was deleted or loosened.** A suite that passes because an assertion was removed has proved nothing. The test count should go up or stay the same; project 2 went from 30 to 32.
-3. **A new dependency appeared.** Every package is code you did not review, running with your project's access.
-4. **Anything that looks like a secret.** A long hexadecimal value, a `.env` file, a keystore path. Pre-flight checks for these, and you should too.
-5. **A role or an address changed.** Who holds the admin role is the most valuable fact in the contract.
+1. Did the gate change? Anything in `Gated`, in the token's `_update`, or in `_authorizeVerifierChange` decides who may hold and move the asset. [Writing Solidity 3](/solidity/the-gated-token/) shows what those look like.
+2. Was a test deleted or loosened? A suite that passes because an assertion was removed has proved nothing. The test count should go up or stay the same; project 2 went from 30 to 32.
+3. Did a new dependency appear? Every package is code you did not review, running with your project's access.
+4. Is there anything that looks like a secret, such as a long hexadecimal value, a `.env` file or a keystore path? Pre-flight checks for these, and you should too.
+5. Did a role or an address change? Who holds the admin role is the most valuable fact in the contract.
 </StepPart>
 <StepPart kind="worked">
 You have searched the diff for each of the five, and you can say what you found.

@@ -5,6 +5,7 @@ import { SHIP_VERSION, renderShipText, runShip, shipReportJson, ShipUsageError }
 import type { ShipOptions } from './ship.js';
 
 export const SHIP_HELP = `redbelly ship --chain <151|153> --account <keystore-name> [options]
+           (or --address <0x…> in place of --account; DEPLOYER in .env also works)
 
 Runs pre-flight (seven checks) with the keystore's address, checks the Slither sidecar, runs
 forge test and the five-state suites, prices the gas report at the chain's base fee and feed
@@ -14,7 +15,10 @@ constructor arguments and the verify command. Refuses to write when any check fa
 deploy script refuses to broadcast on 151 without a report dated today; 153 warns.
 
   --chain <151|153>        required
-  --account <name>         required; Foundry keystore name, resolved with cast wallet address
+  --account <name>         Foundry keystore name, resolved with cast wallet address. cast asks for the
+                           keystore password on the terminal, so run this in one (not from an editor's
+                           run button); without a terminal pass --password-file, or use --address
+  --address <0x…>          the deployer's address, no cast call; the report says it came this way
   --password-file <path>   passed through to cast (or set ETH_PASSWORD)
   --admin <0x…>            the Safe that receives every role (or ADMIN_SAFE in .env); required on 151
   --gas <units>            deployment gas for the balance check (default: the gas report's deployment row)
@@ -46,6 +50,7 @@ export function parseShipArgs(argv: readonly string[]): (Partial<ShipOptions> & 
         break;
       }
       case '--account': o.account = next(); break;
+      case '--address': o.address = next(); break;
       case '--password-file': o.passwordFile = next(); break;
       case '--admin': o.admin = next(); break;
       case '--verifier': o.verifier = next(); break;
@@ -67,8 +72,10 @@ export function parseShipArgs(argv: readonly string[]): (Partial<ShipOptions> & 
   }
   if (!o.help && !o.version) {
     if (!o.chain) throw new Error(`--chain 151 or 153 is required\n\n${SHIP_HELP}`);
-    if (!o.account) throw new Error(`--account <keystore-name> is required: the report carries the deployer's address and its isAllowed reading\n\n${SHIP_HELP}`);
-    if (!/^[A-Za-z0-9._-]{1,64}$/.test(o.account)) throw new Error('--account: keystore names use letters, digits, dot, dash and underscore only');
+    if (!o.account && !o.address && !process.env['DEPLOYER']) throw new Error(`--account <keystore-name> is required (or --address <0x…>, or DEPLOYER in the environment): the report carries the deployer's address and its isAllowed reading\n\n${SHIP_HELP}`);
+    if (o.account && o.address) throw new Error('give --account or --address, not both');
+    if (o.address && !/^0x[0-9a-fA-F]{40}$/.test(o.address)) throw new Error('--address must be a 20-byte hex address');
+    if (o.account && !/^[A-Za-z0-9._-]{1,64}$/.test(o.account)) throw new Error('--account: keystore names use letters, digits, dot, dash and underscore only');
   }
   return o;
 }

@@ -1,0 +1,19 @@
+Slither 0.11.6 through `npm run lint:slither` on 2026-10-17: 5 detector results on the whole project (src/ only; tests and scripts skipped).
+
+- [High/High] uninitialized-state: GrantEscrow._milestones (src/GrantEscrow.sol#74) is never initialized. It is used in:
+	- GrantEscrow.fund(address,IERC20,uint256,uint256[]) (src/GrantEscrow.sol#125-152)
+	- GrantEscrow.release(uint256,string) (src/GrantEscrow.sol#171-189)
+	- GrantEscrow.milestone(uint256,uint256) (src/GrantEscrow.sol#214-216)
+	- GrantEscrow.milestoneCount(uint256) (src/GrantEscrow.sol#219-221)
+	- GrantEscrow.canRelease(uint256) (src/GrantEscrow.sol#232-236)
+- [Medium/Medium] uninitialized-local: GrantEscrow.fund(address,IERC20,uint256,uint256[]).sum (src/GrantEscrow.sol#141) is a local variable never initialized
+- [Low/Medium] timestamp: IssuerRegistry.isActiveIssuer(address) (src/IssuerRegistry.sol#87-93) uses timestamp for comparisons
+	Dangerous comparisons:
+	- p.validUntil != 0 && block.timestamp >= p.validFrom && block.timestamp < p.validUntil (src/IssuerRegistry.sol#92)
+- [Low/Medium] timestamp: IssuerRegistry.canIssue(address,uint256) (src/IssuerRegistry.sol#103-105) uses timestamp for comparisons
+	Dangerous comparisons:
+	- isActiveIssuer(issuer) && remainingIssuance(issuer) >= amount (src/IssuerRegistry.sol#104)
+- [Low/Medium] timestamp: IssuerRegistry.setIssuer(address,uint64,uint64,uint256) (src/IssuerRegistry.sol#60-72) uses timestamp for comparisons
+	Dangerous comparisons:
+	- validFrom == 0 (src/IssuerRegistry.sol#67)
+	- validUntil <= validFrom || validUntil <= nowTs (src/IssuerRegistry.sol#68)

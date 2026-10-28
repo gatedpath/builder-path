@@ -1,4 +1,4 @@
-// `@gatedpath/frontend-kit/dev`: the local-loop pieces (PLAN.md 18.1). Import this path only from
+// `@gatedpath/frontend-kit/dev`: the local-loop pieces (the local loop). Import this path only from
 // code a dev server runs; the scaffold's `web/src/components/DevState.tsx` does, behind a build-time
 // check that leaves nothing of it in a production bundle.
 export { DevStatePanel } from './DevStatePanel.js';

@@ -39,7 +39,7 @@ export async function shipReport(args: z.infer<typeof shipReportInput>): Promise
       ...plain,
       text: renderShipText(report),
       next: report.ok
-        ? { command: `forge script script/Deploy.s.sol --rpc-url ${report.network === 'mainnet' ? 'redbelly_mainnet' : 'redbelly_testnet'} --account ${args.account} --broadcast`, why: `Every check passed and ${report.written} is written; the deploy script accepts a broadcast on ${report.chain} today. This step signs with the keystore, and it is yours to run.` }
+        ? { command: `forge script script/Deploy.s.sol --rpc-url ${report.network === 'mainnet' ? 'redbelly_mainnet' : 'redbelly_testnet'} --account ${args.account} --sender ${report.deployer.address ?? '<your-address>'} --broadcast`, why: `Every check passed and ${report.written} is written; the deploy script accepts a broadcast on ${report.chain} today. This step signs with the keystore, and it is yours to run.` }
         : { command: null, why: `${failing.length} check${failing.length === 1 ? '' : 's'} failed (${failing.map((c) => c.id).join(', ')}); nothing was written. Fix each, then call ship_report again.` },
     };
     return report.ok ? ok(result) : fail(`ship report refused: ${failing.map((c) => `${c.id}: ${c.reason}`).join(' | ')}`, result);

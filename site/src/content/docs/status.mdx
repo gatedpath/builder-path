@@ -38,9 +38,9 @@ What the cards read and how. `eth_chainId` and `eth_blockNumber` say the RPC is 
 The RPC URLs, chain IDs and explorers are Redbelly's; the cards read them from `@gatedpath/chains`, which recorded them from this page.
 </VineAside>
 
-## Measured on {ts(metrics.generatedAt).slice(0, 10)}
+## When it was measured
 
-I read everything below once, on the date shown against each figure, with the read-only scripts in `report/scripts/`. The measurement is exact where it says exact, and approximate where Routescan's own count is.
+On {ts(metrics.generatedAt).slice(0, 10)}. I read everything below once, on the date shown against each figure, with the read-only scripts in `report/scripts/`. The measurement is exact where it says exact, and approximate where Routescan's own count is.
 
 ### Latest block at the time of reading
 
@@ -107,7 +107,7 @@ Read at {ts(m['151'].totals.totalTransactions.routescanCount.at)} (mainnet) and 
 
 ### Gas price at the time of the Phase 0 pass
 
-At 08:25 UTC on 12 September 2026 the mainnet price feed returned 2427, which is US$0.002427 per RBNT at the feed's six decimals; the base fee was 196,205,387,799,948 wei, so a 21,000-gas transfer cost 4.12 RBNT, US$0.01. The priority fee was zero. Source: the research log, question 6. The live card above reads the same two values now.
+At 08:25 UTC on 12 September 2026 the mainnet price feed returned 2427, which is US$0.002427 per RBNT at the feed's six decimals; the base fee was 196,205,387,799,948 wei, so a 21,000-gas transfer cost 4.12 RBNT, US$0.01. The priority fee was zero. Source: the research log, [question 6](/research/#the-questions-this-site-cites). The live card above reads the same two values now.
 
 <Aside type="note" title="Where the numbers come from">
 The live cards: your browser, the public governors RPCs, nothing in between; the code is `site/src/lib/status-reader.ts` and runs once at build too. The tables: `report/data/metrics.json`, generated {ts(metrics.generatedAt)} by `report/scripts/build.mjs` from RPC reads and public Routescan API reads. Nothing here uses a wallet, a key or a transaction. The site's build copies the file and fails if the copy drifts from the source.

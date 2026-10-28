@@ -1,0 +1,58 @@
+---
+// The front page's evidence block (PLAN.md section 20.3; cut to the three figures a developer checks
+// on 26 September 2026, the owner's decision: the site's own honesty facts live on /status/, /review/ and
+// SECURITY.md). Every figure comes from
+// src/data/evidence.ts, which reads it from its source file when the site is built; nothing here is
+// typed by hand, and a source that no longer says what is expected stops the build.
+import Ext from './Ext.astro';
+import { evidence } from '../data/evidence';
+import { formatDate, REPO } from '../data/site';
+
+const run = evidence.npmRun;
+---
+
+<section class="rb-evidence" aria-labelledby="evidence">
+  <h2 id="evidence" class="rb-heading">What helps you build</h2>
+  <p class="rb-evidence__lede">
+    Everything below runs on your machine, holds no key, and is on npm at version {evidence.packages.version}: {run.tests} tests pass in a project made from it, from an empty folder, run on {formatDate(run.date)}.
+  </p>
+
+  <ul class="rb-evidence__list">
+    <li><code>npm create redbelly-dapp@latest</code> writes a project with the gate, the five-state tests, a web app and the rules files. <a href="/start/#get-the-project">Get the project</a></li>
+    <li><code>npm run dev</code> is the local loop: a fork of testnet with five wallets in the five credential states and a panel to move them. <a href="/start/#run-the-local-loop">Run the local loop</a></li>
+    <li><code>npm run doctor</code> checks the machine before the first command, and names the fix on the same line. <a href="/tools/">The tools</a></li>
+    <li><code>npm run preflight</code> and the ship report: what mainnet requires, checked before anything is signed. <a href="/start/#check-before-you-sign">Check before you sign</a></li>
+    <li>Every failure the tools can name, with why it happened and the next command. <a href="/errors/">When something fails</a></li>
+    <li>Alerts on the events that matter and a watcher on the network's own contracts, once you are live. <a href="/operate/">Operate</a></li>
+    <li>Bringing a team, or a repository you already have. <a href="/teams/">For a team that ships</a></li>
+  </ul>
+</section>
+
+<style>
+  .rb-evidence h2 { margin: 0; font-size: var(--sl-text-2xl); }
+  .rb-evidence__lede { margin: 0.75rem 0 0; max-width: 48rem; line-height: 1.6; color: var(--rb-color-text); }
+  .rb-evidence__list {
+    margin: 1rem 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.5rem;
+    max-width: 48rem;
+    font-size: var(--sl-text-base);
+    line-height: 1.55;
+    color: var(--rb-color-text);
+  }
+  .rb-evidence__list li { padding-left: 1rem; position: relative; }
+  .rb-evidence__list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.62em;
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: 50%;
+    background: var(--rb-color-accent);
+  }
+  .rb-evidence__list :global(a) { color: var(--rb-color-accent); }
+  .rb-evidence__list code { font-size: 0.9em; }
+</style>

@@ -7,7 +7,7 @@ import Ext from './Ext.astro';
 import { Code } from '@astrojs/starlight/components';
 import manifest from '../samples/generated/manifest.json';
 interface Props { id: string; title?: string; lang?: string; wrap?: boolean; mark?: string | number | (string | number)[] }
-const { id, title, lang, wrap = false, mark } = Astro.props;
+const { id, title, lang, wrap = true, mark } = Astro.props;
 const entry = manifest.samples.find((s) => s.id === id);
 if (!entry) throw new Error(`<Sample id="${id}">: not in samples.config.mjs`);
 const modules = import.meta.glob('../samples/generated/*', { query: '?raw', import: 'default', eager: true }) as Record<string, string>;

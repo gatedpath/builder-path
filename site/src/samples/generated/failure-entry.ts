@@ -24,5 +24,7 @@ export interface FailureEntry {
   readonly reportedBy?: { readonly who: string; readonly url: string; readonly date: string };
   /** Where and when the shape was seen, or what is still missing. */
   readonly measured: string;
+  /** The record behind `measured`, as a path in the repository, when one exists. The /errors page links it. */
+  readonly record?: string;
   readonly match: readonly FailureMatcher[];
 }

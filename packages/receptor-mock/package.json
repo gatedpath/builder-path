@@ -1,6 +1,6 @@
 {
   "name": "@gatedpath/receptor-mock",
-  "version": "0.2.0",
+  "version": "0.2.3",
   "description": "ReceptorMock, the Gated base contract, verifier adapters and the five-state Foundry test helper for Redbelly Network (151 mainnet, 153 testnet).",
   "license": "MIT",
   "repository": {

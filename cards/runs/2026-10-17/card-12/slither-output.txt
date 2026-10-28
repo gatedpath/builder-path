@@ -1,0 +1,55 @@
+
+> lint:slither
+> node scripts/slither.mjs
+
+
+Detector: incorrect-equality
+VestingVault.release(uint256) (src/VestingVault.sol#129-137) uses a dangerous strict equality:
+	- amount == 0 (src/VestingVault.sol#133)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#dangerous-strict-equalities
+
+Detector: reentrancy-events
+Reentrancy in VestingVault.grant(uint256,address,uint256,uint64,uint64,uint64) (src/VestingVault.sol#90-109):
+	External calls:
+	- register.issueToNominee(classId,beneficiary,total) (src/VestingVault.sol#107)
+	Event emitted after the call(s):
+	- Granted(scheduleId,classId,beneficiary,total,start,cliff,duration,msg.sender) (src/VestingVault.sol#108)
+Reentrancy in VestingVault.release(uint256) (src/VestingVault.sol#129-137):
+	External calls:
+	- register.releaseFromNominee(s.classId,s.beneficiary,amount) (src/VestingVault.sol#135)
+	Event emitted after the call(s):
+	- Released(scheduleId,s.beneficiary,amount) (src/VestingVault.sol#136)
+Reentrancy in VestingVault.revoke(uint256,string) (src/VestingVault.sol#113-123):
+	External calls:
+	- register.cancelFromNominee(s.classId,cancelled) (src/VestingVault.sol#121)
+	Event emitted after the call(s):
+	- Revoked(scheduleId,cancelled,msg.sender,reason) (src/VestingVault.sol#122)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-4
+
+Detector: timestamp
+IssuerRegistry.setIssuer(address,uint64,uint64,uint256) (src/IssuerRegistry.sol#60-72) uses timestamp for comparisons
+	Dangerous comparisons:
+	- validFrom == 0 (src/IssuerRegistry.sol#67)
+	- validUntil <= validFrom || validUntil <= nowTs (src/IssuerRegistry.sol#68)
+IssuerRegistry.isActiveIssuer(address) (src/IssuerRegistry.sol#87-93) uses timestamp for comparisons
+	Dangerous comparisons:
+	- p.validUntil != 0 && block.timestamp >= p.validFrom && block.timestamp < p.validUntil (src/IssuerRegistry.sol#92)
+IssuerRegistry.canIssue(address,uint256) (src/IssuerRegistry.sol#103-105) uses timestamp for comparisons
+	Dangerous comparisons:
+	- isActiveIssuer(issuer) && remainingIssuance(issuer) >= amount (src/IssuerRegistry.sol#104)
+VestingVault.revoke(uint256,string) (src/VestingVault.sol#113-123) uses timestamp for comparisons
+	Dangerous comparisons:
+	- cancelled > 0 (src/VestingVault.sol#121)
+VestingVault.release(uint256) (src/VestingVault.sol#129-137) uses timestamp for comparisons
+	Dangerous comparisons:
+	- amount == 0 (src/VestingVault.sol#133)
+VestingVault._vestedAt(VestingVault.Schedule,uint256) (src/VestingVault.sol#163-169) uses timestamp for comparisons
+	Dangerous comparisons:
+	- timestamp < start + s.cliff (src/VestingVault.sol#166)
+	- timestamp >= start + s.duration (src/VestingVault.sol#167)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#block-timestamp
+. analyzed (19 contracts with 81 detectors), 10 result(s) found
+'forge clean' running (wd: ~/code/card-12/contracts)
+'forge config --json' running
+'forge build --build-info --deny never --skip ./test/** ./script/** --force' running (wd: ~/code/card-12/contracts)
+wrote contracts/reports/slither.json and contracts/reports/slither.sources.sha256

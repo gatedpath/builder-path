@@ -1,7 +1,7 @@
 ---
 title: 'Project 1: Change the gate'
 description: 'Switch a gated token from the over-18 recipe to the AU wholesale investor recipe and prove it, step by step, by directing an agent or by writing the Solidity yourself.'
-lastVerified: '2026-09-17'
+lastVerified: '2026-09-22'
 tableOfContents: false
 prev: false
 next: false
@@ -19,20 +19,21 @@ import ProjectStepMake from '../../../components/ProjectStepMake.astro';
 import ProjectStepPreflight from '../../../components/ProjectStepPreflight.astro';
 import ProjectPrompt from '../../../components/ProjectPrompt.astro';
 import ProjectPager from '../../../components/ProjectPager.astro';
+import Cast from '../../../components/Cast.astro';
 
 <ForAgents
   page="Project 1: Change the gate"
   facts={[
     'The recipe a gated contract enforces is its requestId, a constructor argument passed to Gated(verifier, requestId). Changing recipe changes no code in contracts/src/. Over-18 is request id 18; AU wholesale investor is 708.',
     'The default lives in contracts/script/Deploy.s.sol (vm.envOr("REQUEST_ID", ...)) and in .env.example. Change both, then prove it with tests in all five credential states, including a wallet that is Valid for 18 and must revert with NotEligible(wallet, 708).',
-    'A fresh scaffold has 63 tests in 7 suites (2026-09-17). After this project it has 67 in 8. Commit at every green test.',
+    'A fresh scaffold at 0.2.1 has 68 tests in 7 suites; after this project it has 72 in 8 (2026-09-22; 63 and 67 on 0.1.1). Commit at every green test.',
     'Stop at the fork. No testnet deploy is part of this project; npm run preflight will fail only on DEPLOYER until a wallet is configured.',
   ]}
 />
 
-A warm-up, fifteen to thirty minutes. You start from a fresh project whose token lets in anyone over 18, and you finish with the same token letting in only an AU wholesale investor, with tests that prove the gate moved. It is the smallest change that teaches the most important thing about building here: **the eligibility rule is not code in your contract; it is a number you hand the contract when you deploy it.**
+Fifteen to thirty minutes on the scaffold. You start from a fresh project whose token lets in anyone over 18, and you finish with the same token letting in only an AU wholesale investor, with tests that prove the gate moved. It is the smallest change that teaches the rule this whole site rests on: **the eligibility rule does not live in your contract's code. You hand the contract a number when you deploy it.**
 
-I ran both tracks on a fresh scaffold before writing this page: the agent track on 12 and 14 September 2026, the Solidity track by hand on 17 September 2026. Every count and output below comes from those runs.
+I ran both tracks on a fresh scaffold before writing this page: the agent track on 12 and 14 September 2026, the Solidity track by hand on 17 September 2026, and the two recordings on 22 September 2026 on scaffolder 0.2.1. Every count and output below comes from those runs.
 
 <ProjectSteps slug="change-the-gate" title="Project 1: Change the gate">
 
@@ -90,6 +91,8 @@ Then add `contracts/test/WholesaleGate.t.sol`. The test that earns its place is 
 </StepPart>
 <StepPart kind="worked">
 `cd contracts && forge fmt --check` prints nothing, and `npm run test` ends with `72 tests passed, 0 failed` across 8 test suites: the 68 you started with and four new ones. If you directed an agent, its count may differ by a test or two; what must be true is that nothing failed and that a test names request id 708.
+
+<Cast id="project1-test" />
 </StepPart>
 <StepPart kind="ifnot">
 A revert that reads `NotEligible(0x…, 18)` in a test you expected to pass means something still deploys with 18; search for it again. The failure table explains [`NotEligible`](/errors/#not-eligible) and its neighbours.
@@ -104,6 +107,8 @@ The contract deployed on your own machine against a fork of testnet, answering f
 ```sh
 npm run dev
 ```
+
+<Cast id="project1-dev" />
 
 This forks testnet onto a local chain, deploys the token, puts five wallets into the five credential states and starts the web app with its state panel. It holds no key of yours and sends nothing to the real network. In a second terminal, ask the contract directly, with the address the table printed:
 
@@ -125,6 +130,6 @@ The table's first line ends `request id 708` and the `cast call` prints `708`. I
 
 ## What you learned
 
-Recipes are swappable, because the rule is a deploy-time argument and not contract code. Tests are the contract: the change was twelve lines, and the proof was seventy-four. And the local loop shows the gate move before any network sees it. The next project, [Prove the pause](/tutorials/prove-the-pause/), uses the same project folder.
+Recipes are swappable, because the rule is a deploy-time argument and not contract code. The tests did most of the work: the change was twelve lines, and the proof was seventy-four. And the local loop shows the gate move before any network sees it. The next project, [Prove the pause](/tutorials/prove-the-pause/), uses the same project folder.
 
 <ProjectPager n={1} />

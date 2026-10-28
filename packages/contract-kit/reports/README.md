@@ -1,6 +1,11 @@
 # Analyser reports
 
 Both run on 12 September 2026 against the sources in `src/` at the commit that added them.
+Re-run on 26 September 2026 with Slither 0.11.6 and Aderyn 0.6.8 installed on the owner's Mac: the
+same four Slither results (`calls-loop` on `_checkEligible` inside `distribute`, `timestamp` on three
+`IssuerRegistry` functions) and the same five Aderyn findings; the only change in `aderyn.md` is the
+line count (`GatedERC20.sol` 128 nSLOC, 186 in all), because `src/` grew after 12 September. The
+triage below stands.
 Re-run with `npm run slither` and `npm run aderyn` after any change to `src/`; CI in a scaffolded
 project runs both on every push (the scaffolder's `ci.yml`).
 

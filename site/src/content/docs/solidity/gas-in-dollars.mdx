@@ -19,7 +19,7 @@ import StepPart from '../../../components/StepPart.astro';
   page="Writing Solidity 6: Price it in dollars"
   facts={[
     'npm run gas in a scaffolded project runs redbelly gas: it takes gas figures from forge test --gas-report (or a committed .gas-snapshot), reads the base fee and the RBNT price feed read-only from the chain, and prints gas, RBNT and US cents per function.',
-    'Measured 2026-09-17 on a fresh scaffold against chain 153: GatedERC20 deployment 1,898,391 gas = 90.399 US cents; transfer 32,978 gas = 1.570 cents; subscribe 48,051 = 2.288; mint 42,760 = 2.036; forceTransfer 36,486 = 1.737; pause 39,117 = 1.862. RBNT was US/bin/zsh.002429 at the feed.',
+    'Measured 2026-09-17 on a fresh scaffold against chain 153: GatedERC20 deployment 1,898,391 gas = 90.399 US cents; transfer 32,978 gas = 1.570 cents; subscribe 48,051 = 2.288; mint 42,760 = 2.036; forceTransfer 36,486 = 1.737; pause 39,117 = 1.862. RBNT was US$0.002429 at the feed.',
     'The cents column is the stable one: gas is priced in US dollars and converted to RBNT at execution, so the RBNT column moves with the price. There is no priority fee. Pre-flight adds 25% to the deployment figure for its balance check.',
   ]}
 />
@@ -70,7 +70,7 @@ If the feed cannot be reached, check [Status](/status/). The gas figures come fr
 A year of operations as a number you can defend.
 </StepPart>
 <StepPart kind="do">
-From that run: a `transfer` is 1.570 cents, a `subscribe` 2.288, a `mint` 2.036, a `forceTransfer` 1.737, a `pause` 1.862, and deploying the token 90.4 cents. Multiply by what you expect. Ten thousand transfers a month is US$157. A thousand subscriptions is US$22.88. The deployment is under a dollar, once.
+From that run: a `transfer` is 1.570 cents, a `subscribe` 2.288, a `mint` 2.036, a `forceTransfer` 1.737, a `pause` 1.862, and deploying the token 90.4 cents. Then multiply by the traffic you expect: ten thousand transfers a month comes to US$157, a thousand subscriptions to US$22.88, and the deployment is under a dollar, once.
 
 Then look for the row that surprises you. `distribute` was 3.484 cents in my run, but it pays a list, so its cost grows with the list; a function whose gas depends on input length is the one to bound, because the block's gas limit is generous and a single transaction's is not something I have been able to measure without a wallet.
 </StepPart>
@@ -99,7 +99,7 @@ npm run gas -- --diff /tmp/before.gas-snapshot
 `--diff` takes a file: the earlier snapshot to compare against. Once a project has a `.gas-snapshot`, `npm run gas` prices that file, one row per test; add `--report` when you want the per-function table of step 2 again. The scaffold's CI runs `forge snapshot --diff` against the same committed file.
 </StepPart>
 <StepPart kind="worked">
-Compared with an identical snapshot, the two right-hand columns read `0` and `0.000` on every row. I then tried a real regression: one new stored counter, incremented inside `subscribe`. Every test that subscribes showed `+22,217` gas and `+1.058` cents, and the fuzz test `+6,054` and `+0.288`. One storage write, about a cent per call, visible before the change was committed. I reverted it.
+Compared with an identical snapshot, the two right-hand columns read `0` and `0.000` on every row. I then tried a real regression: one new stored counter, incremented inside `subscribe`. Every test that subscribes showed `+22,217` gas and `+1.057` or `+1.058` cents, and the fuzz test `+6,054` and `+0.288`. One storage write, about a cent per call, visible before the change was committed. I reverted it.
 </StepPart>
 <StepPart kind="ifnot">
 `--diff needs a value` means the file path is missing after `--diff`.

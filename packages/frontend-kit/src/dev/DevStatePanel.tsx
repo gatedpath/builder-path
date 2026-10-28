@@ -33,7 +33,7 @@ function rpc(client: Client, method: string, params: unknown[] = []): Promise<un
 }
 
 /**
- * The dev-only state switcher (PLAN.md 18.1). Lists the five wallets `npm run dev` seeded, marks
+ * The dev-only state switcher (the local loop). Lists the five wallets `npm run dev` seeded, marks
  * the connected one, and flips the connected wallet through the five credential states by calling
  * `setStatus` on the `ReceptorMock` as the deployer, through Anvil's impersonation RPC. Every
  * mounted `useEligibility` for that wallet refetches on the resulting signal, so the page moves

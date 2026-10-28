@@ -1,0 +1,27 @@
+fork of testnet at block 3048628, local chain id 31337
+0. the registry names the permission contract 0x519ba1b48D571FD92FAF6FE4D20fe74Ca435B690; on the fork it becomes the test mock
+   sender and friend are marked verified; the stranger is not
+1. deploy the guard (pre-flight first, then one contract with no admin and no roles)
+   chain id: 31337
+   chain is not 151 or 153: identity check skipped (local anvil without the registry?)
+   RecipientGuard: 0x76ca03a67C049477FfB09694dFeF00416dB69746
+2. check before sending: friend Permissioned, stranger NotPermissioned, the guard itself Contract
+3. send 1 RBNT to the friend
+   ok
+   friend now holds 10001.000000000000000000 RBNT
+4. send 1 RBNT to the stranger (the typo that lands on an address nobody verified)
+   REFUSED: RecipientNotPermissioned(to)
+   stranger still holds 10000.000000000000000000 RBNT; the sender's RBNT never left
+5. send 1 RBNT to a contract without saying so
+   REFUSED: RecipientIsContract(to)
+6. the same, saying so, to a contract that cannot receive RBNT
+   REFUSED: NativeTransferFailed(to)
+7. a token: the sender deploys one, approves the guard, sends 5 to the friend
+   ok
+   ok
+   friend holds 5000000000000000000 of the token (5 whole units)
+8. the same token to the stranger
+   REFUSED: RecipientNotPermissioned(to)
+9. the friend's verification is removed; 1 RBNT to the friend again
+   REFUSED: RecipientNotPermissioned(to)
+   check now says: friend NotPermissioned

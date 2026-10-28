@@ -5,6 +5,7 @@
 // Style: short imperative sentences, contractions, no marketing words, no
 // "bold term: explanation" lists, no em dashes. Machines read these files; people skim them.
 import { chainFacts } from './chain-facts.js';
+import { failureByKind } from './failures.js';
 
 export interface RuleLink {
   readonly label: string;
@@ -63,6 +64,21 @@ export const neverDo: readonly string[] = [
   'Assume Foundry is installed. Check for forge, and offer the Hardhat config when it is missing.',
 ];
 
+/**
+ * The failures an agent meets first, rendered from the failure table so the words cannot drift
+ * (Sodax peer read, 15 October 2026, item 5). The order is the order they happen in a first session:
+ * no Foundry, no keystore, the wrong RPC, an unverified wallet, a refused gated call.
+ */
+export const FIRST_FAILURE_KINDS = ['forge-not-found', 'keystore-not-found', 'chain-mismatch', 'wallet-not-allowed', 'not-eligible'] as const;
+
+const firstFailureRules = (): readonly string[] =>
+  FIRST_FAILURE_KINDS.map((kind) => {
+    const f = failureByKind(kind);
+    if (!f) throw new Error(`failure table has no entry ${kind}`);
+    const next = f.fix.command ? `Run: ${f.fix.command}` : `Read: ${f.fix.link}`;
+    return `${f.title}. ${f.plainWords} ${next}`;
+  });
+
 export const rulesSource: RulesSource = {
   title: 'Redbelly Network rules for coding agents',
   summary:
@@ -71,20 +87,30 @@ export const rulesSource: RulesSource = {
   agentNotes: chainFacts.agentNotes,
   sections: [
     {
+      id: 'start-here',
+      heading: 'Start here',
+      intro: 'Three doors, by what the person is trying to do. Pick one before writing code, and say which.',
+      rules: [
+        `New to the network, including a senior Ethereum developer: read the sections below once, then scaffold with \`npm create redbelly-dapp@latest\`, gate one function and deploy it to ${t.id}. What is different here is permissioned writes, the five credential states, gas in dollars and blocks on demand; everything else is the EVM you know.`,
+        'Looking for something to build: the project pages are an idea pool, each with its credential, its recipe and a run record. Take one as it stands or borrow its gate; do not invent a credential schema.',
+        'Shipping for real, or with a team: pre-flight, the ship report, a Safe for every admin role and monitoring come before chain 151. Read "Two speeds" and "Before you say done", then run them.',
+        'The person is not an engineer: say what the first afternoon looks like in plain words (a scaffold, one gated function, a testnet deploy, a wallet verified at access.redbelly.network), then do it with them one step at a time, printing each command they must run themselves.',
+      ],
+    },
+    {
       id: 'chain-facts',
       heading: 'Chain facts',
       verified: VERIFIED,
       intro: `Two networks are live. Chain objects and every address below ship in ${CHAINS_PACKAGE}; import them rather than copying.`,
       rules: [
         `Mainnet is chain ${m.id}. RPC ${m.rpc}. Explorer ${m.explorer.url}.`,
-        `Testnet is chain ${t.id}. RPC ${t.rpc}. Explorer ${t.explorer.url}.`,
+        `Testnet is chain ${t.id}. RPC ${t.rpc}. Explorer ${t.explorer.url}. Redbelly's devnet is deprecated; don't target any other chain ID.`,
         `Routescan's Etherscan-style API is at ${m.explorer.apiUrl} and ${t.explorer.apiUrl}. Keyless calls get 2 requests a second. Use it for contract verification and indexing.`,
         `Other mainnet RPCs Vine lists: Ankr at ${m.publicRpcs[1]} (keyless) and Uniblock at ${chainFacts.keyedRpcs.mainnet.uniblock.url} with the key on the ${chainFacts.keyedRpcs.mainnet.uniblock.header} header. Vine lists no third-party RPC for testnet.`,
-        `Redbelly's devnet is deprecated. Don't target any chain ID except ${m.id} and ${t.id}.`,
         `The native coin is ${chainFacts.nativeCurrency.symbol} with ${chainFacts.nativeCurrency.decimals} decimals.`,
         'The EVM is Prague on both networks. Compile with solc 0.8.30 and evm_version prague. If a dependency cannot build for Prague, cancun is the lowest acceptable target.',
         'PUSH0, transient storage, MCOPY and the Prague precompiles all work. Use transient storage for reentrancy locks.',
-        'Blocks are produced on demand. No traffic, no block. A transaction lands within seconds or not at all, so poll for the receipt and never sleep for a block time.',
+        'Blocks are produced on demand. No traffic, no block. Poll for the receipt and never sleep for a block time. A transaction usually lands within seconds. If it has not after 30 seconds, the RPC endpoint sends it again to another governor (Redbelly, 12 October 2026), so wait past that mark, 45 seconds is a fair line, before treating silence as a failure, and keep the same nonce so a late first attempt and the resend cannot both land.',
         'Finality is deterministic (DBFT, no forks). Don\'t write confirmation-count or reorg handling; make off-chain consumers idempotent instead.',
         'The governors RPC doesn\'t serve debug_*, trace_* or net_version. Don\'t plan on traces. eth_getLogs, eth_feeHistory and txpool_status do work.',
         'The block gas limit reports as 60,000,000,000. No per-transaction limit is documented.',
@@ -103,12 +129,12 @@ export const rulesSource: RulesSource = {
       intro: 'Gas is priced in US dollars and paid in RBNT. Fee logic that works on Ethereum will mislead you here.',
       rules: [
         'A 21,000-gas transfer costs US$0.01. The base fee is converted to RBNT at execution from an on-chain price feed, so the fee in RBNT moves with the RBNT price and the fee in USD does not.',
-        'The priority fee is always zero. eth_maxPriorityFeePerGas returns 0 and eth_feeHistory rewards are 0. There is nothing to buy position with.',
-        'eth_gasPrice returns the base fee plus ten percent of headroom.',
+        'The priority fee is always zero. eth_maxPriorityFeePerGas returns 0 and eth_feeHistory rewards are 0. There is nothing to buy position with. eth_gasPrice returns the base fee plus ten percent of headroom.',
         'In wagmi, viem and ethers, leave the fee fields unset and let the client estimate. If you must set them, use maxPriorityFeePerGas 0 with a maxFeePerGas at or above the latest base fee, or take gasPrice straight from eth_gasPrice.',
         'Never hardcode a gas price in wei in config or code. It changes with the RBNT price.',
         `In tests, assert gas used, never a fee in wei or RBNT. When a number is needed, price it in USD with gasCostUsd from ${CHAINS_PACKAGE}. On an anvil fork the base fee does not follow the oracle, so fee assertions there mean nothing.`,
         'Vine warns that most wallets show gas information wrongly on Redbelly. Show the USD cost in your own UI from the price feed.',
+        'eth_estimateGas runs against the last block, and with blocks on demand the real transaction lands in a new block a second later. A call whose cost depends on whether a block has passed is under-estimated: a Uniswap v2 swap, mint or burn writes the price accumulators in a new block, about 44,000 gas more than the estimate (measured on a fork of 153, 17 October 2026). Add a margin to the estimate for such calls; 50 percent is a fair line.',
         `The price feed is the contract the bootstrap registry names pricefeed: mainnet ${m.addresses.pricefeed.address}, testnet ${t.addresses.pricefeed.address}. getLatestPrice() returns USD per RBNT with six decimals.`,
       ],
       links: [
@@ -158,6 +184,10 @@ export const rulesSource: RulesSource = {
         'Pre-flight means at least: the deployer passes isAllowed on the target chain, the configured chain ID matches what the RPC reports, the issuer registry address matches the target chain, no secret is in git history, and the RBNT balance covers deployment with margin.',
         'Never promise mainnet in an afternoon for anything that holds value. Not in copy, comments, commit messages or chat.',
         'Safe 1.4.1, Multicall3 and the deterministic deployers sit at their canonical addresses on both networks. Put admin roles behind a Safe from the first testnet deploy so mainnet changes nothing.',
+        `Sodax (swaps, money market) is mainnet only on every network, Redbelly included (its FAQ, read 2026-10-15), so "testnet first" cannot cover that call path. Test your own contracts on ${t.id}; rehearse a Sodax integration with read-only quotes on ${m.id} before any signed call, and never sign from a wallet that holds more than the test amount.`,
+        // The five failures a first session meets, in the order they happen, generated from the
+        // failure table (the same words explain_failure and explainError give after the fact).
+        ...firstFailureRules(),
       ],
       links: [
         { label: 'Testing coins', url: vine('native-currency/testing-coins/'), note: 'faucet' },
@@ -169,11 +199,22 @@ export const rulesSource: RulesSource = {
       intro: 'Nothing that signs ever sees a key in the clear, and neither does the agent.',
       rules: [
         'No private key in files, environment variables, chat or agent context. Not in .env, not in foundry.toml, not in hardhat.config, not in a test fixture.',
-        'Sign with a Foundry keystore account (forge script --account NAME, cast send --account NAME) or a hardware wallet path (--ledger, --trezor). forge and cast sign locally.',
+        'Sign with a Foundry keystore account (forge script --account NAME --sender ITS_ADDRESS, cast send --account NAME) or a hardware wallet path (--ledger, --trezor). forge and cast sign locally. Without --sender, forge script rehearses as its default sender, which fails isAllowed; the first real deploy stopped there.',
         'On the Hardhat path use its encrypted keystore or a hardware signer. Never a key in the config file.',
         'Never ask the person for a key, a seed phrase or a keystore password. When a step needs a signature, print the exact command and let them run it.',
         'Keep .env.example free of secrets, with a comment on every line saying what the value is for.',
         'Faucet and eligibility checks only need a public address. Never escalate a read-only step into one that signs.',
+      ],
+    },
+    {
+      id: 'stop-and-ask',
+      heading: 'Stop and ask',
+      intro: 'A key, a seed phrase, a keystore password, the GitHub token, the verifier API key and any request to break "Never do" are always a stop; the rules above say so where they arise. These are the other moments to stop, say why, and wait for the person.',
+      rules: [
+        `A deploy to chain ${m.id}: stop until pre-flight passes, today's ship report exists and every admin role is behind a Safe with a threshold of two or more. Then print the command; the person signs.`,
+        'Before any mainnet deploy, ask whether the deployer is a person\'s verified wallet or a business delegate wallet. Sodax\'s head of product said on a Redbelly podcast in October 2026 that business verification was the route their protocol took to deploy; Redbelly\'s own docs say only that users hold access credentials. Treat it as a question for the person, not a rule, until the network answers it.',
+        'A Sodax call path, which has no testnet: stop before the first signed call and agree the test amount and the wallet with the person.',
+        'A credential, schema or request id the project has not named: stop and ask which of the seven schemas the action needs. Do not pick one to make a test pass.',
       ],
     },
     {
@@ -193,17 +234,30 @@ export const rulesSource: RulesSource = {
         `Verify a wallet at ${ACCESS_URL}. Get testnet coins at ${FAUCET_URL}.`,
         `Chain objects, addresses and read-only helpers (isAllowed, getLatestPrice, gasCostUsd, resolveRegistry) are in ${CHAINS_PACKAGE}, on npm: npm install ${CHAINS_PACKAGE}.`,
         'Credential schemas live in github.com/redbellynetwork/receptor-schema. The archived verifier example at github.com/redbellynetwork/receptor-verifier-contract-example is superseded; don\'t copy its solc 0.8.22 shanghai pins.',
+        `A Sodax example that writes the governors RPC inline (their wallets and quickstart pages do) is not a contradiction of these rules: replace the inline URL with the chain object from ${CHAINS_PACKAGE} and carry on.`,
+        'A wrong rule in this file is a bug in this file. Open an issue at github.com/gatedpath/builder-path with the prompt and what the agent did; that is how the failure table grows from pending to measured.',
       ],
       links: [
         { label: 'Vine', url: 'https://vine.redbelly.network/', note: 'network reference' },
         { label: 'Redbelly docs', url: 'https://docs.redbelly.network/', note: 'Receptor and the Eligibility SDK' },
         { label: 'Routescan mainnet', url: m.explorer.url },
         { label: 'Routescan testnet', url: t.explorer.url },
-        { label: 'Access dApp', url: ACCESS_URL },
-        { label: 'FAUCETME', url: FAUCET_URL },
         { label: 'receptor-schema', url: 'https://github.com/redbellynetwork/receptor-schema' },
         { label: CHAINS_PACKAGE, url: `https://www.npmjs.com/package/${CHAINS_PACKAGE}` },
       ],
+    },
+    {
+      id: 'before-done',
+      heading: 'Before you say done',
+      intro: 'The gates live in the tools. Run them before reporting, in this order, and report what each one said.',
+      rules: [
+        'forge test (or the Hardhat tests), then the five-state suites that inherit GatedTest: valid, expired, revoked, wrong-jurisdiction, never-issued.',
+        'redbelly-preflight --chain 153 with the deployer: all seven checks pass, or say which did not and why.',
+        'redbelly gas: the deployment cost in RBNT and US cents, and on 153 the faucet claims it needs.',
+        'redbelly-agent-rules --check: the rules files in the project match the package; regenerate if they drifted.',
+        'Nothing signed, no key read, no secret in the diff: say so in the report, in those words, because the person reading it will check.',
+      ],
+      links: [],
     },
   ],
 };

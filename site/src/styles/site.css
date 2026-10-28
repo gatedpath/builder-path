@@ -101,6 +101,24 @@ a[href^="https://schema.redbelly.network"]::after {
 }
 .sidebar-content a.large,
 .sidebar-content summary + ul .large { text-transform: none; letter-spacing: 0; }
+
+/* Two shelves (the path, then the reference), each holding sections. Starlight draws a group
+   label the same way at every depth, so without this the shelf name and the section inside it
+   are indistinguishable and the reader cannot tell which entries open. The shelf name stays a
+   quiet uppercase eyebrow and is chrome; a section inside it reads at the scale of the links it
+   holds, so the hierarchy is legible at a glance. */
+.sidebar-content ul.top-level > li + li > details > summary {
+  margin-block-start: 1.25rem;
+  padding-block-start: 1rem;
+  border-block-start: 1px solid var(--rb-color-hairline);
+}
+.sidebar-content ul.top-level ul details > summary .group-label span {
+  font-size: var(--sl-text-sm);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--rb-color-text-strong);
+}
 .sidebar-content a {
   font-size: var(--sl-text-sm);
   font-weight: 500;
@@ -149,8 +167,18 @@ a[href^="https://schema.redbelly.network"]::after {
   font-size: 0.9em;
 }
 
-/* Code blocks */
+/* Code blocks. Wrapped blocks may break inside a token that has no space in it (a hash, an
+   address, a URL) rather than run past the box; output blocks keep their lines and show a thin
+   scrollbar. */
 .expressive-code { margin-block: 1.25rem; }
+/* Two corrections to Expressive Code's wrapping, found on 26 September 2026 at 390 px. It wraps
+   with break-word, which the browser ignores when it works out a block's minimum width, so a long
+   token can still push the box out; "anywhere" counts. And it gives every wrapped line a minimum
+   of 20 characters of content on top of its hanging indent, so a line indented 16 spaces needs 36
+   characters plus padding, which is wider than a phone; with no minimum, deep lines simply wrap.
+   This file is unlayered, so these win over the library's own rules. */
+body .expressive-code pre.wrap .ec-line .code { overflow-wrap: anywhere; min-width: 0; }
+.expressive-code pre:not(.wrap) { scrollbar-width: thin; }
 .expressive-code .frame { border-radius: var(--rb-radius-lg); }
 @media (pointer: coarse) {
   .expressive-code .copy button { width: var(--rb-target-min); height: var(--rb-target-min); }

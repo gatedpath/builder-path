@@ -1,6 +1,17 @@
     function preflight() internal returns (Preflight memory p) {
         p.chainId = block.chainid;
         p.deployer = msg.sender;
+        // Foundry's default sender, used whenever --sender is absent. `--account` alone rehearses as
+        // this address, which fails isAllowed on 151 and 153; the first real run (17 October 2026)
+        // stopped here. A broadcast refuses; a dry run and a plain test only say so.
+        if (p.deployer == 0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38) {
+            console2.log(
+                "deployer is Foundry's default sender: pass --sender <your-address> beside --account <keystore-name>"
+            );
+            if (vm.isContext(VmSafe.ForgeContext.ScriptBroadcast)) {
+                revert("deployer is Foundry's default sender; pass --sender <your-address> beside --account");
+            }
+        }
         _requireChainIdIsTheNetworks(p.chainId);
         console2.log("chain id:", p.chainId);
         console2.log("deployer:", p.deployer);

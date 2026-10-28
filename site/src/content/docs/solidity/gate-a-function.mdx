@@ -20,7 +20,7 @@ import StepPart from '../../../components/StepPart.astro';
   facts={[
     'Inherit Gated(verifier, requestId) from @gatedpath/receptor-mock/Gated.sol. Put the gated modifier on a function whose caller must be eligible, and gatedFor(account) when a second party must be eligible too.',
     'Gated has no owner. The child must implement _authorizeVerifierChange() (for example with onlyOwner or onlyRole(DEFAULT_ADMIN_ROLE)); leaving it out is a compile error.',
-    'A denial reverts with NotEligible(wallet, requestId). An event cannot survive a revert, and the governors RPC serves no trace methods, so use _checkEligible and _recordDenial when a denial must be on the log.',
+    'A denial reverts with NotEligible(wallet, requestId). An event cannot survive a revert, and the governors RPC serves no trace methods (measured 12 September 2026, SOURCES.md), so use _checkEligible and _recordDenial when a denial must be on the log.',
   ]}
 />
 
@@ -48,7 +48,7 @@ What a credential is, who issues it and how a proof reaches a verifier is Redbel
 
 <StepCard n={2} title="Read the two modifiers">
 <StepPart kind="gets">
-The two words you will actually type.
+The two words you will type.
 </StepPart>
 <StepPart kind="do">
 <Sample id="gated-modifiers" />
@@ -67,10 +67,10 @@ A complete, small contract to copy the shape of.
 <StepPart kind="do">
 <Sample id="gated-counter" />
 
-Three things to notice. The constructor hands `Gated` a verifier and a request id, so which credential the gate asks for is decided at deploy time and not in the code. `_authorizeVerifierChange` is where you say who may repoint the gate; the base has no owner of its own, so if you leave it out the contract does not compile, which is better than an open door. And `tryIncrement` shows the other path: ask without reverting, record the denial, carry on.
+There are three things I would notice here. The constructor hands `Gated` a verifier and a request id, so which credential the gate asks for is decided at deploy time and not in the code. `_authorizeVerifierChange` is where you say who may repoint the gate; the base has no owner of its own, so if you leave it out the contract does not compile, which is better than an open door. And `tryIncrement` shows the other path: ask without reverting, record the denial, carry on.
 </StepPart>
 <StepPart kind="worked">
-You can explain why `tryIncrement` exists. A reverted transaction keeps no events, and this network's RPC serves no trace methods, so a revert's reason cannot be read back from the chain afterwards. When a denial has to be on the record, it must not revert.
+You can explain why `tryIncrement` exists. A reverted transaction keeps no events, and this network's RPC serves no trace methods (measured 12 September 2026), so a revert's reason cannot be read back from the chain afterwards. When a denial has to be on the record, it must not revert.
 </StepPart>
 </StepCard>
 
@@ -79,7 +79,7 @@ You can explain why `tryIncrement` exists. A reverted transaction keeps no event
 Proof on your own machine that the example does what it says.
 </StepPart>
 <StepPart kind="do">
-From the repository's root:
+From the repository's root, which means a clone of [github.com/gatedpath/builder-path](https://github.com/gatedpath/builder-path) with Node 22 and Foundry installed ([the Solidity index](/solidity/#before-you-start) has the setup):
 
 ```sh
 cd packages/receptor-mock
@@ -88,7 +88,7 @@ forge test --match-contract GatedCounterTest
 ```
 </StepPart>
 <StepPart kind="worked">
-`Suite result: ok. 9 passed; 0 failed`. One of the nine is `test_incrementAcrossAllFiveStates`, which the next tutorial takes apart. The whole package, `forge test` with no filter, is 34 passed and 1 skipped; the skipped one needs a live fork.
+`Suite result: ok. 9 passed; 0 failed`. One of the nine is `test_incrementAcrossAllFiveStates`, which the next tutorial takes apart. The whole package, `forge test` with no filter, is 34 passed and one suite skipped; its two tests need a live fork.
 </StepPart>
 <StepPart kind="ifnot">
 `forge not found` means Foundry is missing, and a missing `lib/forge-std` means `npm run setup` has not run in this package. [When something fails](/errors/) has the rest.
@@ -103,10 +103,10 @@ The habit, before the next tutorial teaches you to test it properly.
 Copy `test/examples/GatedCounter.sol` beside itself under a new name and change what the gated function does: a guest book that stores one line per eligible wallet is enough. Keep the constructor, keep `_authorizeVerifierChange`, and put `gated` on the function that writes.
 </StepPart>
 <StepPart kind="worked">
-`forge build` ends with `Compiler run successful!`; mine was twenty lines and compiled first time. You have not tested it yet, and an untested gate is not a gate; that is next.
+`forge build` ends with `Compiler run successful!`; mine was twenty lines and compiled first time. You have not tested it yet, so you cannot rely on it. Testing comes next.
 </StepPart>
 <StepPart kind="ifnot">
-`Error (3656): Contract "GuestBook" should be marked as abstract`, pointing at `_authorizeVerifierChange() internal virtual;`, does not mean what it says. It means you have not written `_authorizeVerifierChange`, so you have not said who may move the gate. That is the base refusing to compile an open door.
+`Error (3656): Contract "GuestBook" should be marked as abstract`, pointing at `_authorizeVerifierChange() internal virtual;`, does not mean what it says. It means you have not written `_authorizeVerifierChange`, so you have not said who may move the gate. The base contract is refusing to compile a gate that anybody could move.
 </StepPart>
 </StepCard>
 

@@ -32,7 +32,7 @@ interface ISafe {
 ///   RECORD_DEPLOYMENT   "false" to skip writing deployments/<chainId>-GatedERC20.json.
 ///
 /// Sign with a keystore or hardware wallet; the key never touches this file or the shell:
-///   forge script script/Deploy.s.sol --rpc-url redbelly_testnet --account <keystore-name> --broadcast
+///   forge script script/Deploy.s.sol --rpc-url redbelly_testnet --account <keystore-name> --sender <your-address> --broadcast
 /// This script checks the chain id against the RPC's own, and on 151 that every role holder is a
 /// real Safe 1.4.1. It does NOT check `permission.isAllowed` on the deployer or ask for a ship
 /// report; a scaffolded project's deploy script does those, and does not set up this timelock. Until

@@ -7,7 +7,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { basename, join, relative, resolve } from 'node:path';
-import { PRICE_FEED_DECIMALS, chainById, formatUnits, getLatestPrice, toCaller } from '@gatedpath/chains';
+import { PRICE_FEED_DECIMALS, chainById, createRpc, formatUnits, getLatestPrice, toCaller } from '@gatedpath/chains';
 import { run } from './proc.js';
 
 const require = createRequire(import.meta.url);
@@ -33,6 +33,8 @@ export interface GasQuote {
   readonly network: 'mainnet' | 'testnet';
   readonly rpc: string;
   readonly block: number;
+  /** The head block's timestamp as ISO, so a quote can be dated without a second block read. */
+  readonly blockTimestamp: string;
   readonly baseFeeWei: bigint;
   /** The feed's raw integer (six decimals) and the derived USD per RBNT. */
   readonly priceRaw: bigint;
@@ -60,6 +62,35 @@ export interface GasReport {
   readonly quote: GasQuote;
   readonly rows: readonly PricedRow[];
   readonly diff: { readonly file: string; readonly rows: number; readonly added: readonly string[]; readonly removed: readonly string[] } | null;
+  /** Testnet only: what the deployment rows cost in faucet claims, with pre-flight's 25% margin, at this quote. */
+  readonly faucet: FaucetDays | null;
+}
+
+export interface FaucetDays {
+  /** What one FAUCETME claim pays, in test RBNT, and how often (read 15 September 2026). */
+  readonly perClaimRbnt: number;
+  readonly claimsPerDay: number;
+  /** Deployment gas summed over the rows, plus the 25% pre-flight's balance check adds. */
+  readonly gasWithMargin: bigint;
+  readonly rbnt: number;
+  readonly claims: number;
+  readonly days: number;
+  readonly pricedAt: string;
+}
+
+export const FAUCET_PER_CLAIM_RBNT = 500;
+export const FAUCET_CLAIMS_PER_DAY = 1;
+
+/** Faucet claims a project needs before its deploy: the deployment rows, 25% on top, at the quote's base fee and price. 153 only. */
+export function faucetDays(rows: readonly PricedRow[], quote: GasQuote): FaucetDays | null {
+  if (quote.chain !== 153) return null;
+  const deploys = rows.filter((r) => r.item === 'deployment');
+  if (deploys.length === 0) return null;
+  const gas = deploys.reduce((a, r) => a + r.gas, 0n);
+  const gasWithMargin = gas + gas / 4n;
+  const rbnt = Number(gasWithMargin * quote.baseFeeWei) / 1e18;
+  const claims = Math.max(1, Math.ceil(rbnt / FAUCET_PER_CLAIM_RBNT));
+  return { perClaimRbnt: FAUCET_PER_CLAIM_RBNT, claimsPerDay: FAUCET_CLAIMS_PER_DAY, gasWithMargin, rbnt, claims, days: Math.ceil(claims / FAUCET_CLAIMS_PER_DAY), pricedAt: quote.priceTimestamp };
 }
 
 export interface GasOptions {
@@ -161,19 +192,21 @@ export function priceRows(rows: readonly GasRow[], quote: Pick<GasQuote, 'baseFe
 
 // ---- the two reads ----
 
-export async function quoteGas(rpc: string, expected?: 151 | 153): Promise<GasQuote> {
-  const caller = toCaller(rpc);
+/** `fetch` is for tests and for callers that wrap a timeout round the global one; the reads are the same either way. */
+export async function quoteGas(rpc: string, expected?: 151 | 153, opts: { fetch?: typeof fetch } = {}): Promise<GasQuote> {
+  const caller = opts.fetch ? createRpc(rpc, { fetch: opts.fetch }) : toCaller(rpc);
   const reported = Number(BigInt((await caller('eth_chainId')) as string));
   if (reported !== 151 && reported !== 153) throw new Error(`the RPC at ${rpc} reports chain ${reported}; redbelly gas prices through the feed on 151 or 153 (a fork of either works)`);
   if (expected && reported !== expected) throw new Error(`--chain ${expected} but the RPC at ${rpc} reports ${reported}`);
-  const block = (await caller('eth_getBlockByNumber', ['latest', false])) as { number?: string; baseFeePerGas?: string } | null;
+  const block = (await caller('eth_getBlockByNumber', ['latest', false])) as { number?: string; timestamp?: string; baseFeePerGas?: string } | null;
   if (!block?.baseFeePerGas) throw new Error('the latest block has no baseFeePerGas');
-  const price = await getLatestPrice({ rpc });
+  const price = await getLatestPrice({ rpc: caller });
   return {
     chain: reported,
     network: reported === 151 ? 'mainnet' : 'testnet',
     rpc,
     block: Number(BigInt(block.number ?? '0x0')),
+    blockTimestamp: new Date(Number(BigInt(block.timestamp ?? '0x0')) * 1000).toISOString(),
     baseFeeWei: BigInt(block.baseFeePerGas),
     priceRaw: price.raw,
     usdPerRbnt: price.usdPerRbnt,
@@ -237,6 +270,7 @@ export async function runGas(opts: GasOptions = {}): Promise<GasReport> {
     quote,
     rows: priced.rows,
     diff: diffFile ? { file: diffFile, rows: before!.length, added: priced.added, removed: priced.removed } : null,
+    faucet: faucetDays(priced.rows, quote),
   };
 }
 
@@ -272,6 +306,7 @@ export function renderGasText(report: GasReport): string {
   const deploys = report.rows.filter((r) => r.item === 'deployment');
   lines.push('');
   if (deploys.length) lines.push(`deployment: ${deploys.map((d) => `${d.contract} ${num(d.gas)} gas = ${rbnt6(d.rbnt)} RBNT = US$${fixed(d.usd, 4)}`).join('; ')}. Pre-flight's balance check adds 25% on top; pass its --gas the figure here.`);
+  if (report.faucet) lines.push(`faucet: ${num(report.faucet.gasWithMargin)} gas with the 25% margin = ${fixed(report.faucet.rbnt, 1)} test RBNT at this base fee = ${report.faucet.claims} claim${report.faucet.claims === 1 ? '' : 's'} of ${report.faucet.perClaimRbnt} (${report.faucet.days} day${report.faucet.days === 1 ? '' : 's'}, one claim a day) before you can deploy. Priced at ${report.faucet.pricedAt}; the base fee moves, so re-run on the day.`);
   lines.push(`Gas is priced in US dollars and converted to RBNT at execution from the feed, so the cents column is the stable one; the RBNT column moves with the price. Base fee only: the chain charges no priority fee.`);
   return lines.join('\n') + '\n';
 }

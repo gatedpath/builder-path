@@ -1,0 +1,63 @@
+// The candidate registers, in one place. An ERC-3643 register (a T-REX token) is only known to be
+// one once the chain says so: the page asks each address whether identityRegistry() answers with a
+// contract and lists only those that do. This file is the list of addresses worth asking, by chain.
+//
+// Mainnet (151): the 44 contracts that answered identityRegistry() in the census of 12 October 2026
+// (527 ERC-20 contracts listed by Routescan for chain 151, each asked by eth_call on the governors
+// RPC; every one reported T-REX version 4.1.3). A register deployed since is not here until the
+// list is refreshed; the page says when the list was last checked.
+//
+// Testnet (153): none known. Mainnet is the chain with registers on it today.
+import type { Address } from "viem";
+
+export const REGISTER_CANDIDATES_CHECKED = "2026-10-12";
+
+export const registerCandidates: Record<151 | 153, readonly Address[]> = {
+  151: [
+    "0x0Eea5afF22b8B5e89CAdd84ed1a18b828404e392",
+    "0x0e2752032A1a1F47e9cc29FA06AB21873B0467a8",
+    "0x11a8102f55B9e6b09721552590833F99Df9F90a0",
+    "0x146C8E93cC985927B33eb9A6490Ec57d902eE243",
+    "0x1Cbf18Ac9c8A6ac79524a7833C2415456e98f063",
+    "0x26A96a8b2608F068285343371b8d008EACef823F",
+    "0x2Bce1F71B6Bd244205C8cF5561988ea6Cf8981BE",
+    "0x2d0B802Deb5B9a705716167Df4Aa2F7F44ACd7f4",
+    "0x333F00A004cC5Ec9d898a4df33fD350D9ad71787",
+    "0x35255BD960C222992629E93B1860A2530fF6C432",
+    "0x44efD0Db1572b1E9c54151057D823425fF38EE26",
+    "0x45910DaE99D71394b659bADdFA1EdB1a0375534B",
+    "0x4C8Aa15BC3DFeb44d1ba02196715337b0F706D53",
+    "0x4c9C40aeC2698a2F6E547eDdA3d5dA22A6ED48b7",
+    "0x52646603Fc06A80C81De2A3eda2322B5d1EbA0f6",
+    "0x52bb4356b8C8FD59f3cb63251F592035EbEFD998",
+    "0x56E1f44BEeB94d7f3C5AbABA16c61ff52952f809",
+    "0x68142E41F9711d7a382fAF27585dAffaEB8592A4",
+    "0x784DefDab0388143bb6a5f10C57AB8E8EF2E6cBE",
+    "0x8895c30C2a5B52e628FE6118471D8B931bF6A000",
+    "0x8ccB1D009e127D0CAB80E39f07d5fBB293a012de",
+    "0x93E5086ED371630726E2418363fE0aB230f12331",
+    "0xA691e50AaEf0130b1ccBD60381FAf1BECE11e5d2",
+    "0xA8351e43Da1B0c8259564870E059719CBB3d10A5",
+    "0xA84A42D1e2e96CAC925A6d58564DFBF1Bc832a5B",
+    "0xBAFb145EF19dBC226866748460f69Eb304310d63",
+    "0xBadAC1AD71b6b22156755D6F0E14bFF7bb471DB8",
+    "0xC41f2aeC7Ff1E877769cF22fd1398f4082543B2B",
+    "0xC999EBFaAF12642bc3086C5C910EB335204F9ee7",
+    "0xD48e0bF4e9856A8F7D665CB60C005d94f331A847",
+    "0xD59BB8F4E32dFCe172620A79abf5e13121a7318a",
+    "0xDC065F30876a2a173CbFFD9Be34AF6D3Df4660b6",
+    "0xDC7d87F3C67a6C088806B9450631881e5379B994",
+    "0xE9c1b4DE419867A56B250156832E93cEaf3Bf6B6",
+    "0xEaEfE65729454C5db59d63a74a17643eaC7f1fe6",
+    "0xF7Ac8307489A2495Fc4aC9Ff125B18612F55ae6E",
+    "0xFE6B40D18D1297C38B74A992941095C4866c2303",
+    "0xa1072115190a2fCECB476f5f8fE50D044a5A9d9F",
+    "0xb37744cE2885eFae59EB0C1C9bAe7c162E818195",
+    "0xbEFc7B97E7A746c89CD5be75668De4CcbC3A7A40",
+    "0xc184CDE2c0EBd4f87494BD3BFC8A2644eEa8A084",
+    "0xc3041A0c06AF0fD2a54aEbF329e16cfEc16624f4",
+    "0xc791A126682d200bc29e0Fd45097f185D1540163",
+    "0xeD9FBfC584a6dAD11Eb3D1573f77036F6839c618",
+  ],
+  153: [],
+};

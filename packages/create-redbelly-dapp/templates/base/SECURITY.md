@@ -9,7 +9,7 @@ public issue for anything that could move funds or bypass eligibility.
 
 ## What this project does about security
 
-The programme in PLAN.md section 6 of the Redbelly Development Tool, applied here:
+The security programme of the Redbelly Development Tool, applied here:
 
 - Every gated function has tests in all five credential states (valid, expired, revoked,
   wrong jurisdiction, never issued) on `GatedTest`. A gate with fewer is untested and CI

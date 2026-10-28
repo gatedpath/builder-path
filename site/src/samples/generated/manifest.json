@@ -11,8 +11,8 @@
       "region": null,
       "whole": true,
       "lines": 23,
-      "sourceSha256": "0c93d723fd24df0a3243d8629d84f0563379227424634f218c3fec8e59d39d7c",
-      "sampleSha256": "0c93d723fd24df0a3243d8629d84f0563379227424634f218c3fec8e59d39d7c",
+      "sourceSha256": "1cb1e1a5c0b6f15c5191ff04343e306fc3ed37646192d026fa8799eab7646963",
+      "sampleSha256": "1cb1e1a5c0b6f15c5191ff04343e306fc3ed37646192d026fa8799eab7646963",
       "publish": null
     },
     {
@@ -21,12 +21,12 @@
       "file": "foundry-toml.toml",
       "lang": "toml",
       "title": "foundry.toml",
-      "compiledBy": "read by forge build in phase-0/first-contract",
+      "compiledBy": "forge build in phase-0/first-contract",
       "region": null,
       "whole": true,
       "lines": 20,
-      "sourceSha256": "3c19147e726d19d1b7fdb5d46d115961408f3f1c67d615dac1dcd006c4caf0f9",
-      "sampleSha256": "3c19147e726d19d1b7fdb5d46d115961408f3f1c67d615dac1dcd006c4caf0f9",
+      "sourceSha256": "ec8a0ff228d65db93e29a3ca7d8e6b067195ad8b49a3fb34f49289dd458c8498",
+      "sampleSha256": "ec8a0ff228d65db93e29a3ca7d8e6b067195ad8b49a3fb34f49289dd458c8498",
       "publish": null
     },
     {
@@ -138,8 +138,8 @@
       "region": null,
       "whole": true,
       "lines": 10,
-      "sourceSha256": "69f934cbf55d090d3c32b8cba56e1153ba310367ded5d62f310aaf4661e35b61",
-      "sampleSha256": "69f934cbf55d090d3c32b8cba56e1153ba310367ded5d62f310aaf4661e35b61",
+      "sourceSha256": "01a886ff6853eebd30d9ff9a5c42abab3c959a4779e220e0fb8a660f66fc2eb8",
+      "sampleSha256": "01a886ff6853eebd30d9ff9a5c42abab3c959a4779e220e0fb8a660f66fc2eb8",
       "publish": null
     },
     {
@@ -151,9 +151,9 @@
       "compiledBy": "npm test in packages/agent-rules compares it byte for byte with the renderer",
       "region": null,
       "whole": true,
-      "lines": 164,
-      "sourceSha256": "6645a51a8e04a6f6ea38a1e24ef9d07146fb5fd80c24d74f9e587715618a8592",
-      "sampleSha256": "6645a51a8e04a6f6ea38a1e24ef9d07146fb5fd80c24d74f9e587715618a8592",
+      "lines": 197,
+      "sourceSha256": "aab5da2de4a8773259ff0790bc16a2a4f921f758db82370f91b4c9c78cfadd90",
+      "sampleSha256": "aab5da2de4a8773259ff0790bc16a2a4f921f758db82370f91b4c9c78cfadd90",
       "publish": "agent-rules/CLAUDE.md"
     },
     {
@@ -165,9 +165,9 @@
       "compiledBy": "npm test in packages/agent-rules",
       "region": null,
       "whole": true,
-      "lines": 164,
-      "sourceSha256": "4d644a9f83894c3d3df3c8e747397a08239e323350dbc8af00b0654f292d7f73",
-      "sampleSha256": "4d644a9f83894c3d3df3c8e747397a08239e323350dbc8af00b0654f292d7f73",
+      "lines": 197,
+      "sourceSha256": "0054599a156adaace171c986cc573e8a4ad98a0dd1570bec53808b21e6b7f88a",
+      "sampleSha256": "0054599a156adaace171c986cc573e8a4ad98a0dd1570bec53808b21e6b7f88a",
       "publish": "agent-rules/AGENTS.md"
     },
     {
@@ -179,9 +179,9 @@
       "compiledBy": "npm test in packages/agent-rules",
       "region": null,
       "whole": true,
-      "lines": 169,
-      "sourceSha256": "9dca525c575553db385f0082314282d6b4bd6adfc7a74c50ecca69578952dfa7",
-      "sampleSha256": "9dca525c575553db385f0082314282d6b4bd6adfc7a74c50ecca69578952dfa7",
+      "lines": 202,
+      "sourceSha256": "6110eb11870482e146879b6f30e49d778fff63e49de3ad704507f97424fc971d",
+      "sampleSha256": "6110eb11870482e146879b6f30e49d778fff63e49de3ad704507f97424fc971d",
       "publish": "agent-rules/cursor-rules-redbelly.mdc"
     },
     {
@@ -193,9 +193,9 @@
       "compiledBy": "npm test in packages/agent-rules",
       "region": null,
       "whole": true,
-      "lines": 164,
-      "sourceSha256": "1d6cdc4da1bb724d9ec30b2f69288f69be0b3d246ca126cd495f976f7818d87b",
-      "sampleSha256": "1d6cdc4da1bb724d9ec30b2f69288f69be0b3d246ca126cd495f976f7818d87b",
+      "lines": 197,
+      "sourceSha256": "423e4a10c1d4d88f530101b4ae0d6cfd177a1a0f99b2fa85915ccca1fa9c3df8",
+      "sampleSha256": "423e4a10c1d4d88f530101b4ae0d6cfd177a1a0f99b2fa85915ccca1fa9c3df8",
       "publish": "agent-rules/copilot-instructions.md"
     },
     {
@@ -207,10 +207,24 @@
       "compiledBy": "npm test in packages/agent-rules",
       "region": null,
       "whole": true,
-      "lines": 164,
-      "sourceSha256": "0832538e7620cf714289e8c64ca34ab0ebadb57d3899ef4de3222f5c496928ff",
-      "sampleSha256": "0832538e7620cf714289e8c64ca34ab0ebadb57d3899ef4de3222f5c496928ff",
+      "lines": 197,
+      "sourceSha256": "2d317044f62194373c15b17402261d25e5ea4371fd969730575d22f2d1f08574",
+      "sampleSha256": "2d317044f62194373c15b17402261d25e5ea4371fd969730575d22f2d1f08574",
       "publish": "agent-rules/GEMINI.md"
+    },
+    {
+      "id": "rules-skill",
+      "source": "packages/agent-rules/generated-samples/skills/redbelly/SKILL.md",
+      "file": "rules-skill.md",
+      "lang": "md",
+      "title": "skills/redbelly/SKILL.md",
+      "compiledBy": "npm test in packages/agent-rules",
+      "region": null,
+      "whole": true,
+      "lines": 201,
+      "sourceSha256": "8966c1fcb6324665bb1f9d3bc9e750238ecb2c955a8712d1c40c3a8cac626613",
+      "sampleSha256": "8966c1fcb6324665bb1f9d3bc9e750238ecb2c955a8712d1c40c3a8cac626613",
+      "publish": "skill.md"
     },
     {
       "id": "llms",
@@ -221,9 +235,9 @@
       "compiledBy": "npm test in packages/agent-rules",
       "region": null,
       "whole": true,
-      "lines": 103,
-      "sourceSha256": "b454269eaa9464981c31a566fabe5621e1c7edb13489ecc2524cf1b015926a32",
-      "sampleSha256": "b454269eaa9464981c31a566fabe5621e1c7edb13489ecc2524cf1b015926a32",
+      "lines": 106,
+      "sourceSha256": "272f568110be540dd27a09fb6d33297544414d5aa1d920f3c848c72dee72a575",
+      "sampleSha256": "272f568110be540dd27a09fb6d33297544414d5aa1d920f3c848c72dee72a575",
       "publish": "llms.txt"
     },
     {
@@ -235,9 +249,9 @@
       "compiledBy": "npm test in packages/agent-rules",
       "region": null,
       "whole": true,
-      "lines": 204,
-      "sourceSha256": "9c3ce12240ebec59f49cce278a37a64475556e250f4739ca8123bf6432f66706",
-      "sampleSha256": "9c3ce12240ebec59f49cce278a37a64475556e250f4739ca8123bf6432f66706",
+      "lines": 235,
+      "sourceSha256": "ecf10a257cf4c908eb65964331ffaaf1b4fc1ef261024391c63fd45c89e5a818",
+      "sampleSha256": "ecf10a257cf4c908eb65964331ffaaf1b4fc1ef261024391c63fd45c89e5a818",
       "publish": "llms-full.txt"
     },
     {
@@ -314,9 +328,9 @@
         "to": "function preflight() internal returns (Preflight memory p) {"
       },
       "whole": false,
-      "lines": 36,
-      "sourceSha256": "0ec37ac68b40f9043c21ca295ddad006cf476d6aa12826a799ef120c7db24e20",
-      "sampleSha256": "24b6fe94b6fe15637d9d245c504f8aa80ec707fd47f79d8d61285a8c477fe3b2",
+      "lines": 47,
+      "sourceSha256": "9519535186d5a4155a960c3b95ac660e3b4b68cf26dfb9b26d8d2ab3ad73c0a9",
+      "sampleSha256": "06cbbfffed7130c130a58a0207aa7d304756d1d79f66f28f062602fc87775d8d",
       "publish": null
     },
     {
@@ -346,8 +360,8 @@
       },
       "whole": false,
       "lines": 12,
-      "sourceSha256": "c4d58400ed655d2d359b23517b6697c51086b02ffc0cfd28faabe55f94412ada",
-      "sampleSha256": "692f6ffebd9210e21b91fac4a5af454094251d04beaf5c93462e1914755fcc0f",
+      "sourceSha256": "9c9fb75873f721ad0e4b6e06779f93db8be2a97c040f887cff5dff75bca2f3e6",
+      "sampleSha256": "9b7ebe40450d72bda9a2c3b55a1588cc07228977bc1998aa65b4b8e54d50b8bb",
       "publish": null
     },
     {
@@ -362,9 +376,9 @@
         "to": "readonly match: readonly FailureMatcher[];"
       },
       "whole": false,
-      "lines": 28,
-      "sourceSha256": "7ba3756925df4001e8f6ea9fa412bf7da2196524082b0a04484170d36dc1699a",
-      "sampleSha256": "6d299ad3cb154a66a9ea814eeebb0a0ea69746d693bbdc6e9b09bbf04a4db64b",
+      "lines": 30,
+      "sourceSha256": "8cb5843152e81c0c11b99fdd79191c92fd712e92f9d7ab777cdcd8c0a75b6855",
+      "sampleSha256": "6bc87570895359d85d545faf8c8f09bc18fd66f7a1b5396a87e4c3f15daba2c6",
       "publish": null
     },
     {
@@ -379,9 +393,9 @@
         "to": "    match: [{ type: 'selector', value: NOT_ELIGIBLE_SELECTOR }, { type: 'text', value: 'NotEligible\\\\(' }],"
       },
       "whole": false,
-      "lines": 13,
-      "sourceSha256": "7ba3756925df4001e8f6ea9fa412bf7da2196524082b0a04484170d36dc1699a",
-      "sampleSha256": "e45d68d28da0e982a1a4156390e80ce884e06fbb6cc3ecb2e1ef926167562c27",
+      "lines": 14,
+      "sourceSha256": "8cb5843152e81c0c11b99fdd79191c92fd712e92f9d7ab777cdcd8c0a75b6855",
+      "sampleSha256": "26f5ab7b8dee4b8a3bd511f4338bf1d56f1d174308c141b3b833dc85b578f2ce",
       "publish": null
     },
     {
@@ -411,7 +425,7 @@
       },
       "whole": false,
       "lines": 41,
-      "sourceSha256": "1dd49b198d40bbc2a6ab6a1f36cde8e23643cebd899291d9967f0652dd0b5658",
+      "sourceSha256": "37f8fded1204f6284b85d7dd038992216d2c60f2628476a762c2cf4fdefa8e8d",
       "sampleSha256": "e4913017c68083b96a254a7b6233ead86807bbf5ba3302f7277792e425d036e2",
       "publish": null
     },
@@ -439,8 +453,8 @@
       "region": null,
       "whole": true,
       "lines": 81,
-      "sourceSha256": "ff51e66246b21e80378defb59760cbd4364c84eb15bb9f6e1f5e063d5f4f29ef",
-      "sampleSha256": "ff51e66246b21e80378defb59760cbd4364c84eb15bb9f6e1f5e063d5f4f29ef",
+      "sourceSha256": "d6640f94f84b8946da9fadd803a3b753e0e9146e6b0d3ade35fc4c260a46e09b",
+      "sampleSha256": "d6640f94f84b8946da9fadd803a3b753e0e9146e6b0d3ade35fc4c260a46e09b",
       "publish": null
     },
     {
@@ -558,7 +572,7 @@
       },
       "whole": false,
       "lines": 10,
-      "sourceSha256": "063ed5df16cdcc799b1af0501f0a6271dc0606cf05ea7aedda24e6c8bda81ac3",
+      "sourceSha256": "2ae6a3bb9313e8632f8a34fd46e36f63aaf89f70f5ce1dce7b5f3c61bf3a1c7e",
       "sampleSha256": "2bded82e037d2919a274adee3e21add2714dc4ec3635668e0a4ea2e14e9c7c43",
       "publish": null
     },
@@ -722,8 +736,8 @@
       "region": null,
       "whole": true,
       "lines": 68,
-      "sourceSha256": "2850689f6b9c3564907f50e1976868ff924e478ea984249d4170bea2b774f3b8",
-      "sampleSha256": "2850689f6b9c3564907f50e1976868ff924e478ea984249d4170bea2b774f3b8",
+      "sourceSha256": "5cdd230ddab44f1d7836a330ed8e728bba39a873e0d255b9146ad40357bf5509",
+      "sampleSha256": "5cdd230ddab44f1d7836a330ed8e728bba39a873e0d255b9146ad40357bf5509",
       "publish": null
     },
     {

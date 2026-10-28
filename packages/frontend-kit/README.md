@@ -17,6 +17,10 @@ For agents
   table (`@gatedpath/agent-rules/failures`): NotEligible (with the credential state when you pass
   one), a wallet rejection, a wrong chain, not enough RBNT. Show `plainWords` and `fix.link`, never
   `error.message` alone; `kind: "unknown"` carries the error's own words in `raw`.
+- Before a send, `checkRecipient(client, { recipient, chainId })` (or `useRecipientCheck(recipient)`)
+  answers what card 13's `RecipientGuard` will answer on chain: `ok`, a `verdict`, and `reasons`
+  with a sentence each. Show the sentences; never build the transaction while `ok` is false. It
+  means an address someone verified holds, not the right person.
 - Build: `npm run build`. Tests: `npm test` (Vitest, jsdom, a mocked transport; no network).
 ```
 
@@ -57,6 +61,23 @@ State derivation, in order: no address is `disconnected`; nothing cached and an 
 `error`; nothing cached yet is `checking`; `isAllowed` false is `unverified` whatever the verifier
 says; `isEligible` false is `ineligible`; `isEligible` true with an expiry inside the window is
 `expiring`; otherwise `eligible`.
+
+## The register hook
+
+```tsx
+const r = useRegister(tokenAddress, address);
+// r.state: 'disconnected' | 'checking' | 'not-a-register' | 'registered' | 'not-registered' | 'frozen' | 'paused' | 'error'
+```
+
+`useRegister(token, wallet)` reads an ERC-3643 register (a T-REX token, the shape of every real asset
+on this network) and, when a wallet is given, whether that register's identity registry has verified
+it. It is the third gate a holder meets, after `permission.isAllowed` and a dApp's recipe, which
+`useEligibility` reads. The result carries the token's facts (name, symbol, decimals, supply, T-REX
+version, paused), the registry's shape (trusted issuers, required claim topics, and `gate`:
+`registration only` when no topics are required, `claims` otherwise) and the wallet's standing
+(verified, registered, frozen, balance). Reads are batched through Multicall3, cached per chain and
+refetched on a new block. Only the issuer can register a wallet, so `not-registered` is information
+for the page, never a button. The ops kit's `readRegister` is the same read from a script.
 
 ## The components
 
@@ -116,12 +137,51 @@ The panel renders only on chain 31337. On 151 or 153 it renders nothing whatever
 and the scaffold imports it only in the dev server behind a build-time constant, so a production
 bundle carries none of it; the scaffolder's integration test builds one and checks.
 
+## checkRecipient
+
+```tsx
+import { useRecipientCheck } from '@gatedpath/frontend-kit';
+
+const { check, isChecking, error } = useRecipientCheck(recipient, { allowContract });
+// check: { ok, verdict, reasons: [{ kind, error, plainWords }], permission, chainId } | null
+return (
+  <>
+    {isChecking && <p>Asking the network…</p>}
+    {check?.reasons.map((r) => <p key={r.kind}>{r.plainWords}</p>)}
+    <button disabled={!check?.ok} onClick={send}>Send through the guard</button>
+  </>
+);
+```
+
+A transfer that refuses to lose your money (card 13) goes through `RecipientGuard`, a contract
+that asks the network whether the recipient has passed the identity gate on this chain and
+refuses if not. `checkRecipient(client, { recipient, chainId, allowContract?, amount?, permission?,
+registry? })` asks the same questions from the browser first, in the guard's order, so the page can
+say no before it asks for a signature: the zero address (`ZeroRecipient`); code at the address,
+which makes it a contract the guard refuses unless `allowContract` is true (`RecipientIsContract`;
+a 23-byte EIP-7702 delegation is still a wallet); the bootstrap registry naming no permission
+contract, or one with no code (`NoPermissionContract`); `permission.isAllowed` false
+(`RecipientNotPermissioned`); and, when you pass `amount`, zero (`NothingToSend`). Each reason
+carries the guard's error name and a sentence for the page. The permission contract is resolved
+through the registry on every call, as the guard does, because its proxy admin has moved before;
+pass `permission` to skip that when the page already holds it. `client` is a viem `PublicClient`
+(`usePublicClient()` in wagmi); the call throws if the client is on another chain than `chainId`,
+and an RPC failure is thrown, never turned into a verdict.
+
+`useRecipientCheck(recipient, { chainId?, allowContract?, permission?, registry?, refreshInterval?,
+enabled? })` runs it when a recipient is set, caches the answer under the chain id and the recipient
+for 30 s, and exposes `refresh()`. The page's answer is a courtesy and the contract's is the rule:
+`ok` means an address someone verified holds on this chain, or a contract the user said they mean.
+A typo that lands on another verified address goes through, and the page should say so.
+
 ## Tests
 
-`npm test`: 80 Vitest tests in jsdom. `test/mock-chain.tsx` is a wagmi config over a `custom`
+`npm test`: 122 Vitest tests in jsdom. `test/mock-chain.tsx` is a wagmi config over a `custom`
 transport that answers `eth_chainId`, `eth_blockNumber`, `eth_call` and Multicall3 `aggregate3`
+(and, since `checkRecipient`, `eth_getCode` and the bootstrap registry's `getContractAddress`)
 from an in-memory state the tests mutate; nothing leaves the process and no address in it exists
-anywhere. The hook tests cover every state, that reads happen once and then only on a new block,
+anywhere. `test/checkRecipient.test.tsx` covers every refusal the guard makes, the ok path, the
+EIP-7702 case, a given permission contract, the chain mismatch and the hook's cache and refresh. The hook tests cover every state, that reads happen once and then only on a new block,
 manual refresh without a block, shared reads, the expiry window, errors and `enabled: false`. The
 component tests render every state, the gate's selection and override, the links (Access dApp,
 faucet, Vine) and the retry and refresh buttons. `test/dev-panel.test.tsx` runs the dev panel

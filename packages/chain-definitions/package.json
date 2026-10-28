@@ -1,6 +1,6 @@
 {
   "name": "@gatedpath/chains",
-  "version": "0.2.0",
+  "version": "0.2.3",
   "description": "Chain definitions, verified addresses and read-only helpers for Redbelly Network (151 mainnet, 153 testnet).",
   "license": "MIT",
   "repository": {

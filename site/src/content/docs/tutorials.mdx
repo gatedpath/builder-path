@@ -1,6 +1,6 @@
 ---
 title: Tutorials
-description: Twelve prompt cards from warm-up to stretch, filterable by level and recipe; every card is executed before it ships, and the four warm-ups have been, with one agent.
+description: Fifteen prompt cards, filterable by what you will build, by recipe, and by whether the card has been run; every card is executed before it ships; the four scaffold cards, the tokenised bond and the recipient guard have been, with one agent.
 lastVerified: '2026-09-12'
 ---
 
@@ -13,7 +13,7 @@ import { cards } from '../../data/cards';
   page="Tutorials"
   facts={[
     'Each card is a prompt in a fixed shape: what to build, who may use it, where it runs, how to show it works. Keep that shape when writing your own.',
-    'Cards 1 to 4 were run on 2026-09-12 with one agent (Claude Code) on a fresh scaffold; each compiled, passed the five-state tests and cleared pre-flight, and the run records are linked from the cards. The plan asks for two agents, so a second run is pending. Cards 5 to 12 have not been run; treat them as drafts.',
+    'Cards 1 to 4 were run on 2026-09-12 with one agent (Claude Code) on a fresh scaffold; each compiled, passed the five-state tests and cleared pre-flight, and the run records are linked from the cards. The plan asks for two agents, so a second run is pending. Card 5, the tokenised bond, was run on 2026-09-18 and card 13, the recipient guard, on 2026-10-10; both are proven on a fork of testnet. Cards 6 to 12, 14, 15, 16 and 18 ran on 2026-10-17 on fresh scaffolds and local forks, one agent each; card 17 ran on 2026-10-27 on a fresh 0.2.3 scaffold from npm and read 44 ERC-3643 registers live from mainnet, read-only. Every card has now been run once. Cards 7, 8, 9, 13 and 14 are deployed on chain 153 from the owner\'s own wallet and verified on Routescan (17 to 25 October 2026), and four of the five have had their use run on the network; each of those cards carries the address and the block. Cards 13 and 14 come from what the network\'s founder asked for on the Redbelly Insights podcast, episode 32, and the cards say so. Every card also says why the project needs this network and who would transact on it; the second describes and never promises a number.',
     'Every card targets testnet (chain 153). None asks for a mainnet deploy; card 4 asks you to watch pre-flight refuse one.',
     'The recipes the cards name exist as drafts in recipes/ (over-18, au-wholesale-investor, accredited-issuer, business-delegate) with verify markers where the docs are silent. Bind the request id, run the five states, and treat every verify marker as open; the jurisdiction recipe is not written yet.',
   ]}
@@ -21,11 +21,23 @@ import { cards } from '../../data/cards';
 
 After the golden path you have a verified wallet, a project, and an agent that has read the rules file. The cards below stop the hand-holding. Each one names a recipe, a network and a proof, and the shape is always the same: what to build, who may use it, where it runs, how to show it works. Once you have the shape, you will write your own prompts that way.
 
-Every prompt is executed before it is published, on a fresh scaffold, with at least two agents. It ships only if the result compiles, passes the five credential-state tests and clears pre-flight, and it carries the date and the tools used. CI re-runs the set monthly, and a failing card is pulled. <StatusPill variant="verified" label="Warm-ups run 12 Sep 2026, one agent" /> Cards 1 to 4 ran on 12 September 2026 with Claude Code as the agent; each card links to its run record (prompt, diff, `forge test`, pre-flight, wall time, tools). I reworded two of the four prompts because the run showed they did not fit the scaffold; the records say what changed and why. A second agent has not run them yet, and the monthly CI re-run is not wired. <StatusPill variant="pending" label="Cards 5 to 12 not run" /> Those still read "Verification pending", and that is what it means.
+A card is verified only when its prompt has been executed on a fresh scaffold and the result compiles, passes the five credential-state tests and clears pre-flight; it then carries the date and the tools used. The standard also asks for a second agent and a monthly CI re-run, neither of which is in place yet, and the pills say how far each card is from it. <StatusPill variant="verified" label="Runs 12 to 18 Sep 2026, one agent" /> Cards 1 to 4 ran on 12 September 2026 with Claude Code as the agent; each card links to its run record (prompt, diff, `forge test`, pre-flight, wall time, tools). I reworded two of the four prompts because the run showed they did not fit the scaffold; the records say what changed and why. A second agent has not run them yet, and the monthly CI re-run is not wired. <StatusPill variant="verified" label="Card 5 run 18 Sep 2026, on a fork" /> The tokenised bond ran on 18 September 2026 and is proven on a fork of testnet. <StatusPill variant="verified" label="Card 13 run 10 Oct 2026, on a fork" /> The recipient guard, the project the network's founder asked for out loud, ran on 10 October 2026 and is proven on a fork of testnet the same way. <StatusPill variant="verified" label="Cards 6 to 12, 14 to 16 and 18 run 17 Oct 2026, one agent" /> <StatusPill variant="testnet" label="Cards 7, 8, 9, 13 and 14 live on testnet, 17 to 25 Oct 2026" /> <StatusPill variant="verified" label="Card 17 run 27 Oct 2026, 44 registers read live from mainnet" /> Every card has now been run once, each by one agent; the second agent the standard asks for is still pending on all of them.
 
-## The twelve cards
+## Who has already tried this network
 
-Pick whichever one you like the sound of. Every card opens its own project page, which takes you through it one step at a time, with a checklist, a track for directing an agent and a track for writing the Solidity yourself, and help with saving your work. Projects 1 to 4 have been run and say what happened. Projects 5 to 12 have not been run yet, and their pages say so plainly and give you only the parts that are proven.
+One reason to build here is access to possible capital markets, and since "possible" is doing a lot of work in that sentence, here is what I know.
+
+[Project Acacia's final report](https://www.rba.gov.au/payments-and-infrastructure/tokenised-money/pdf/project-acacia-final-report.pdf) was published by the Reserve Bank of Australia and the Digital Finance CRC on 18 May 2026, and I read it in full on 20 September 2026. It names Redbelly Network as one of three platforms on which the RBA issued pilot wholesale central bank digital currency, and it is the only one of the three the report calls public-permissioned. By my count from the report's Figure 1 and Appendix 1, four of its 12 pilots with real money and real assets ran on this network: tokenised corporate bonds, units in a wholesale fund, and a security backed by loans. The report's body calls one of those four a proof of concept.
+
+I would not claim more from the report than that. It was a research project under temporary regulatory relief, and the pilot currency was redeemed when it ended. The report does not assess or endorse any platform. Nothing in it is in production. And nothing in it, or on this site, says that building here brings capital, investors or a listing.
+
+For your code it means something narrower and more useful. The assets those pilots tokenised are the kind project 5 below builds: a bond that checks its own holders on every mint, transfer and claim. An issuer working under regulation will expect what the kit already enforces, which is a gate tested in all five credential states and every admin role behind a Safe and a timelock.
+
+## The eighteen cards
+
+Every card answers the same five things, in the same order: what it is, why it needs this network, who would transact on it and how often, what exists today, and where to start. The third is a description and never a forecast. A card that could not answer the second would not be here.
+
+Pick whichever one you like the sound of. Every card opens its own project page, which takes you through it one step at a time, with a checklist, a track for directing an agent and a track for writing the Solidity yourself, and help with saving your work. Every project has been run and says what happened; 15 and 18 ask for a real network and their runs stopped at a fork, which their badges say. Project 17 read the real registers on mainnet, read-only, from a browser. Projects 13 and 14 are the ones the network's founder said out loud he would like someone to build, on the network's own podcast, and each card says which minute. Project 15 came from another builder's question in the network's own Discord in October 2026, and the answer they were given. Project 16 came from paying my own enable fee: the wallet said one figure, the chain said another, and the [What it costs](/fees/) page is the same checker running on this site. Projects 17 and 18 are the two that read and pay the ERC-3643 registers already on mainnet, which is where this network's real assets live today.
 
 <CardGrid cards={cards} />
 
@@ -38,9 +50,9 @@ The plan pairs each practical skill with the paper it rests on. None of these is
 | Your first deploy | Scaffold, testnet deploy, explorer verify | nothing | the [start page](/start/) covers it |
 | Why your transaction is final | Deleting reorg handling; off-chain idempotency | DBFT, NCA 2018 | <StatusPill variant="draft" /> |
 | Reading a super block | What the explorer shows; why many proposers per block | Red Belly, S&P 2021 | <StatusPill variant="draft" /> |
-| Gate one function | `Gated` base, the five states in tests | Receptor docs | [the start page](/start/), step 7, covers it; long form <StatusPill variant="draft" /> |
+| Gate one function | `Gated` base, the five states in tests | Receptor docs | [the start page](/start/), step 8, covers it; long form <StatusPill variant="draft" /> |
 | Design an eligibility query | Minimum disclosure, age and jurisdiction predicates | Iden3 docs | <StatusPill variant="draft" /> |
-| Handle revocation | Freeze, custody or ignore; the race at N+1 | Receptor docs, our threat model | waits for question 24 |
+| Handle revocation | Freeze, custody or ignore; the race at N+1 | Receptor docs, our threat model | waits for [question 24](/research/#the-questions-this-site-cites) |
 | Why accountability matters to you | What a dApp can assume if more than a third misbehave | Polygraph, ICDCS 2021 | <StatusPill variant="draft" /> |
 | Trusting the consensus | What "formally verified" does and doesn't mean | Holistic Verification, DISC 2022 | <StatusPill variant="draft" /> |
 | Budgeting gas in dollars | Fixed pricing; a year of operations; stuck transactions | Vine fees page | [Gas model](/concepts/gas-model/) covers the facts |

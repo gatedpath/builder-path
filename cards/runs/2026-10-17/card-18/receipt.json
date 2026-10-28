@@ -1,0 +1,734 @@
+{
+  "distributor": "0x1f5e9e9602beb4d14c38952cb5504e4471e3328f",
+  "id": "1",
+  "rpc": "http://127.0.0.1:8558",
+  "readAtBlock": 3228734,
+  "rows": [
+    {
+      "holder": "0x00eecfeb143c8473aa36eb1648cff4ceb5a0397e",
+      "status": "Paid",
+      "amount": "288552923",
+      "snapshotBalance": "217947725100000000000000",
+      "block": 3228730,
+      "tx": "0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7",
+      "reason": ""
+    },
+    {
+      "holder": "0x0112b33dd542ac8a39013c5294bcda6b612360ed",
+      "status": "Paid",
+      "amount": "7780218037",
+      "snapshotBalance": "5876498505000000000000000",
+      "block": 3228733,
+      "tx": "0xda3c318e71b19ba9e5725f67082a3fd1dbe4e93a74be236d5e59e4c84b04c31a",
+      "reason": ""
+    },
+    {
+      "holder": "0x0243ef73700ce685ea0100c9684c3d5e478571b0",
+      "status": "Paid",
+      "amount": "418737111",
+      "snapshotBalance": "316277512900000000000000",
+      "block": 3228730,
+      "tx": "0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7",
+      "reason": ""
+    },
+    {
+      "holder": "0x0565bd5597c13e9ae35f9605e18e876e6370d5e8",
+      "status": "Paid",
+      "amount": "1313049296",
+      "snapshotBalance": "991762980000000000000000",
+      "block": 3228730,
+      "tx": "0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7",
+      "reason": ""
+    },
+    {
+      "holder": "0x07223d9c5290ce6be1ac68bbf5ace273ea7e4a5d",
+      "status": "Paid",
+      "amount": "647249176",
+      "snapshotBalance": "488875607500000000000000",
+      "block": 3228730,
+      "tx": "0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7",
+      "reason": ""
+    },
+    {
+      "holder": "0x076ed3e50edc61e8768c3cb0a0749ce62be35dfd",
+      "status": "Paid",
+      "amount": "132155779",
+      "snapshotBalance": "99818955800000000000000",
+      "block": 3228730,
+      "tx": "0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7",
+      "reason": ""
+    },
+    {
+      "holder": "0x0bad47bd1d069606b994af25eaf771c13a2642af",
+      "status": "Paid",
+      "amount": "349972246",
+      "snapshotBalance": "264338528000000000000000",
+      "block": 3228730,
+      "tx": "0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7",
+      "reason": ""
+    },
+    {
+      "holder": "0x0c905213053b4e2a8dc3e738379ac12cced6aae7",
+      "status": "Paid",
+      "amount": "1245515504",
+      "snapshotBalance": "940753841000000000000000",
+      "block": 3228730,
+      "tx": "0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7",
+      "reason": ""
+    },
+    {
+      "holder": "0x1948e7b3ecbbd624f83efe9ef3380b60f20f3c42",
+      "status": "Paid",
+      "amount": "345569227",
+      "snapshotBalance": "261012871600000000000000",
+      "block": 3228730,
+      "tx": "0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7",
+      "reason": ""
+    },
+    {
+      "holder": "0x1bb8d9794a8981cabab5ae6bc9a30074219ae481",
+      "status": "Paid",
+      "amount": "1595752185",
+      "snapshotBalance": "1205292099200000000000000",
+      "block": 3228730,
+      "tx": "0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7",
+      "reason": ""
+    },
+    {
+      "holder": "0x1bd3070769c149e8f8d2bd70e33b342ffcf0fcf6",
+      "status": "Paid",
+      "amount": "80752065",
+      "snapshotBalance": "60993071400000000000000",
+      "block": 3228730,
+      "tx": "0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7",
+      "reason": ""
+    },
+    {
+      "holder": "0x287f23aee0cc0df879271bc82fbffddf2baffc14",
+      "status": "Paid",
+      "amount": "2189986109",
+      "snapshotBalance": "1654124606400000000000000",
+      "block": 3228730,
+      "tx": "0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7",
+      "reason": ""
+    },
+    {
+      "holder": "0x29d64156a25492d730640ab201fbe1ad51b093b7",
+      "status": "Paid",
+      "amount": "44003965",
+      "snapshotBalance": "33236760000000000000000",
+      "block": 3228730,
+      "tx": "0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7",
+      "reason": ""
+    },
+    {
+      "holder": "0x2d7ef64402bf1deecfe2333965426411a4797bf0",
+      "status": "Paid",
+      "amount": "128973792",
+      "snapshotBalance": "97415560000000000000000",
+      "block": 3228730,
+      "tx": "0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7",
+      "reason": ""
+    },
+    {
+      "holder": "0x31c1abb81e06c8d3dbbe2f36929f05a9e0d83139",
+      "status": "Paid",
+      "amount": "95986149",
+      "snapshotBalance": "72499570100000000000000",
+      "block": 3228730,
+      "tx": "0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7",
+      "reason": ""
+    },
+    {
+      "holder": "0x33a7149e059440b6a719a275f636fc958603bf4e",
+      "status": "Paid",
+      "amount": "748309856",
+      "snapshotBalance": "565208035800000000000000",
+      "block": 3228730,
+      "tx": "0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7",
+      "reason": ""
+    },
+    {
+      "holder": "0x34eed1a63b3414a8295378882af13a5a37207cea",
+      "status": "Paid",
+      "amount": "5224189389",
+      "snapshotBalance": "3945897273000000000000000",
+      "block": 3228730,
+      "tx": "0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7",
+      "reason": ""
+    },
+    {
+      "holder": "0x3d08ce7760e9fd9b93ea2e6af036f82ae62158ff",
+      "status": "Paid",
+      "amount": "335408002",
+      "snapshotBalance": "253337967700000000000000",
+      "block": 3228730,
+      "tx": "0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7",
+      "reason": ""
+    },
+    {
+      "holder": "0x4626814c095fdbaf7ae620d34d609f480163fb65",
+      "status": "Paid",
+      "amount": "263770781",
+      "snapshotBalance": "199229455800000000000000",
+      "block": 3228730,
+      "tx": "0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7",
+      "reason": ""
+    },
+    {
+      "holder": "0x4e50057898f4d16babcd9959515db96620ee9f74",
+      "status": "Paid",
+      "amount": "5954631",
+      "snapshotBalance": "4497609200000000000000",
+      "block": 3228730,
+      "tx": "0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7",
+      "reason": ""
+    },
+    {
+      "holder": "0x4fe1e51d4709df67a747952adf87aac3cd4dac53",
+      "status": "Paid",
+      "amount": "392900584",
+      "snapshotBalance": "296762852800000000000000",
+      "block": 3228730,
+      "tx": "0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7",
+      "reason": ""
+    },
+    {
+      "holder": "0x4ff72f19a915729f718a456caab9395df6445d92",
+      "status": "Paid",
+      "amount": "129582243",
+      "snapshotBalance": "97875130900000000000000",
+      "block": 3228730,
+      "tx": "0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7",
+      "reason": ""
+    },
+    {
+      "holder": "0x555f7c1b477bdcf55dcf4d93684d6f3db4368c1b",
+      "status": "Paid",
+      "amount": "1945713886",
+      "snapshotBalance": "1469622662000000000000000",
+      "block": 3228730,
+      "tx": "0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7",
+      "reason": ""
+    },
+    {
+      "holder": "0x569cd2d126e444b843706051967948c73497b88a",
+      "status": "Paid",
+      "amount": "3816424",
+      "snapshotBalance": "2882594200000000000000",
+      "block": 3228730,
+      "tx": "0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7",
+      "reason": ""
+    },
+    {
+      "holder": "0x597266f743d5a4c34a3b28c59f0ef2f78d91e41c",
+      "status": "Paid",
+      "amount": "13441654263",
+      "snapshotBalance": "10152653923000000000000000",
+      "block": 3228730,
+      "tx": "0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7",
+      "reason": ""
+    },
+    {
+      "holder": "0x635ad353c59160773833554da6ae8f12240e5e3b",
+      "status": "Paid",
+      "amount": "154235353",
+      "snapshotBalance": "116495941500000000000000",
+      "block": 3228730,
+      "tx": "0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7",
+      "reason": ""
+    },
+    {
+      "holder": "0x67fe4495cfd24bc4581142723c6f966c9d30c27e",
+      "status": "Paid",
+      "amount": "573197718",
+      "snapshotBalance": "432943591200000000000000",
+      "block": 3228730,
+      "tx": "0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7",
+      "reason": ""
+    },
+    {
+      "holder": "0x75608f516df9663c62a53e838603ef4dc93b64d1",
+      "status": "Paid",
+      "amount": "125634435",
+      "snapshotBalance": "94893301000000000000000",
+      "block": 3228730,
+      "tx": "0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7",
+      "reason": ""
+    },
+    {
+      "holder": "0x75f3f6f4a824b30cc5280f67dff8d8917fdf29fd",
+      "status": "Paid",
+      "amount": "226295274",
+      "snapshotBalance": "170923723900000000000000",
+      "block": 3228730,
+      "tx": "0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7",
+      "reason": ""
+    },
+    {
+      "holder": "0x75f886c6f1275e362214a2a12b3790d0a2b85788",
+      "status": "Paid",
+      "amount": "153601533",
+      "snapshotBalance": "116017208700000000000000",
+      "block": 3228730,
+      "tx": "0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7",
+      "reason": ""
+    },
+    {
+      "holder": "0x76c41dd14eebfd360f007dc2ed8cc3ce18432419",
+      "status": "Paid",
+      "amount": "781529272",
+      "snapshotBalance": "590299086900000000000000",
+      "block": 3228730,
+      "tx": "0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7",
+      "reason": ""
+    },
+    {
+      "holder": "0x79ca45820e4ebe60eb033d3c69f74423fc288a99",
+      "status": "Paid",
+      "amount": "250754777",
+      "snapshotBalance": "189398301000000000000000",
+      "block": 3228730,
+      "tx": "0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7",
+      "reason": ""
+    },
+    {
+      "holder": "0x7a088759d3d9b789b5a268011e49e84b5d9237fe",
+      "status": "Paid",
+      "amount": "65871421",
+      "snapshotBalance": "49753530000000000000000",
+      "block": 3228730,
+      "tx": "0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7",
+      "reason": ""
+    },
+    {
+      "holder": "0x7dc7811c3bdc73db96f98aaa8aba6b06cffcd63b",
+      "status": "Paid",
+      "amount": "1048790313",
+      "snapshotBalance": "792164780000000000000000",
+      "block": 3228730,
+      "tx": "0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7",
+      "reason": ""
+    },
+    {
+      "holder": "0x7f57effd86618e8b7ee40521b328c601396a7e19",
+      "status": "Paid",
+      "amount": "6631194414",
+      "snapshotBalance": "5008626220000000000000000",
+      "block": 3228730,
+      "tx": "0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7",
+      "reason": ""
+    },
+    {
+      "holder": "0x7f775db32568c5685f13f2fa2d3d83aeed0d5855",
+      "status": "Paid",
+      "amount": "2188704407",
+      "snapshotBalance": "1653156520000000000000000",
+      "block": 3228730,
+      "tx": "0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7",
+      "reason": ""
+    },
+    {
+      "holder": "0x827e7318b076acb2efc52f6aef12bdeb43f79559",
+      "status": "Paid",
+      "amount": "17002915",
+      "snapshotBalance": "12842520000000000000000",
+      "block": 3228730,
+      "tx": "0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7",
+      "reason": ""
+    },
+    {
+      "holder": "0x8780fcb5f7cd5e447336b72f5ec5bd7a6da69bf7",
+      "status": "Paid",
+      "amount": "3165880535",
+      "snapshotBalance": "2391230187000000000000000",
+      "block": 3228730,
+      "tx": "0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7",
+      "reason": ""
+    },
+    {
+      "holder": "0x893f5d8b33648d2762ad020366cc70dac7ddece6",
+      "status": "Paid",
+      "amount": "134407171",
+      "snapshotBalance": "101519460800000000000000",
+      "block": 3228730,
+      "tx": "0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7",
+      "reason": ""
+    },
+    {
+      "holder": "0x89571da1910d6e955f1d465b5f292245e28f3a66",
+      "status": "Paid",
+      "amount": "333823414",
+      "snapshotBalance": "252141107600000000000000",
+      "block": 3228730,
+      "tx": "0x6195c612aaa0fc3cf3f588c0d8e972d8b0974bd8c5bb9c3d76bb6f3cbf5df3e7",
+      "reason": ""
+    },
+    {
+      "holder": "0x8c8643e6f6c83cb1acefc53f5f44ba68a72b7dc4",
+      "status": "Paid",
+      "amount": "130297098",
+      "snapshotBalance": "98415070000000000000000",
+      "block": 3228731,
+      "tx": "0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d",
+      "reason": ""
+    },
+    {
+      "holder": "0x8ecf5bec74f1f45d7b2705832cbd87709e33f50b",
+      "status": "Paid",
+      "amount": "5430795",
+      "snapshotBalance": "4101949800000000000000",
+      "block": 3228731,
+      "tx": "0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d",
+      "reason": ""
+    },
+    {
+      "holder": "0x90f07e036f2e52ff8dacc680475387816a3d0919",
+      "status": "Paid",
+      "amount": "4777518004",
+      "snapshotBalance": "3608520644600000000000000",
+      "block": 3228731,
+      "tx": "0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d",
+      "reason": ""
+    },
+    {
+      "holder": "0x96c8323d7beff3f88a88d73261ac0948e1f16dbd",
+      "status": "Paid",
+      "amount": "320616641",
+      "snapshotBalance": "242165862800000000000000",
+      "block": 3228731,
+      "tx": "0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d",
+      "reason": ""
+    },
+    {
+      "holder": "0x9a9afbc0c11521db2bae560a65b46380a43cf23f",
+      "status": "Paid",
+      "amount": "752115611",
+      "snapshotBalance": "568082571300000000000000",
+      "block": 3228731,
+      "tx": "0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d",
+      "reason": ""
+    },
+    {
+      "holder": "0x9cdb6652e92f4b9efe759f72017848ad4cd2da41",
+      "status": "Paid",
+      "amount": "8928962",
+      "snapshotBalance": "6744160000000000000000",
+      "block": 3228731,
+      "tx": "0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d",
+      "reason": ""
+    },
+    {
+      "holder": "0xa0ccde71fa9f0cd511aa6114363aadea8e250f7f",
+      "status": "Paid",
+      "amount": "7918652",
+      "snapshotBalance": "5981060000000000000000",
+      "block": 3228731,
+      "tx": "0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d",
+      "reason": ""
+    },
+    {
+      "holder": "0xa578dcd99af6996469ea549ff271af149ac18b8c",
+      "status": "Paid",
+      "amount": "6243893021",
+      "snapshotBalance": "4716092509400000000000000",
+      "block": 3228731,
+      "tx": "0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d",
+      "reason": ""
+    },
+    {
+      "holder": "0xaa633dd46eb064f2293e9e368bfe7f457391d089",
+      "status": "Paid",
+      "amount": "2452996",
+      "snapshotBalance": "1852780000000000000000",
+      "block": 3228731,
+      "tx": "0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d",
+      "reason": ""
+    },
+    {
+      "holder": "0xad7fdca259d50c1099fede80affb79001c9bb4eb",
+      "status": "Paid",
+      "amount": "652472234",
+      "snapshotBalance": "492820650000000000000000",
+      "block": 3228731,
+      "tx": "0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d",
+      "reason": ""
+    },
+    {
+      "holder": "0xaf9f6fac40b7bdcbe889c068032a438754b2c644",
+      "status": "Paid",
+      "amount": "15931128",
+      "snapshotBalance": "12032985400000000000000",
+      "block": 3228731,
+      "tx": "0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d",
+      "reason": ""
+    },
+    {
+      "holder": "0xb0d15e3467ad20085fc5967fdc9fc5e8ecf445a6",
+      "status": "Paid",
+      "amount": "2852629948",
+      "snapshotBalance": "2154628000000000000000000",
+      "block": 3228731,
+      "tx": "0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d",
+      "reason": ""
+    },
+    {
+      "holder": "0xbafa95cf1020ee01ba78832e80fc5a722e575099",
+      "status": "Paid",
+      "amount": "5310137363",
+      "snapshotBalance": "4010814880000000000000000",
+      "block": 3228731,
+      "tx": "0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d",
+      "reason": ""
+    },
+    {
+      "holder": "0xbc39ac50a9e6a0c982139990cfca9be12c10ccdf",
+      "status": "Paid",
+      "amount": "3115270",
+      "snapshotBalance": "2353003600000000000000",
+      "block": 3228731,
+      "tx": "0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d",
+      "reason": ""
+    },
+    {
+      "holder": "0xbe5e3df554579d7e1843a14b4cb08a73308e0496",
+      "status": "Paid",
+      "amount": "130297098",
+      "snapshotBalance": "98415070000000000000000",
+      "block": 3228731,
+      "tx": "0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d",
+      "reason": ""
+    },
+    {
+      "holder": "0xc0302dc2f5ebd6a9c140814e4b8b08d5865226c3",
+      "status": "Paid",
+      "amount": "425127371",
+      "snapshotBalance": "321104158400000000000000",
+      "block": 3228731,
+      "tx": "0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d",
+      "reason": ""
+    },
+    {
+      "holder": "0xc07dda461464795052585618f40e6dcf00fe1e9f",
+      "status": "Paid",
+      "amount": "916645158",
+      "snapshotBalance": "692353848600000000000000",
+      "block": 3228731,
+      "tx": "0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d",
+      "reason": ""
+    },
+    {
+      "holder": "0xca956d77249be38792392bc9cf220b4d9cc386ad",
+      "status": "Paid",
+      "amount": "130175969",
+      "snapshotBalance": "98323580000000000000000",
+      "block": 3228731,
+      "tx": "0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d",
+      "reason": ""
+    },
+    {
+      "holder": "0xcd83b5f25fc2175c80afa76ad9c021205f9566b2",
+      "status": "Paid",
+      "amount": "791300526",
+      "snapshotBalance": "597679440000000000000000",
+      "block": 3228731,
+      "tx": "0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d",
+      "reason": ""
+    },
+    {
+      "holder": "0xcefb01143a9bb5e8434ff1c3a03c6ac9d6eea1da",
+      "status": "Paid",
+      "amount": "142193670",
+      "snapshotBalance": "107400703400000000000000",
+      "block": 3228731,
+      "tx": "0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d",
+      "reason": ""
+    },
+    {
+      "holder": "0xd2bee14292cf61ca8b81bef248bbe45a0f579650",
+      "status": "Paid",
+      "amount": "4980839501",
+      "snapshotBalance": "3762091980000000000000000",
+      "block": 3228731,
+      "tx": "0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d",
+      "reason": ""
+    },
+    {
+      "holder": "0xd3f31ddb283641c2f2f58e546c8946dbdc523af9",
+      "status": "Paid",
+      "amount": "923934431",
+      "snapshotBalance": "697859530000000000000000",
+      "block": 3228731,
+      "tx": "0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d",
+      "reason": ""
+    },
+    {
+      "holder": "0xd42f4d0b243b208586e1ca14045177c0118bdc76",
+      "status": "Paid",
+      "amount": "1579626616",
+      "snapshotBalance": "1193112250000000000000000",
+      "block": 3228731,
+      "tx": "0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d",
+      "reason": ""
+    },
+    {
+      "holder": "0xd8349dadb4cd3dbf17950b2033491e1218e54e1c",
+      "status": "Paid",
+      "amount": "2590445722",
+      "snapshotBalance": "1956596890000000000000000",
+      "block": 3228731,
+      "tx": "0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d",
+      "reason": ""
+    },
+    {
+      "holder": "0xdbdff77091033e57522065a806069116a5449483",
+      "status": "Paid",
+      "amount": "4389121",
+      "snapshotBalance": "3315159600000000000000",
+      "block": 3228731,
+      "tx": "0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d",
+      "reason": ""
+    },
+    {
+      "holder": "0xdf273c642836ce8a883bf514220e1ec350756827",
+      "status": "Paid",
+      "amount": "149079330",
+      "snapshotBalance": "112601531100000000000000",
+      "block": 3228731,
+      "tx": "0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d",
+      "reason": ""
+    },
+    {
+      "holder": "0xe0873fceee91281f7a55c6b4b0742dace90c9cb1",
+      "status": "Paid",
+      "amount": "642727674",
+      "snapshotBalance": "485460459200000000000000",
+      "block": 3228731,
+      "tx": "0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d",
+      "reason": ""
+    },
+    {
+      "holder": "0xe3403ba243834e467d7ed970a99e1473e9b1c07c",
+      "status": "Paid",
+      "amount": "166311460",
+      "snapshotBalance": "125617180000000000000000",
+      "block": 3228731,
+      "tx": "0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d",
+      "reason": ""
+    },
+    {
+      "holder": "0xe69ae2c4ff7646c3f9ecd34e77066428883d6378",
+      "status": "Paid",
+      "amount": "404889972",
+      "snapshotBalance": "305818590900000000000000",
+      "block": 3228731,
+      "tx": "0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d",
+      "reason": ""
+    },
+    {
+      "holder": "0xeb6939a792e0eddb1de81aecd9b5ce64f4c43cb3",
+      "status": "Paid",
+      "amount": "130175969",
+      "snapshotBalance": "98323580000000000000000",
+      "block": 3228731,
+      "tx": "0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d",
+      "reason": ""
+    },
+    {
+      "holder": "0xebd0d4183c23d3f0486573ec72d38b77ba3f5269",
+      "status": "Paid",
+      "amount": "650879861",
+      "snapshotBalance": "491617910000000000000000",
+      "block": 3228731,
+      "tx": "0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d",
+      "reason": ""
+    },
+    {
+      "holder": "0xec3859971195439a2c7efc3b1eeba034f8804615",
+      "status": "Paid",
+      "amount": "1125856702",
+      "snapshotBalance": "850374012000000000000000",
+      "block": 3228731,
+      "tx": "0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d",
+      "reason": ""
+    },
+    {
+      "holder": "0xec8eaba35667fd68ee6f3d464512800f5321c0a9",
+      "status": "Paid",
+      "amount": "393460160",
+      "snapshotBalance": "297185507700000000000000",
+      "block": 3228731,
+      "tx": "0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d",
+      "reason": ""
+    },
+    {
+      "holder": "0xed801dd75e6e3bd5ef433013272824b88d7b4812",
+      "status": "Paid",
+      "amount": "292389971",
+      "snapshotBalance": "220845897100000000000000",
+      "block": 3228731,
+      "tx": "0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d",
+      "reason": ""
+    },
+    {
+      "holder": "0xedeb272326b2672acede00841d56c8111a14af22",
+      "status": "Paid",
+      "amount": "5287749039",
+      "snapshotBalance": "3993904691800000000000000",
+      "block": 3228731,
+      "tx": "0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d",
+      "reason": ""
+    },
+    {
+      "holder": "0xee844009ef5a5cf9b69e76f9eac9081af48322a1",
+      "status": "Paid",
+      "amount": "627755433",
+      "snapshotBalance": "474151732800000000000000",
+      "block": 3228731,
+      "tx": "0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d",
+      "reason": ""
+    },
+    {
+      "holder": "0xf4c2651386e344c78b43fbd5c233b0c687df3659",
+      "status": "Paid",
+      "amount": "102027493",
+      "snapshotBalance": "77062675200000000000000",
+      "block": 3228731,
+      "tx": "0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d",
+      "reason": ""
+    },
+    {
+      "holder": "0xf754b9824bbc489b86dba04289c79cd8d20bb20b",
+      "status": "Paid",
+      "amount": "1329567417",
+      "snapshotBalance": "1004239329300000000000000",
+      "block": 3228731,
+      "tx": "0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d",
+      "reason": ""
+    }
+  ],
+  "opened": {
+    "block": 3228728,
+    "tx": "0x1c34f29d27e4d93a8f4d5a1d99658393f8105acb9cb1ae093d8808e660d4efda",
+    "payer": "0x23618e81e3f5cdf7f54c3d65f7fbc0abf5b21e8f",
+    "stablecoin": "0x9323d71e54cffe145ae15ad711a5ad52255a7866",
+    "register": "0x0eea5aff22b8b5e89cadd84ed1a18b828404e392",
+    "snapshotBlock": "3228698",
+    "total": "100000000000",
+    "holderCount": "78",
+    "totalBalance": "75531283012000000000000000"
+  },
+  "completed": {
+    "block": 3228731,
+    "tx": "0x44c6ceaf048b90b7d1dbf784c5f062f5e35bdcb5fbd8621a6f0cbdbc95d4d24d",
+    "paid": "92219781925",
+    "paidCount": "77",
+    "failedCount": "1",
+    "dust": "38"
+  },
+  "closed": {
+    "block": 3228734,
+    "tx": "0x3addf56a29911803f609f74ff34578a3e004776c3864a97fc511690f0964ff63"
+  },
+  "rowCount": 78
+}

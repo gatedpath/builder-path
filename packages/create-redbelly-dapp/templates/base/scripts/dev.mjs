@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// The local loop in one command (PLAN.md 18.1). Forks testnet on Anvil as chain 31337, deploys a
+// The local loop in one command (the local loop). Forks testnet on Anvil as chain 31337, deploys a
 // ReceptorMock and this project's contract, seeds Anvil accounts 2 to 6 into the five credential
 // states, starts the web app with the dev state panel, and prints a table of wallet, state and the
 // impersonation command beside each. Ctrl-C stops Anvil and the web app together.
@@ -18,7 +18,7 @@
 //
 // Keys: none. Anvil's own accounts sign locally; this script never prints or writes a key, and
 // deployments/local.json records account indices, never keys. Accounts 0 and 1 are never used for
-// anything, because they pass permission.isAllowed on the real networks (RESEARCH.md question 30).
+// anything, because they pass permission.isAllowed on the real networks (research question 30 on the builder site).
 // The real networks are only read (the fork fetches state); every transaction lands on Anvil.
 import { spawn, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';

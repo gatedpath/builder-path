@@ -9,6 +9,12 @@
  *
  * What it produces is the same [marker] format as "Website Text Edits/*.txt", so both ways of
  * editing feed one apply-text.mjs.
+ *
+ * Version 3 (30 September 2026, the owner's request, the shape she liked on another site of hers):
+ * nothing shows unless the address ends in #edit, so the offline site otherwise looks exactly like
+ * the real one; and editing happens in a text box that opens under the page, not by typing into
+ * the page itself, because a real text box behaves the same in every browser and typing straight
+ * into a page does not.
  */
 (function () {
   'use strict';
@@ -122,7 +128,9 @@
   var edits = load();
   var orphans = loadOrphans();
   var editing = false;
-  var bar, countEl, saveBtn, toggleBtn;
+  var bar, countEl, saveBtn, messageEl;
+
+  function setMessage(text) { if (messageEl) messageEl.textContent = text; }
 
   function pageEdits() {
     var out = {};
@@ -147,24 +155,11 @@
     });
   }
 
-  function setEditing(on) {
-    editing = on;
-    document.documentElement.toggleAttribute('data-rb-editing', on);
-    toggleBtn.setAttribute('aria-pressed', String(on));
-    toggleBtn.textContent = on ? 'Editing on' : 'Edit text';
-    document.querySelectorAll('[data-rb-marker]').forEach(function (el) {
-      if (on) {
-        el.setAttribute('contenteditable', 'true');
-        el.setAttribute('spellcheck', 'true');
-      } else {
-        el.removeAttribute('contenteditable');
-      }
-    });
-  }
+  /* ---------------------------------------------------------------- the box */
 
-  function onBlur(e) {
-    var el = e.target.closest ? e.target.closest('[data-rb-marker]') : null;
-    if (!el) return;
+  var box, area, current = null;
+
+  function keep(el) {
     var marker = el.getAttribute('data-rb-marker');
     var now = normalise(el.textContent);
     var was = el.getAttribute('data-rb-original');
@@ -174,14 +169,63 @@
     refresh();
   }
 
-  function onKey(e) {
-    var el = e.target.closest ? e.target.closest('[data-rb-marker]') : null;
-    if (!el) return;
-    if (e.key === 'Escape') {
-      el.textContent = el.getAttribute('data-rb-original');
-      el.blur();
-    }
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); el.blur(); }
+  function openBox(el) {
+    if (current) current.classList.remove('rb-ed-now');
+    current = el;
+    el.classList.add('rb-ed-now');
+    area.value = el.textContent;
+    box.hidden = false;
+    area.focus();
+    area.setSelectionRange(area.value.length, area.value.length);
+    setMessage('Editing. Enter finishes; Shift+Enter starts a new line; click another outlined text to move on.');
+  }
+
+  function closeBox() {
+    if (current) { keep(current); current.classList.remove('rb-ed-now'); }
+    current = null;
+    box.hidden = true;
+    setMessage(totalEdits() ? 'Kept in this browser. Press "Save my edits" when you are done for the day.' : 'Click any outlined text to change it.');
+  }
+
+  function buildBox() {
+    box = document.createElement('div');
+    box.className = 'rb-ed-box';
+    box.hidden = true;
+    box.setAttribute('role', 'dialog');
+    box.setAttribute('aria-label', 'Edit this text');
+    box.innerHTML =
+      '<p class="rb-ed-box__hint">Type here; the page changes as you go. Enter finishes, Shift+Enter starts a new line, Escape closes.</p>' +
+      '<textarea rows="4" spellcheck="true"></textarea>' +
+      '<div class="rb-ed-box__row">' +
+        '<button type="button" class="secondary" data-act="revert">Put this text back</button>' +
+        '<button type="button" data-act="done">Done</button>' +
+      '</div>';
+    document.body.appendChild(box);
+    area = box.querySelector('textarea');
+    area.addEventListener('input', function () {
+      if (!current) return;
+      current.textContent = area.value || ' ';
+    });
+    area.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); closeBox(); }
+      if (e.key === 'Escape') { e.preventDefault(); closeBox(); }
+    });
+    box.addEventListener('click', function (e) {
+      var act = e.target.getAttribute && e.target.getAttribute('data-act');
+      if (act === 'revert' && current) {
+        current.textContent = current.getAttribute('data-rb-original');
+        area.value = current.textContent;
+        keep(current);
+      }
+      if (act === 'done') closeBox();
+    });
+    /* A click on any outlined text opens the box on it; a link inside it does not navigate. */
+    document.addEventListener('click', function (e) {
+      var el = e.target.closest ? e.target.closest('[data-rb-marker]') : null;
+      if (!el) return;
+      if (e.target.closest('a')) e.preventDefault();
+      openBox(el);
+    }, true);
   }
 
   /* ---------------------------------------------------------------- saving */
@@ -279,11 +323,9 @@
     bar = document.createElement('div');
     bar.className = 'rb-ed-bar';
 
-    toggleBtn = document.createElement('button');
-    toggleBtn.type = 'button';
-    toggleBtn.setAttribute('aria-pressed', 'false');
-    toggleBtn.textContent = 'Edit text';
-    toggleBtn.addEventListener('click', function () { setEditing(!editing); });
+    messageEl = document.createElement('span');
+    messageEl.className = 'rb-ed-bar__msg';
+    messageEl.textContent = 'Click any outlined text to change it.';
 
     countEl = document.createElement('span');
     countEl.className = 'rb-ed-bar__count';
@@ -298,6 +340,7 @@
     undoBtn.textContent = 'Undo page';
     undoBtn.title = 'Put this page back the way it was';
     undoBtn.addEventListener('click', function () {
+      if (current) closeBox();
       document.querySelectorAll('[data-rb-marker]').forEach(function (el) {
         var m = el.getAttribute('data-rb-marker');
         if (edits[m]) { el.textContent = el.getAttribute('data-rb-original'); delete edits[m]; }
@@ -306,10 +349,20 @@
       refresh();
     });
 
-    bar.appendChild(toggleBtn);
+    var exitBtn = document.createElement('button');
+    exitBtn.type = 'button';
+    exitBtn.textContent = 'Exit';
+    exitBtn.title = 'Leave edit mode; your edits stay in this browser';
+    exitBtn.addEventListener('click', function () {
+      /* Taking #edit off the address turns everything off; the hashchange handler reloads. */
+      window.location.hash = '';
+    });
+
+    bar.appendChild(messageEl);
     bar.appendChild(countEl);
     bar.appendChild(saveBtn);
     bar.appendChild(undoBtn);
+    bar.appendChild(exitBtn);
     document.body.appendChild(bar);
 
     if (!storageWorks) {
@@ -345,15 +398,38 @@
     Object.keys(here).forEach(function (m) { if (edits[m]) here[m].textContent = edits[m].t; });
   }
 
+  function editRequested() { return window.location.hash === '#edit'; }
+
+  function footerHint() {
+    /* Opened from a folder without #edit: one line at the foot says how to edit, and nothing else
+       of the editor shows. Over http nothing shows at all; the address is the switch. */
+    var foot = document.querySelector('footer');
+    if (!foot) return;
+    var p = document.createElement('p');
+    p.className = 'rb-ed-hint';
+    p.innerHTML = 'Opened as a local file. <a href="#edit">Add #edit to the address to edit the text.</a>';
+    foot.appendChild(p);
+  }
+
   function init() {
+    document.documentElement.setAttribute('data-rb-offline', '');
+    window.addEventListener('hashchange', function () {
+      /* The editor is built once, at load, from the address; a change either way starts over. */
+      if (editRequested() || editing) window.location.reload();
+    });
+    if (!editRequested()) {
+      if (window.location.protocol === 'file:') footerHint();
+      return;
+    }
     markBlocks();
     if (!matchedCount) return;
+    editing = true;
+    document.documentElement.setAttribute('data-rb-editing', '');
     build();
+    buildBox();
     restore();
     refresh();
-    document.addEventListener('blur', onBlur, true);
-    document.addEventListener('keydown', onKey, true);
-    document.documentElement.setAttribute('data-rb-offline', '');
+    setMessage(totalEdits() ? 'Click any outlined text to change it. Your earlier edits are shown in place.' : 'Click any outlined text to change it.');
     if (unmatched) {
       // Blocks whose text the page fills in at load (a live date, a live number) cannot be matched
       // here; they are still editable in the plain text files.

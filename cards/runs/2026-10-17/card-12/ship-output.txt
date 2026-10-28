@@ -1,0 +1,27 @@
+
+> ship
+> node vendor/redbelly-preflight/dist/redbelly.js ship --project contracts --chain 153
+
+--account <keystore-name> is required: the report carries the deployer's address and its isAllowed reading
+
+redbelly ship --chain <151|153> --account <keystore-name> [options]
+
+Runs pre-flight (seven checks) with the keystore's address, checks the Slither sidecar, runs
+forge test and the five-state suites, prices the gas report at the chain's base fee and feed
+price, reads the deployer and the admin (isAllowed, Safe 1.4.1, threshold, owners), and writes
+deployments/ship-<chain>-<date>.md with every check and its result, the addresses, the
+constructor arguments and the verify command. Refuses to write when any check fails. The
+deploy script refuses to broadcast on 151 without a report dated today; 153 warns.
+
+  --chain <151|153>        required
+  --account <name>         required; Foundry keystore name, resolved with cast wallet address
+  --password-file <path>   passed through to cast (or set ETH_PASSWORD)
+  --admin <0x…>            the Safe that receives every role (or ADMIN_SAFE in .env); required on 151
+  --gas <units>            deployment gas for the balance check (default: the gas report's deployment row)
+  --verifier <0x…>         the dApp's verifier (or VERIFIER in .env); required on 151
+  --project <dir>          Foundry project or scaffold root (default: current directory)
+  --rpc <url>              JSON-RPC endpoint (default: the governors RPC for --chain; a fork works)
+  --out <path>             write the report here instead
+  --json                   print the report as JSON (the file is still written when checks pass)
+  --version, --help
+

@@ -1,0 +1,96 @@
+chain id 31337; block 3052536
+CapTable 0x07AF11e412ed7C343603c0F4b35645f7870686Eb   VestingVault 0xef86cec1cef0c78e5725fa6cc3e9929788bbde35   verifier (ReceptorMock) 0x37cA242a94945CdC3d3F155452a82Af6374bebD7
+board, admin and deployer (Anvil 7) 0x14dC79964da2C08b23698B3D3cc7Ca32193d9955
+founder, Valid on 18 (Anvil 3) 0x90F79bf6EB2c4f870365E785982E1f101E93b906   employee (Anvil 8) 0x23618e81e3f5cdf7f54c3d65f7fbc0abf5b21e8f   investor (Anvil 9) 0xa0ee7a142d267c1f36714e4a8f75612f20a79720
+NeverIssued on 18 (Anvil 2) 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC   Revoked on 18 (Anvil 5) 0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc   WrongJurisdiction on 18 (Anvil 6) 0x976EA74026E726554dB657fA54763abd0C3a0aa9
+
+== 1. the register as deployed: two classes, each with its own request id
+class 1 ("Ordinary", 18, 10000000 [1e7], 0)
+class 2 ("Series A Preference", 708, 2000000 [2e6], 0)
+requestId() for the loop = 18; vault has NOMINEE_ROLE: true
+
+== 2. the board issues 6,000,000 Ordinary to the founder (gate: request 18, wallet is Valid)
+status 0x1 gas 86526 block 3052537
+founder holds 6000000 [6e6] Ordinary; class 1 now ("Ordinary", 18, 10000000 [1e7], 6000000 [6e6])
+
+== 3. refusals on the Ordinary gate: NeverIssued, Revoked and WrongJurisdiction wallets
+refused: NotEligible(0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC 18 )
+refused: NotEligible(0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc 18 )
+refused: NotEligible(0x976EA74026E726554dB657fA54763abd0C3a0aa9 18 )
+
+== 4. the wrong class: the founder is Valid on 18 and holds nothing for 708, so Series A is refused
+isEligibleFor(1, founder) = true; isEligibleFor(2, founder) = false
+refused: NotEligible(0x90F79bf6EB2c4f870365E785982E1f101E93b906 708 )
+
+== 5. seed the investor gate (request 708): account 9 Valid, account 2 Valid, account 6 Revoked; account 8 Valid on 18 as the employee
+account 2 is NeverIssued on 18 and Valid on 708: a wallet of the other class
+
+== 6. the board issues 1,000,000 Series A to the investor; the investor cannot be issued Ordinary
+status 0x1 gas 86526 block 3052542
+refused: NotEligible(0xa0Ee7A142d267C1f36714E4a8F75612F20a79720 18 )
+investor holds 1000000 [1e6] Series A and 0 Ordinary
+
+== 7. refusal: the authorised cap on Series A (2,000,000) is hit
+refused: ExceedsAuthorised(2 2000001 [2e6] 2000000 [2e6] )
+
+== 8. vesting: the board grants the employee 48,000 Ordinary over four years with a one-year cliff
+status 0x1 gas 194204 block 3052543
+vault holds 48000 [4.8e4] Ordinary for the employee; employee holds 0; releasable(1) = 0
+refusal: a grant to the investor, Valid on 708 only
+refused: NotEligible(0xa0Ee7A142d267C1f36714E4a8F75612F20a79720 18 )
+refusal: the founder (not on the board) tries to grant
+refused: NotBoard(0x90F79bf6EB2c4f870365E785982E1f101E93b906 )
+
+== 9. release before the cliff: refused
+refused: NothingVested(1 )
+
+== 10. one year passes on the fork (evm_increaseTime); release at the cliff: a quarter
+releasable(1) = 12000 [1.2e4]
+status 0x1 gas 106346 block 3052545
+employee holds 12000 [1.2e4] Ordinary; vault holds 36000 [3.6e4]
+
+== 11. the employee's credential is revoked; the next release waits in the vault
+releasable(1) = 12000 [1.2e4] (vested, but the gate decides)
+refused: NotEligible(0x23618e81E3f5cdF7f54C3d65f7FBc0aBf5B21E8f 18 )
+credential restored
+status 0x1 gas 72146 block 3052549
+employee holds 24000 [2.4e4] Ordinary after two years
+
+== 12. the board revokes the schedule at two years: 24,000 cancelled, the register's issued count falls
+status 0x1 gas 60877 block 3052550
+class 1 ("Ordinary", 18, 10000000 [1e7], 6024000 [6.024e6]); vault holds 0; schedule(1) = (1, 0x23618e81E3f5cdF7f54C3d65f7FBc0aBf5B21E8f, 24000 [2.4e4], 24000 [2.4e4], 1792274457 [1.792e9], 31536000 [3.153e7], 126144000 [1.261e8], true)
+
+== 13. a transfer: the investor asks to move 250,000 Series A to account 2 (Valid on 708)
+status 0x1 gas 175786 block 3052551
+canApprove(1) = true; investor still holds 1000000 [1e6]
+refusal: the founder tries to approve; refusal: the investor tries to approve their own
+refused: AccessControlUnauthorizedAccount(0x90F79bf6EB2c4f870365E785982E1f101E93b906 0x0182a37f4cfe4a11c9cc13af6a96350bc084bedfd41df0928670dbabcfe3aea1 )
+refused: AccessControlUnauthorizedAccount(0xa0Ee7A142d267C1f36714E4a8F75612F20a79720 0x0182a37f4cfe4a11c9cc13af6a96350bc084bedfd41df0928670dbabcfe3aea1 )
+the board approves with its minute reference
+status 0x1 gas 147533 block 3052552
+investor holds 750000 [7.5e5]; account 2 holds 250000 [2.5e5] Series A (and 0 Ordinary)
+transferRequest(1) = (2, 0xa0Ee7A142d267C1f36714E4a8F75612F20a79720, 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC, 250000 [2.5e5], 2, "board minute 2026-10-17/5: transfer approved")
+refused: WrongStatus(1 1 2 )
+
+== 14. a transfer to a wallet Revoked on 708: the request is taken, the approval is refused
+status 0x1 gas 158686 block 3052553
+canApprove(2) = false
+refused: NotEligible(0x976EA74026E726554dB657fA54763abd0C3a0aa9 708 )
+status 0x1 gas 100549 block 3052554
+
+== 15. a holder cannot move shares alone: the founder asks and withdraws; nothing moves
+status 0x1 gas 158698 block 3052555
+status 0x1 gas 30309 block 3052556
+founder holds 6000000 [6e6]; employee holds 24000 [2.4e4]
+
+== 16. the register from the log: every TransferApproved since block 3052536
+- address: 0x07AF11e412ed7C343603c0F4b35645f7870686Eb
+  blockNumber: 3052552
+  data: 0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000002c626f617264206d696e75746520323032362d31302d31372f353a207472616e7366657220617070726f7665640000000000000000000000000000000000000000
+  topics: [
+  	0xebae32b46ab8a0b6bf732dcfe158758806f7be24cce544a55037837610c5f05d
+  	0x0000000000000000000000000000000000000000000000000000000000000001
+  	0x00000000000000000000000014dc79964da2c08b23698b3d3cc7ca32193d9955
+  ]
+
+done: 6,000,000 Ordinary and 1,000,000 Series A issued, 48,000 granted on a schedule, 24,000 released and 24,000 cancelled, 250,000 Series A transferred with the board's minute, 15 refusals each with its name.

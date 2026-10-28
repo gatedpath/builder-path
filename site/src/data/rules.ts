@@ -16,7 +16,7 @@ export const rulesFiles: RulesFile[] = [
     file: 'CLAUDE.md',
     sampleId: 'rules-claude',
     url: '/agent-rules/CLAUDE.md',
-    install: 'npx redbelly-agent-rules --only claude --out .',
+    install: 'npx -y @gatedpath/agent-rules --only claude --out .',
     note: 'Read at the start of every session from the project root. Add your own rules under .claude/rules/ rather than editing the generated file.',
   },
   {
@@ -24,7 +24,7 @@ export const rulesFiles: RulesFile[] = [
     file: 'AGENTS.md',
     sampleId: 'rules-agents',
     url: '/agent-rules/AGENTS.md',
-    install: 'npx redbelly-agent-rules --only agents --out .',
+    install: 'npx -y @gatedpath/agent-rules --only agents --out .',
     note: 'Walked from the git root to the working directory, 32 KiB combined budget. Copilot and Cursor read it too.',
   },
   {
@@ -32,7 +32,7 @@ export const rulesFiles: RulesFile[] = [
     file: '.cursor/rules/redbelly.mdc',
     sampleId: 'rules-cursor',
     url: '/agent-rules/cursor-rules-redbelly.mdc',
-    install: 'npx redbelly-agent-rules --only cursor --out .',
+    install: 'npx -y @gatedpath/agent-rules --only cursor --out .',
     note: 'A Project Rule with alwaysApply: true, so it applies to every conversation.',
   },
   {
@@ -40,7 +40,7 @@ export const rulesFiles: RulesFile[] = [
     file: '.github/copilot-instructions.md',
     sampleId: 'rules-copilot',
     url: '/agent-rules/copilot-instructions.md',
-    install: 'npx redbelly-agent-rules --only copilot --out .',
+    install: 'npx -y @gatedpath/agent-rules --only copilot --out .',
     note: 'Repository custom instructions, plain markdown, no front matter.',
   },
   {
@@ -48,7 +48,15 @@ export const rulesFiles: RulesFile[] = [
     file: 'GEMINI.md',
     sampleId: 'rules-gemini',
     url: '/agent-rules/GEMINI.md',
-    install: 'npx redbelly-agent-rules --only gemini --out .',
+    install: 'npx -y @gatedpath/agent-rules --only gemini --out .',
     note: 'Loaded from the workspace and its parents; @file.md imports work.',
+  },
+  {
+    tool: 'Skills (Claude Code, Cursor, the skills CLI)',
+    file: 'skills/redbelly/SKILL.md',
+    sampleId: 'rules-skill',
+    url: '/skill.md',
+    install: 'npx -y @gatedpath/agent-rules --only skill --out .',
+    note: 'A skill folder: the loader reads the name and description in the front matter and brings the file in when a task matches. Same body as the others. Since 0.2.3.',
   },
 ];

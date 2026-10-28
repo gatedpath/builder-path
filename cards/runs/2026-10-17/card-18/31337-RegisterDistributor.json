@@ -1,0 +1,10 @@
+{
+  "admin": "0x14dC79964da2C08b23698B3D3cc7Ca32193d9955",
+  "adminIsSafe": false,
+  "chainId": 31337,
+  "contract": "0x1f5E9E9602bEb4D14c38952cB5504E4471E3328F",
+  "contractName": "RegisterDistributor",
+  "deployer": "0x14dC79964da2C08b23698B3D3cc7Ca32193d9955",
+  "evmVersion": "prague",
+  "solc": "0.8.30"
+}

@@ -1,6 +1,6 @@
 {
   "name": "@gatedpath/contract-kit",
-  "version": "0.2.0",
+  "version": "0.2.3",
   "description": "Contract kit v1 for Redbelly Network: a gated ERC-20 on OpenZeppelin 5.x with both-party eligibility, a compliance role with justified forced transfers, pause, an issuer registry with time-boxed mint permissions, and the Safe plus timelock admin pattern.",
   "license": "MIT",
   "repository": {

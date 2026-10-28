@@ -1,6 +1,7 @@
 export { rulesSource, neverDo, mentionedAddresses, CREDENTIAL_STATES, ACCESS_URL, FAUCET_URL, CHAINS_PACKAGE } from './source.js';
 export type { RulesSource, RuleSection, RuleLink } from './source.js';
 export { chainFacts } from './chain-facts.js';
+export { RULES_VERSION } from './version.js';
 export type { ChainFacts } from './chain-facts.js';
 export {
   formats,
@@ -13,6 +14,7 @@ export {
   renderCursor,
   renderCopilot,
   renderGemini,
+  renderSkill,
   renderLlms,
   renderLlmsFull,
   isFormat,

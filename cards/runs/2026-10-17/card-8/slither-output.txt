@@ -1,0 +1,25 @@
+
+> lint:slither
+> node scripts/slither.mjs
+
+
+Detector: timestamp
+InvoiceFinancing.list(uint256,uint16,uint64,bytes32) (src/InvoiceFinancing.sol#144-166) uses timestamp for comparisons
+	Dangerous comparisons:
+	- dueDate <= block.timestamp (src/InvoiceFinancing.sol#154)
+IssuerRegistry.setIssuer(address,uint64,uint64,uint256) (src/IssuerRegistry.sol#60-72) uses timestamp for comparisons
+	Dangerous comparisons:
+	- validFrom == 0 (src/IssuerRegistry.sol#67)
+	- validUntil <= validFrom || validUntil <= nowTs (src/IssuerRegistry.sol#68)
+IssuerRegistry.isActiveIssuer(address) (src/IssuerRegistry.sol#87-93) uses timestamp for comparisons
+	Dangerous comparisons:
+	- p.validUntil != 0 && block.timestamp >= p.validFrom && block.timestamp < p.validUntil (src/IssuerRegistry.sol#92)
+IssuerRegistry.canIssue(address,uint256) (src/IssuerRegistry.sol#103-105) uses timestamp for comparisons
+	Dangerous comparisons:
+	- isActiveIssuer(issuer) && remainingIssuance(issuer) >= amount (src/IssuerRegistry.sol#104)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#block-timestamp
+. analyzed (22 contracts with 81 detectors), 4 result(s) found
+'forge clean' running (wd: ~/code/card-8/contracts)
+'forge config --json' running
+'forge build --build-info --deny never --skip ./test/** ./script/** --force' running (wd: ~/code/card-8/contracts)
+wrote contracts/reports/slither.json and contracts/reports/slither.sources.sha256

@@ -1,7 +1,7 @@
 ---
 title: 'Project 5: Tokenised bond'
 description: 'Build a fixed-coupon bond on the gated token: coupons in a stablecoin on a schedule, claims that wait for a lapsed holder, and accounting that can always pay what it owes, by directing an agent or by writing the Solidity yourself.'
-lastVerified: '2026-09-18'
+lastVerified: '2026-09-26'
 tableOfContents: false
 prev: false
 next: false
@@ -74,7 +74,7 @@ Four new files, and no change to any file the scaffold gave you.
 
 `contracts/src/TokenisedBond.sol` inherits `GatedERC20` and passes a subscription amount of zero, because a bond is issued by its issuer through `mint` and is not claimed by whoever turns up. The schedule is fixed in the constructor: the stablecoin, the coupon per whole unit, when the first coupon falls due, the period, and how many coupons there are. A `PAYING_AGENT_ROLE` funds them, kept apart from the admin so that the account holding the stablecoin is not the account that can change roles.
 
-The hook is the heart of it. `super._update` first, always, because it is the eligibility check and the pause:
+Most of the work is in the hook. `super._update` first, always, because it is the eligibility check and the pause:
 
 <Sample id="project-bond-update" />
 
@@ -84,7 +84,7 @@ Funding a coupon computes the amount from the supply at that moment and never ta
 
 `claimCoupons` carries the `gated` modifier, so a holder must be eligible at the moment it claims. A holder whose credential has lapsed loses nothing: the amount waits.
 
-Then `contracts/test/TokenisedBond.t.sol`, with a six-decimal `contracts/test/mocks/MockStable.sol`. The test that earns its place is the last one. It does not check an example; it holds the rule that the contract can always pay what it owes, and then makes every holder actually claim:
+Then `contracts/test/TokenisedBond.t.sol`, with a six-decimal `contracts/test/mocks/MockStable.sol`. The last test is the one I would keep if I could keep only one. Rather than checking an example, it holds the rule that the contract can always pay what it owes, and then makes every holder claim:
 
 <Sample id="project-bond-fuzz" />
 
@@ -95,7 +95,7 @@ Last, `contracts/script/DeployBond.s.sol`, which runs the scaffold's pre-flight 
 </Tabs>
 </StepPart>
 <StepPart kind="worked">
-`cd contracts && forge fmt --check` prints nothing, and `npm run test` ends with `85 tests passed, 0 failed` across 8 test suites: the 68 you started with and seventeen new ones. If you directed an agent, its count may differ; what must be true is that nothing failed, that `claimCoupons`, `mint`, `transfer` and `forceTransfer` are each tested in all five states, and that a fuzz test compares what is owed with what was funded.
+`cd contracts && forge fmt --check` prints nothing, and `npm run test` ends with `85 tests passed, 0 failed` across 8 test suites: the 68 you started with and seventeen new ones (measured on scaffolder 0.2.1 on 26 September 2026; the 18 September run, on a 63-test scaffold, ended at 80). If you directed an agent, its count may differ; what must be true is that nothing failed, that `claimCoupons`, `mint`, `transfer` and `forceTransfer` are each tested in all five states, and that a fuzz test compares what is owed with what was funded.
 </StepPart>
 <StepPart kind="ifnot">
 `249999999 != 250000000` in a test means the arithmetic divides a coupon by the supply; accumulate the fixed coupon instead. A fuzz failure that reads "owed more than was funded" means funding rounds down. A build refused for `unsafe-typecast` wants `SafeCast`. [When something fails](/errors/) has the rest.
@@ -129,7 +129,7 @@ If every `cast send` is refused but the clock still moves, the script is not run
 
 ## What you learned
 
-The gated ERC-20 shape is a base to build on, not a finished product: the bond added 196 lines and changed none of the token's. Scheduled payments belong in accounting, not in loops. And the two faults worth remembering were both in money arithmetic that looked standard: a division that was not needed, and a rounding that went the wrong way. Neither was found by reading. Both were found by a test that expected an exact number.
+The gated ERC-20 shape is a base to build on, not a finished product: the bond added 196 lines and changed none of the token's. Scheduled payments belong in accounting, not in loops. And the two faults worth remembering were both in money arithmetic that looked standard: a division that was not needed, and a rounding that went the wrong way. I did not find either of them by reading the code. A test that expected an exact number found both.
 
 What this page does not give you is a bond you could issue. No static analyser has read the new contract, the principal is never redeemed, and the stablecoin in the rehearsal mints to anyone. Two design limits belong beside those. A coupon goes to whoever holds the units when it is funded, not when it falls due, so a paying agent who is late moves a coupon from the seller to the buyer; a real bond fixes a record date. And the accounting assumes the stablecoin delivers the amount it was asked to move; a token that takes a fee on transfer would leave the bond short. The <Ext href="https://github.com/gatedpath/builder-path/blob/main/cards/runs/2026-09-18/card-05.md">run record</Ext> lists what is not done, and why.
 

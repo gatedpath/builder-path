@@ -1,0 +1,10 @@
+{
+  "admin": "0x38d8fd4d6bAd7Af440Ed5D35a4E381f5f2936B59",
+  "adminIsSafe": false,
+  "chainId": 153,
+  "contract": "0x017b98c2b39E26435f9ad3880101F9f1c5FDBE73",
+  "contractName": "RecipientGuard",
+  "deployer": "0x38d8fd4d6bAd7Af440Ed5D35a4E381f5f2936B59",
+  "evmVersion": "prague",
+  "solc": "0.8.30"
+}

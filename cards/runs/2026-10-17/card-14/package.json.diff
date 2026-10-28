@@ -1,0 +1,22 @@
+diff --git a/package.json b/package.json
+index 1a2d433..261c36d 100644
+--- a/package.json
++++ b/package.json
+@@ -42,7 +42,9 @@
+     "abi:sync": "node scripts/abi-sync.mjs",
+     "web:dev": "npm run --workspace web dev",
+     "web:build": "npm run --workspace web build",
+-    "anvil:fork": "anvil --fork-url https://governors.testnet.redbelly.network --chain-id 153"
++    "anvil:fork": "anvil --fork-url https://governors.testnet.redbelly.network --chain-id 153",
++    "send": "node scripts/send.mjs",
++    "deploy": "node scripts/deploy.mjs"
+   },
+   "devDependencies": {
+     "@gatedpath/chains": "file:vendor/redbelly-chains"
+@@ -53,4 +55,5 @@
+     "react-dom": "19.3.0",
+     "viem": "2.56.3",
+     "wagmi": "3.7.7"
+-  }}
++  }
++}

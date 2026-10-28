@@ -44,6 +44,17 @@ abstract contract RedbellyDeployScript is Script {
     function preflight() internal returns (Preflight memory p) {
         p.chainId = block.chainid;
         p.deployer = msg.sender;
+        // Foundry's default sender, used whenever --sender is absent. `--account` alone rehearses as
+        // this address, which fails isAllowed on 151 and 153; the first real run (17 October 2026)
+        // stopped here. A broadcast refuses; a dry run and a plain test only say so.
+        if (p.deployer == 0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38) {
+            console2.log(
+                "deployer is Foundry's default sender: pass --sender <your-address> beside --account <keystore-name>"
+            );
+            if (vm.isContext(VmSafe.ForgeContext.ScriptBroadcast)) {
+                revert("deployer is Foundry's default sender; pass --sender <your-address> beside --account");
+            }
+        }
         _requireChainIdIsTheNetworks(p.chainId);
         console2.log("chain id:", p.chainId);
         console2.log("deployer:", p.deployer);
@@ -110,7 +121,7 @@ abstract contract RedbellyDeployScript is Script {
         }
     }
 
-    /// @dev The mainnet gate that produces the document you wanted anyway (PLAN.md 18.3). On 151 a
+    /// @dev The mainnet gate that produces the document you wanted anyway (the ship-report gate). On 151 a
     /// broadcast needs `deployments/ship-151-<today>.md`, which `redbelly ship` writes only when every
     /// check passed; a dry run without it says so and continues. 153 warns. Other chains are silent.
     function _requireShipReport(uint256 chainId) internal view {
@@ -286,8 +297,16 @@ abstract contract RedbellyDeployScript is Script {
             vm.serializeBytes(json, "constructorArgs", constructorArgs);
         }
         vm.serializeString(json, "solc", "0.8.30");
+        // A dry run simulates the deploy and would otherwise write a record that looks real, with an
+        // address nothing lives at; the scaffold's token deploy of 23 October 2026 read such a record
+        // into its ship report. So a dry run says so in the record and writes it under its own name,
+        // and the plain name is only ever written by a broadcast.
+        bool broadcasting = vm.isContext(VmSafe.ForgeContext.ScriptBroadcast);
+        vm.serializeBool(json, "broadcast", broadcasting);
         string memory out = vm.serializeString(json, "evmVersion", "prague");
-        string memory path = string.concat("deployments/", vm.toString(p.chainId), "-", contractName, ".json");
+        string memory path = string.concat(
+            "deployments/", vm.toString(p.chainId), "-", contractName, broadcasting ? ".json" : ".dry-run.json"
+        );
         // Only written when foundry.toml grants write access to deployments/ (CI and the golden path do).
         // The folder does not exist on a fresh scaffold, and vm.writeJson does not create it.
         if (vm.envOr("RECORD_DEPLOYMENT", true)) {

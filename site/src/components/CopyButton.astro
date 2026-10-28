@@ -1,7 +1,8 @@
 ---
 // One copy control for the whole site: copies the text of the element `target` names (a
 // <template> or any element), or fetches `url` and copies the response. The script is
-// bundled once however many buttons a page has.
+// bundled once however many buttons a page has. The copying itself is in src/lib/copy.js, which
+// the offline copy uses too, and which says "Copied" or "Copy failed" on the button.
 interface Props { target?: string; url?: string; label: string; short?: string; class?: string; dark?: boolean }
 const { target, url, label, short = 'Copy', class: cls, dark = false } = Astro.props;
 ---
@@ -19,39 +20,8 @@ const { target, url, label, short = 'Copy', class: cls, dark = false } = Astro.p
 </button>
 
 <script>
-  const read = async (btn: HTMLElement): Promise<string> => {
-    const id = btn.dataset.copyTarget;
-    if (id) {
-      const el = document.getElementById(id);
-      if (el instanceof HTMLTemplateElement) return el.content.textContent ?? '';
-      if (el) return el.textContent ?? '';
-    }
-    const url = btn.dataset.copyUrl;
-    if (url) {
-      const r = await fetch(url);
-      if (!r.ok) throw new Error(String(r.status));
-      return r.text();
-    }
-    return '';
-  };
-  const flash = (btn: HTMLElement, text: string) => {
-    const label = btn.querySelector('[data-copy-label]');
-    if (!label) return;
-    const was = label.textContent;
-    label.textContent = text;
-    btn.setAttribute('data-copied', '');
-    setTimeout(() => { label.textContent = was; btn.removeAttribute('data-copied'); }, 1500);
-  };
-  document.addEventListener('click', async (e) => {
-    const btn = (e.target as HTMLElement | null)?.closest<HTMLElement>('[data-rb-copy]');
-    if (!btn) return;
-    try {
-      await navigator.clipboard.writeText(await read(btn));
-      flash(btn, 'Copied');
-    } catch {
-      flash(btn, 'Copy failed');
-    }
-  });
+  import { mountCopy } from '../lib/copy.js';
+  mountCopy();
 </script>
 
 <style>

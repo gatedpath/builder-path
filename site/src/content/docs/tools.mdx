@@ -1,6 +1,6 @@
 ---
 title: Tools
-description: Every package this project ships or plans, with its install line and the date its tests last ran green; nothing is on npm until I run the publish workflow, and PUBLISHING.md in the repository has the steps.
+description: Every package this project ships or plans, with its install line and the date its tests last ran green.
 lastVerified: '2026-09-14'
 ---
 
@@ -14,7 +14,7 @@ import { formatDate, REPO } from '../../data/site';
 <ForAgents
   page="Tools"
   facts={[
-    'Nine packages exist in packages/: chain-definitions, agent-rules, receptor-mock, create-redbelly-dapp, preflight, mcp, contract-kit, frontend-kit and ops-kit, plus four recipes in recipes/. All nine are on npm since 2026-09-18, and at 0.2.0 since 2026-09-19: eight under the @gatedpath scope and create-redbelly-dapp. 0.2.0 is the security release after the audit of 2026-09-19; the 0.1.x versions are deprecated. Every install line on this page was run against the public registry that day.',
+    'Nine packages exist in packages/: chain-definitions, agent-rules, receptor-mock, create-redbelly-dapp, preflight, mcp, contract-kit, frontend-kit and ops-kit, plus four recipes in recipes/. All nine are on npm since 2026-09-18, at 0.2.1 since 2026-09-20 and at 0.2.3 since 2026-10-26: eight under the @gatedpath scope and create-redbelly-dapp. 0.2.0 is the security release after the audit of 2026-09-19, 0.2.1 a small correction the day after, and 0.2.2 and 0.2.3 followed in October 2026 from the first real deploys; every older version is deprecated. The latest of every package was read as 0.2.3 from the public registry on 2026-10-26. Every install line on this page was run against the public registry on 2026-09-26, at 0.2.1 (cards/runs/2026-09-26/install-lines-from-npm.md).',
     'Import chain IDs, RPC URLs and contract addresses from @gatedpath/chains. Never retype them.',
     'Scaffold with node packages/create-redbelly-dapp/bin/index.js my-app --yes (Foundry only; --hardhat adds a Hardhat 3 view). In the scaffold: npm run doctor first, npm run gas -- --chain 153 for RBNT and US cents per test or function, npm run ship -- --chain <151|153> --account <keystore-name> for the ship report. Run redbelly-preflight before any deploy. Never pass a key to any tool; use a keystore name.',
     'The gated ERC-20 is packages/contract-kit (GatedERC20 with IssuerRegistry, forceTransfer with a bytes32 justification hash, PAUSER_ROLE and COMPLIANCE_ROLE); the scaffolder copies it. useEligibility and the five state components are packages/frontend-kit. Alerts, Routescan scripts, the RPC fallback and the runbook are packages/ops-kit; see /operate/.',
@@ -22,7 +22,7 @@ import { formatDate, REPO } from '../../data/site';
   ]}
 />
 
-Nine packages and the first four recipes exist. Each entry carries the date its own tests last passed, and the recipes are drafts until one meets a live verifier. The status pill says which is which, so that you do not build a duplicate. None is on npm yet: the publish workflow and my own npmjs.com steps are in `PUBLISHING.md` in the repository, and the install lines below change to `npm install @gatedpath/<name>` and `npm create redbelly-dapp@latest` the day it runs.
+Nine packages and the first four recipes exist. Each entry carries the date its own tests last passed, and the recipes are drafts until one meets a live verifier. The status pill says which is which, so that you do not build a duplicate. The list carries no version on purpose, because the npm page of each package does; all nine were last read from the public registry on 26 October 2026, every one at 0.2.3.
 
 <div class="not-content">
 <ul class="rb-tools">
@@ -63,7 +63,7 @@ The forced transfer itself requires a role and an eligible recipient, and it put
 
 ## What the frontend kit gives you
 
-There is one hook. It reads the network's gate and the dApp's gate, caches both, refetches on a new block or every thirty seconds, and gives the page one of seven states to render.
+There is one hook, and it reads the network's gate and the dApp's gate, caches both, refetches on a new block or every thirty seconds, and gives the page one of seven states to render.
 
 <Sample id="kit-use-eligibility" />
 

@@ -1,5 +1,7 @@
 ---
-// One prompt card (PLAN section 14.1): level pill and time, title, one-line outcome, the
+// One prompt card (PLAN section 14.1), which since PLAN 20.8 is also a card in the idea pool:
+// scope pill and time, title, one-line outcome, why the project needs this network, who would
+// transact on it, the
 // prompt in a mono block with its own copy button, the learn line, recipe chips and the
 // last-verified badge, which links to the run record when one exists. A card reads
 // "Verification pending" until a run on a fresh scaffold has been recorded under cards/runs/;
@@ -7,28 +9,27 @@
 import CopyButton from './CopyButton.astro';
 import Tip from './Tip.astro';
 import Verified from './Verified.astro';
-import { levelLabels, levelWeight, recipeLabels, tipFor, RUNS_BASE, type PromptCardData } from '../data/cards';
+import StatusPill from './StatusPill.astro';
+import Ext from './Ext.astro';
+import { scopeLabels, recipeLabels, tipFor, RUNS_BASE, routescanAddress, type PromptCardData } from '../data/cards';
+import { formatDate } from '../data/site';
 interface Props { card: PromptCardData }
 const { card } = Astro.props;
 const promptId = `prompt-${card.n}`;
 const runSource = card.run ? { label: 'run record', href: RUNS_BASE + card.run } : undefined;
-const marks = [1, 2, 3];
 ---
 
-<li class="rb-pcard" data-level={card.level} data-recipes={card.recipes.join(' ')} id={`card-${card.n}`}>
+<li class="rb-pcard" data-scope={card.scope} data-recipes={card.recipes.join(' ')} data-proven={card.run ? '' : undefined} data-live={card.deployed ? '' : undefined} id={`card-${card.n}`}>
   <div class="rb-pcard__meta">
-    <Tip id={`tip-${card.n}-level`} text={tipFor.get(card.level)!} class="rb-pcard__level" placement="bottom" narrow="inline">
-      {/* Three marks, filled by effort. Colour is never the signal: the label is always there,
-          and the meter still reads in greyscale or at any contrast setting. */}
-      <span class="rb-pcard__marks" aria-hidden="true">
-        {marks.map((m) => <span class="rb-pcard__mark" data-on={m <= levelWeight[card.level] ? '' : undefined} />)}
-      </span>
-      {levelLabels[card.level]}
+    <Tip id={`tip-${card.n}-scope`} text={tipFor.get(card.scope)!} class="rb-pcard__scope" placement="bottom" narrow="inline">
+      {scopeLabels[card.scope]}
     </Tip>
     <span class="rb-pcard__time">{card.time}</span>
   </div>
   <h3 class="rb-pcard__title"><span class="rb-pcard__n">{card.n}</span> {card.title}</h3>
   <p class="rb-pcard__outcome">{card.outcome}</p>
+  <p class="rb-pcard__pool"><span class="rb-pcard__learn-label">Why this network</span> {card.why}</p>
+  <p class="rb-pcard__pool"><span class="rb-pcard__learn-label">Who transacts</span> {card.who}</p>
   {card.slug && (
     <p class="rb-pcard__open"><a href={`/tutorials/${card.slug}/`}>Open the project, step by step &rarr;</a></p>
   )}
@@ -48,9 +49,22 @@ const marks = [1, 2, 3];
   </div>
   {card.lastVerified && card.forkOnly && <p class="rb-pcard__note">Proven on a fork of testnet. The testnet deploy and the Routescan verification this prompt asks for wait for a wallet.</p>}
   {card.lastVerified && card.secondAgentPending && <p class="rb-pcard__note">One agent so far; the plan asks for two. A second run is pending.</p>}
+  {card.deployed && (
+    <p class="rb-pcard__note rb-pcard__live">
+      <StatusPill variant="testnet" label={`Live on testnet since ${formatDate(card.deployed.date)}`} />
+      <span><code>{card.deployed.contract}</code> at <Ext href={routescanAddress(card.deployed.address)}>{card.deployed.address.slice(0, 6)}…{card.deployed.address.slice(-4)}</Ext>, block {card.deployed.block.toLocaleString('en-AU')}, deployed from my own wallet and verified on Routescan.</span>
+    </p>
+  )}
+  {card.deployed && card.deployed.useRun && (
+    <p class="rb-pcard__note">Its use was run on the real network on {formatDate(card.deployed.useRun)}; the record has every transaction.</p>
+  )}
+  {card.deployed && !card.deployed.useRun && (
+    <p class="rb-pcard__note">Only the deploy has happened on the real network so far; the fork rehearsal is in the record.</p>
+  )}
 </li>
 
 <style>
+  .rb-pcard__live { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.25rem 0.375rem; }
   .rb-pcard {
     display: flex;
     flex-direction: column;
@@ -77,10 +91,10 @@ const marks = [1, 2, 3];
   .rb-pcard :global(.rb-tip__bubble) { left: 0; right: auto; max-width: 100%; }
   .rb-pcard__meta { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; font-size: var(--sl-text-2xs); color: var(--rb-color-text-muted); }
 
-  /* The level reads as one object: three effort marks and the word, in a pill that responds to a
-     pointer so it is obviously worth hovering. The word is always present, so the marks are a
-     second encoding rather than the only one. */
-  .rb-pcard :global(.rb-pcard__level) {
+  /* The scope pill says what you will build, in a pill that responds to a pointer so it is
+     obviously worth hovering. It carried three effort marks until 22 September 2026; they were
+     removed because a filled meter ranks the reader, which PLAN 20.8 rules out. */
+  .rb-pcard :global(.rb-pcard__scope) {
     gap: 0.4375rem;
     padding: 0.3125rem 0.625rem;
     border-radius: var(--rb-radius-pill);
@@ -93,21 +107,11 @@ const marks = [1, 2, 3];
     transition: border-color var(--rb-duration-fast) var(--rb-ease-standard),
                 background-color var(--rb-duration-fast) var(--rb-ease-standard);
   }
-  .rb-pcard :global(.rb-pcard__level:hover) {
+  .rb-pcard :global(.rb-pcard__scope:hover) {
     border-color: var(--rb-color-accent);
     background: var(--rb-color-accent-low);
   }
-  .rb-pcard__marks { display: inline-flex; gap: 2px; }
-  .rb-pcard__mark {
-    width: 4px;
-    height: 10px;
-    border-radius: 1px;
-    background: var(--rb-color-hairline-strong);
-    opacity: 0.4;
-  }
-  .rb-pcard__mark[data-on] { background: var(--rb-color-accent); opacity: 1; }
-
-  .rb-pcard__title { margin: 0; display: flex; align-items: baseline; gap: 0.5rem; font-size: var(--sl-text-lg); font-weight: 600; line-height: 1.25; color: var(--rb-color-heading); }
+  .rb-pcard__title { margin: 0; display: flex; align-items: baseline; gap: 0.5rem; font-size: var(--sl-text-lg); font-weight: var(--rb-weight-card-title); line-height: 1.25; color: var(--rb-color-heading); }
   .rb-pcard__n {
     flex: none;
     min-width: 1.5rem;
@@ -139,6 +143,7 @@ const marks = [1, 2, 3];
   .rb-pcard :global(.rb-pcard__copy:hover) { color: #5EEAD4; border-color: #5EEAD4; }
   .rb-pcard :global(.rb-pcard__copy[data-copied]) { background: #134E4A; color: #CCFBF1; border-color: #5EEAD4; }
   .rb-pcard__learn { margin: 0; font-size: var(--sl-text-sm); line-height: 1.5; }
+  .rb-pcard__pool { margin: 0; font-size: var(--sl-text-sm); line-height: 1.5; color: var(--rb-color-text); }
   .rb-pcard__learn-label { font-weight: 600; color: var(--rb-color-text-strong); }
   .rb-pcard__learn-label::after { content: ':'; }
   .rb-pcard__foot { margin-top: auto; padding-top: 0.5rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem; }

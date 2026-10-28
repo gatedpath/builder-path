@@ -1,6 +1,6 @@
 {
   "name": "create-redbelly-dapp",
-  "version": "0.2.0",
+  "version": "0.2.3",
   "description": "Scaffold an identity-gated dApp for Redbelly Network: Foundry contracts on the Gated base, a Next.js + wagmi web app, CI, rules files for coding agents, npm run dev for the local loop, doctor, gas and ship, and a deploy script that refuses chain 151 without a Safe 1.4.1, a verified deployer and a ship report dated today. --hardhat adds a Hardhat 3 view of the same sources.",
   "license": "MIT",
   "repository": {

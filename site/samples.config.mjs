@@ -24,7 +24,7 @@ export const samples = [
     source: 'phase-0/first-contract/foundry.toml',
     lang: 'toml',
     title: 'foundry.toml',
-    compiledBy: 'read by forge build in phase-0/first-contract',
+    compiledBy: 'forge build in phase-0/first-contract',
   },
   {
     id: 'chains-testnet',
@@ -127,6 +127,14 @@ export const samples = [
     title: 'GEMINI.md',
     compiledBy: 'npm test in packages/agent-rules',
     publish: 'agent-rules/GEMINI.md',
+  },
+  {
+    id: 'rules-skill',
+    source: 'packages/agent-rules/generated-samples/skills/redbelly/SKILL.md',
+    lang: 'md',
+    title: 'skills/redbelly/SKILL.md',
+    compiledBy: 'npm test in packages/agent-rules',
+    publish: 'skill.md',
   },
   {
     id: 'llms',

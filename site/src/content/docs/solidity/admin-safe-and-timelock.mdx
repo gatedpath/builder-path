@@ -36,7 +36,7 @@ The idea the whole pattern rests on.
 <StepPart kind="do">
 Anything that **changes the rules** is slow: who is an admin, which verifier decides eligibility, which request id the gate asks for, whether the token runs again after a pause. Those go through a timelock, so anyone can read the pending operation and has the delay, two days on mainnet, to notice a verifier being swapped for one that says yes to strangers.
 
-Anything that **responds to the world** is fast and sits on a Safe directly: pausing, moving a frozen balance under a court order, giving a delegate a week's mint allowance. Each is bounded on its own. A pause can only stop. A forced transfer needs an eligible recipient and a justification hash. An issuer permission expires. So a compromised operational Safe can misuse one lever until it is revoked, and cannot rewrite the token.
+Anything that **responds to the world** is fast and sits on a Safe directly: pausing, moving a frozen balance under a court order, giving a delegate a week's mint allowance. Each one is limited in what it can do: a pause can only stop things, a forced transfer needs an eligible recipient and a justification hash, and an issuer permission expires. So a compromised operational Safe can misuse one lever until it is revoked, and cannot rewrite the token.
 </StepPart>
 <StepPart kind="worked">
 You can sort these four without looking: `pause()`, `unpause()`, `setVerifier()`, `forceTransfer()`. Pausing is fast and unpausing is slow, and that asymmetry is deliberate: stopping must never wait, and restarting must never be one person's decision.
@@ -68,7 +68,7 @@ The three-in-the-morning procedure, written as code that either passes or does n
 <StepPart kind="do">
 <Sample id="kit-admin-emergency" />
 
-Read it as a story. The Safe pauses, and it works in the same block. The Safe tries to unpause directly, and is refused. It schedules the unpause on the timelock, tries to execute early, and is refused again. Time passes, it executes, and the token runs. The Safe is stood in for by an address under `vm.prank`, because what a Safe adds is signatures and signatures are not what is being tested.
+You can read it as a story: the Safe pauses, and it works in the same block. The Safe tries to unpause directly, and is refused. It schedules the unpause on the timelock, tries to execute early, and is refused again. Time passes, it executes, and the token runs. The Safe is stood in for by an address under `vm.prank`, because what a Safe adds is signatures and signatures are not what is being tested.
 </StepPart>
 <StepPart kind="worked">
 You can say what the on-call person does first in an incident (pause, one transaction, next block) and what they cannot do alone (anything that changes a rule).

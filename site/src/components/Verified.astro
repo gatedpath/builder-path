@@ -39,7 +39,14 @@ const stale = date ? daysSince(date) > 90 : false;
     border-radius: var(--rb-radius-pill);
     background: var(--rb-color-verified-bg);
     color: var(--rb-color-verified-text);
-    white-space: nowrap;
+    /* A badge that lists its tools is longer than a phone is wide. It used to be nowrap, which gave
+       /start/ a page 807 px wide on a 390 px screen (audit of 19 September 2026). It wraps now, and
+       the corners stop being a full pill so that a second line is not clipped by them. */
+    max-width: 100%;
+    flex-wrap: wrap;
+    row-gap: 0.25rem;
+    line-height: 1.3;
+    border-radius: min(var(--rb-radius-pill), 0.875rem);
   }
   .rb-verified--stale { background: var(--rb-color-stale-bg); color: var(--rb-color-stale-text); }
   .rb-verified--pending { background: var(--rb-color-surface); color: var(--rb-color-text-muted); border: 1px solid var(--rb-color-hairline-strong); }

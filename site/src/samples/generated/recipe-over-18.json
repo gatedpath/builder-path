@@ -12,7 +12,7 @@
     "queryableToday": "All four are in the SDK's list of seven queryable types (docs, configure-eligibility-criteria).",
     "issuer": {
       "testnet": "did:receptor:redbelly:testnet:31K82iKCtE6ciDc7oAr3T5EpjZb4S1EFM7c4xJaWkM2 (the only DID the docs print)",
-      "mainnet": "unknown; the accredited issuer registry at 0x2d68f1C50a057a310EeF28DF3199F95A65cE4ac5 lists issuers but its ABI is not public (RESEARCH.md questions 15 and 29)",
+      "mainnet": "unknown; the accredited issuer registry at 0x2d68f1C50a057a310EeF28DF3199F95A65cE4ac5 lists issuers but its ABI is not public (research questions 15 and 29 on the builder site)",
       "wildcard": "allowedIssuers: [\"*\"] accepts any issuer and is for demos only; the docs' own example says to use trusted DIDs in production"
     }
   },
@@ -75,7 +75,7 @@
     { "what": "Query workflow, operators, Sig on-chain circuit, single query on chain, the queryable types, the testnet issuer DID", "url": "https://docs.redbelly.network/pages/eligibility-sdk/configure-eligibility-criteria/", "checked": "2026-09-12" },
     { "what": "birthDate integer YYYYMMDD on Passport, DriversLicence, EssentialId, NationalId; expiryDate on each", "url": "https://github.com/redbellynetwork/receptor-schema/tree/3b37c11/schemas/json", "checked": "2026-09-12" },
     { "what": "Proof by Query flow and the reverse hash service revocation check", "url": "https://docs.redbelly.network/pages/methods/proof-by-query/", "checked": "2026-09-12" },
-    { "what": "Iden3 release surfaces 1.x/2.x/3.x", "url": "../../RESEARCH.md (receptor-mock rows)", "checked": "2026-09-12" }
+    { "what": "Iden3 release surfaces 1.x/2.x/3.x", "url": "research page on the builder site (receptor-mock rows)", "checked": "2026-09-12" }
   ],
-  "open": ["RESEARCH.md 15", "RESEARCH.md 17", "RESEARCH.md 29"]
+  "open": ["research question 15", "research question 17", "research question 29"]
 }

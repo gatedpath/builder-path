@@ -26,7 +26,7 @@ export const tools: Tool[] = [
   {
     name: '@gatedpath/agent-rules',
     path: 'packages/agent-rules',
-    summary: 'One typed source rendered to CLAUDE.md, AGENTS.md, Cursor, Copilot and Gemini rules files plus llms.txt; a CLI with --check for drift; writeRulesFiles for the scaffolder; and the failure table (40 kinds with plain words, cause, fix and the docs page) that explain_failure, explainError and the /errors page share.',
+    summary: 'One typed source rendered to CLAUDE.md, AGENTS.md, Cursor, Copilot and Gemini rules files plus llms.txt; a CLI with --check for drift; writeRulesFiles for the scaffolder; and the failure table (48 kinds with plain words, cause, fix and the docs page) that explain_failure, explainError and the /errors page share.',
     install: 'npx -y @gatedpath/agent-rules --out .',
     status: 'verified',
     lastVerified: '2026-09-14',
@@ -35,7 +35,7 @@ export const tools: Tool[] = [
   {
     name: 'create-redbelly-dapp',
     path: 'packages/create-redbelly-dapp',
-    summary: 'One command writes a monorepo: Foundry contracts on the Gated base with five-state, fuzz and invariant tests, a Next.js web app with the verify-your-wallet interstitial and the dev state panel, pinned CI, the five rules files, npm run dev for the local loop, npm run doctor, gas and ship through the vendored preflight package, and a deploy script that refuses chain 151 without a Safe 1.4.1, a verified deployer and a ship report dated today. Foundry only by default since wave 8; --hardhat adds a Hardhat 3 view of the same sources. Templates gated-erc20 and empty ship; gated-erc721 and gated-vault refuse with a list. Thirteen integration and dev tests on anvil, a recorded testnet fork run, and the golden path re-run on the Foundry-only default.',
+    summary: 'One command writes a monorepo: Foundry contracts on the Gated base with five-state, fuzz and invariant tests, a Next.js web app with the verify-your-wallet interstitial and the dev state panel, pinned CI, the five rules files, npm run dev for the local loop, npm run doctor, gas and ship through the vendored preflight package, and a deploy script that refuses chain 151 without a Safe 1.4.1, a verified deployer and a ship report dated today. Foundry only by default since wave 8; --hardhat adds a Hardhat 3 view of the same sources. Templates gated-erc20 and empty ship; gated-erc721 and gated-vault refuse with a list. Fourteen integration tests and twelve unit tests on anvil, a recorded testnet fork run, and the golden path re-run on the Foundry-only default.',
     install: 'npm create redbelly-dapp@latest my-app -- --yes',
     status: 'verified',
     lastVerified: '2026-09-14',

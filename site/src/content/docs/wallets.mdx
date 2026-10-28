@@ -1,0 +1,86 @@
+---
+title: A developer wallet is not a throwaway
+description: 'On Ethereum a deploy wallet is disposable, but on Redbelly Network it is linked to a verified person, each person gets a limited number of them, and nothing published says one can be unlinked. What that changes for a builder, and how to keep the key in a keystore.'
+lastVerified: '2026-09-21'
+---
+
+import ForAgents from '../../components/ForAgents.astro';
+import VineAside from '../../components/VineAside.astro';
+import StatusPill from '../../components/StatusPill.astro';
+
+<ForAgents
+  page="A developer wallet is not a throwaway"
+  facts={[
+    'A wallet that can write to Redbelly Network is linked to a verified person or business. Never suggest making a fresh wallet and pasting its key into .env: a new wallet cannot transact until it is linked in the Access dApp, and the Access dApp stops at 10 wallets per identity (read from the Access dApp\'s own code and FAQ, 15 September 2026).',
+    'Nothing published says a linked wallet can be unlinked or replaced. Treat every link as permanent, and never propose a new wallet per project.',
+    'Signing takes a Foundry keystore account name (--account <name>) or a hardware wallet path. Never ask for a key, a seed phrase or a keystore password, and never put a password on a command line for a real wallet.',
+    'The local loop needs no wallet: npm run dev signs with Anvil accounts on a fork. Never use an Anvil or Hardhat default account on a real network; accounts 0 and 1 pass isAllowed on 151 and 153 and their keys are public.',
+    'The deployer holds no role after the deploy transaction. Admin roles go to a Safe and a timelock, see /solidity/admin-safe-and-timelock/.',
+  ]}
+/>
+
+Most Ethereum tutorials carry the same instruction: make a fresh wallet, paste its key into `.env`, deploy, and forget the wallet. That habit does not carry over, because on this network a wallet that can send a transaction is linked to a verified person. I went through what Redbelly's own pages say about that link and what they leave unsaid, and at the end I describe how I keep a deploy key as a result.
+
+<VineAside href="https://vine.redbelly.network/identity/user-access/" label="Vine: user access">
+How a person gets write access: an access credential from an accredited issuer, then a self-enable call, both through the [Access dApp](https://access.redbelly.network).
+</VineAside>
+
+## What Redbelly tells you when you link a wallet
+
+All of this comes from the [Access dApp](https://access.redbelly.network) and from [Redbelly's terms and conditions](https://redbelly.network/terms-and-conditions), both read on 15 September 2026.
+
+- When you link a further wallet, the Access dApp tells you that you will be "accountable for all the actions taken by that wallet" on the network.
+- The Access dApp also notes that the accounts you connect become your public addresses on the network.
+- Under clause 1 of the terms you are responsible for the security of your wallets and accounts, and you agree to tell Redbelly at once, at info@redbelly.network, if one is used without your authority.
+- Under clause 2, for a breach of the terms, Redbelly may restrict, suspend or end your access, with or without notice.
+- The Access dApp stops offering a further account once an identity has 10, and it refuses a wallet that is already attached to another identity.
+- Testnet does not get you out of any of this, because the same key and the same credential work on 153 and 151, which the [identity gate](/concepts/identity-gate/) page covers.
+
+## The questions nobody has answered yet
+
+<StatusPill variant="pending" label="Unlinking a wallet: not documented by Redbelly" /> I have found no page that says how a wallet is unlinked from an identity, replaced, or linked again. The Access dApp has no words of its own for it. It is one of the questions I have put to Redbelly.
+
+The terms do not mention what happens to the other wallets under an identity when one of them is suspended. The accountability warning in the Access dApp is the only place sibling wallets appear at all.
+
+Whether a suspension stops a wallet's plain transfers or only its gated actions is not stated anywhere either. That is open [question 24](/research/#the-questions-this-site-cites), on the [identity](/identity/) page.
+
+## How I would set up wallets because of this
+
+On Ethereum a stolen throwaway key loses whatever was in the wallet. Here it also lets someone act on the network as you, and you are the one accountable for what they do. So the rule on [what never goes into an agent](/agents-guide/what-never-goes-in/) applies to a testnet deploy wallet as much as to any other.
+
+A new wallet for every project is normal on Ethereum, and with a limit of 10 it runs out here. With no published way to unlink, I treat every link as permanent. I would link one wallet for development and deploys, keep it apart from any wallet that holds value, and use it across projects.
+
+In the contract kit the deploy transaction hands every admin role to a Safe and a timelock, and the deployer holds no role afterwards, which is how I think it should be. A deploy key that is lost after that cannot pause the token, move a balance or grant a role. [Safe and timelock](/solidity/admin-safe-and-timelock/) has the layout.
+
+If you are a business there is a better place for these wallets. A verified business can add delegate wallets that write to the network under the business and not under a director's personal identity. [Business verification and delegate wallets](/identity/#business-verification-and-delegate-wallets) covers it.
+
+You also need a wallet far less often than you might expect. `npm run dev` runs on a local fork where Anvil signs with its own accounts, so you can build, test all five credential states and rehearse the deploy without importing a key. Those Anvil accounts stay on the fork. Their keys are printed by every Anvil start, and accounts 0 and 1 pass `isAllowed` on both real networks, so anything sent from them on 151 or 153 is sent under somebody's verified identity.
+
+## Keep the key in a keystore
+
+The Access dApp's FAQ names MetaMask and Coinbase Wallet as the wallets that can get access, and it names no hardware wallet. So a deploy key usually begins in a browser wallet, and the import below is the one moment it is outside it. Do it in your own terminal, not in one an agent is driving.
+
+```sh
+cast wallet import rbn-dev --interactive
+```
+
+<StatusPill variant="pending" label="Keystore import not run here" tipKey="keystore-import" /> The sessions that build this site hold no key, so nobody has run the import in a recorded session. What I have measured is how the keystore behaves, on 21 September 2026 with `cast` 1.7.1, using a wallet generated for the test and deleted afterwards:
+
+- `cast wallet new` never printed the key. It printed the file's path and the address, and nothing else.
+- The file is encrypted JSON, with the key held as ciphertext (`aes-128-ctr`, with `scrypt` deriving the key from your password). The password is the only thing between the file and the key, so it needs to be a real one.
+- The file was written as `-rw-r--r--`, readable by every account on the machine. After `chmod 600` it was `-rw-------` and `cast` still read it. I have not measured what `cast wallet import` writes, so look, and tighten it if it is the same:
+
+```sh
+ls -l ~/.foundry/keystores/
+chmod 600 ~/.foundry/keystores/rbn-dev
+```
+
+From then on every tool here takes the name and never the key. `cast wallet address --account rbn-dev` prints the address, which is public and safe to share. The deploy, pre-flight and ship commands take `--account rbn-dev`, and you type the password at the prompt. Never pass a password with `--password` or `--unsafe-password` for a real wallet: it stays in your shell history.
+
+<StatusPill variant="pending" label="Hardware wallet: not tested here" /> Foundry can also sign with a hardware wallet (`--ledger`). Whether an address held on a hardware wallet can be linked through the Access dApp is something I have not tested, and the Access dApp does not mention it.
+
+## If a key is exposed
+
+From that moment the key is compromised, whatever you delete afterwards. The order to act in is step 4 of [what never goes into an agent](/agents-guide/what-never-goes-in/), and the terms add one duty of their own: tell Redbelly at once.
+
+The keystore measurements are in the [run record of 21 September 2026](https://github.com/gatedpath/builder-path/blob/main/cards/runs/2026-09-21/wallet-page-keystore.md).

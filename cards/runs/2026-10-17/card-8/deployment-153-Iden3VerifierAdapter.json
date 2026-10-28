@@ -1,0 +1,12 @@
+{
+  "admin": "0x38d8fd4d6bAd7Af440Ed5D35a4E381f5f2936B59",
+  "adminIsSafe": false,
+  "chainId": 153,
+  "constructorArgs": "0x00000000000000000000000068e07d5a913f9988240582a431acc1aea42124610000000000000000000000000000000000000000000000000000000000000001",
+  "constructorSignature": "constructor(address,uint8)",
+  "contract": "0x3D1920190f2D60571eC9ccdA945447fAeF7EFc20",
+  "contractName": "Iden3VerifierAdapter",
+  "deployer": "0x38d8fd4d6bAd7Af440Ed5D35a4E381f5f2936B59",
+  "evmVersion": "prague",
+  "solc": "0.8.30"
+}

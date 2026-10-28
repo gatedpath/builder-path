@@ -1,7 +1,7 @@
 ---
 title: Blocks on demand
 description: 'There is no block time: blocks are produced when there are transactions, so latency is a traffic measurement and your code polls for the receipt.'
-lastVerified: '2026-09-12'
+lastVerified: '2026-09-23'
 ---
 
 import ForAgents from '../../../components/ForAgents.astro';
@@ -11,10 +11,10 @@ import VineAside from '../../../components/VineAside.astro';
   page="Blocks on demand"
   facts={[
     'Blocks are produced when there are transactions. No traffic, no block. Never sleep for a block time; poll for the receipt.',
-    'A transaction lands within seconds or it is not coming. Treat a receipt that has not arrived after a short timeout as a failure to diagnose, not as congestion.',
+    'A transaction usually lands within seconds. If it has not after 30 seconds, the RPC endpoint itself sends it again to another governor (Redbelly, 12 October 2026). Wait 45 seconds before treating silence as a failure, keep the same nonce, then diagnose: an unverified wallet, a bad nonce, a rejected type.',
     'Block numbers are not a clock. Use block timestamps for time.',
     'The governors RPC serves eth_getLogs, eth_feeHistory and txpool_status; it does not serve debug_*, trace_* or net_version.',
-    'Block gas limit reports as 60,000,000,000. No per-transaction limit is documented.',
+    'Block gas limit reads as 60,000,000,000 (12 October 2026). There is no hard-coded per-transaction execution cap: Redbelly confirmed on 12 October 2026 that the network keeps the geth EVM\'s absence of one.',
   ]}
 />
 
@@ -22,20 +22,24 @@ import VineAside from '../../../components/VineAside.astro';
 Vine says transactions are "finalised in seconds" and does not state a block interval, because there is not one.
 </VineAside>
 
-What I measured, 12 September 2026, 08:25 to 08:35 UTC, from `phase-0/measure-blocktime.mjs`: testnet produced 6 blocks in ten minutes, mainnet 8. Every block carried at least one transaction. Gaps ran to four minutes with no traffic, and then mainnet produced three blocks two seconds apart when traffic arrived. The median gap of 90 seconds is a fact about that morning's traffic rather than about the chain, and the 37-second "average block time" some trackers list is the same kind of number. I have not yet measured time to inclusion under load, from a funded wallet (question 4, partial).
+What I measured, 12 September 2026, 08:25 to 08:35 UTC, from `phase-0/measure-blocktime.mjs`: testnet produced 6 blocks in ten minutes, mainnet 8. Every block carried at least one transaction. Gaps ran to four minutes with no traffic, and then mainnet produced three blocks two seconds apart when traffic arrived. The median gap of 90 seconds is a fact about that morning's traffic rather than about the chain, and the 37-second "average block time" some trackers list is the same kind of number. I have not yet measured time to inclusion under load, from a funded wallet ([question 4](/research/#the-questions-this-site-cites), partial).
 
 ## What this means for your code
 
-Poll, do not sleep. Ask for the receipt every second or so, straight after sending. A transaction either lands in the next block, within seconds, or something is wrong: an unverified wallet, a bad nonce, a rejected type. Waiting longer does not help; a diagnosis does.
+Poll for the receipt rather than sleeping: ask for it every second or so, straight after sending. A transaction usually lands in the next block, within seconds. If it has not after 30 seconds, do not conclude anything yet: the endpoint is about to send it again to another governor, and it may land at 35 or 40 seconds. Past 45 seconds, something is wrong, and it is one of three things: an unverified wallet, a bad nonce, a rejected type. Waiting longer than that does not help; a diagnosis does.
 
 Do not estimate time from block numbers. Any formula of the form "blocks × seconds per block" is wrong here in both directions. Use `block.timestamp` in contracts and the block's timestamp field off-chain.
 
-Indexers see bursts and silence. Design for a backlog of several blocks arriving in a few seconds after minutes of nothing, and for idle periods that mean nothing is wrong. Health checks that alert on "no block for two minutes" will page you all night on testnet.
+An indexer here sees bursts and then silence, so design for a backlog of several blocks arriving in a few seconds after minutes of nothing, and for idle periods that mean nothing is wrong. Health checks that alert on "no block for two minutes" will page you all night on testnet.
 
-There are no traces. Anything that needs `debug_traceTransaction` or `trace_block` cannot use the governors endpoint, and Vine lists no third-party archive node. Rely on events and `eth_getLogs`, and emit an event for every state change a monitor would care about.
+Anything that needs `debug_traceTransaction` or `trace_block` cannot use the governors endpoint, because it serves no traces, and Vine lists no third-party archive node. Rely on events and `eth_getLogs`, and emit an event for every state change a monitor would care about.
 
-Gas limits are not the constraint. Blocks in the sample used 47k to 147k gas against a 60 billion limit. A per-transaction limit is not documented, and finding it needs a wallet.
+Gas limits will not be what holds you back: blocks in the sample used 21k to 147k gas against a 60 billion limit, and there is no hard-coded per-transaction cap. The founder's own benchmark found that three other chains refuse a compute-heavy transaction at a limit that paying more gas cannot lift, and that the geth EVM has no such limit (Diablo, EuroSys 2023); Redbelly confirmed to me on 12 October 2026 that the deployed network keeps that property. The ceilings a heavy transaction meets here are the block's and your balance, at gas priced in dollars.
+
+## When the receipt never comes
+
+Until 12 October 2026 this page said that a transaction lands within seconds or it is not coming. That was wrong, and I want to say why in the open. I had read the papers: the Smart Redbelly paper, and Redbelly's architecture paper of 2022 that is now the yellow paper v1.0, say that a transaction is validated once, by the node it was sent to, and afterwards travels only inside proposed blocks; nodes do not pass transactions to each other, and a wallet may have to send its transaction more than once. The papers left the resend to the client as future work. What no paper describes is the endpoint, and on 12 October 2026 Redbelly answered my question about it ([question 42](/research/#the-questions-this-site-cites)): the validation-once design is deployed, and the RPC endpoint, public or one you run yourself, tries a governor for five seconds, moves to another chosen at random if that fails, and if the transaction has not been committed after thirty seconds sends it again to another randomly chosen governor. So the resend exists, and it lives in the endpoint, not in your code. What that means for you: wait past the thirty-second mark, 45 seconds is a fair line, before treating silence as failure; keep the same nonce, so a late first attempt and a resend cannot both land; and only then diagnose. The advice this page used to give, to give up early, would have marked healthy transactions as lost.
 
 ## Where it comes from
 
-Measured in `phase-0/results/blocktime-{testnet,mainnet}-2026-09-12T0825.json` and `chain-check-*-2026-09-12.json`. Smart Redbelly Blockchain (on Redbelly's research page) describes the on-demand block model; the [research page](/research/) lists it.
+Measured in `phase-0/results/blocktime-{testnet,mainnet}-2026-09-12T0825.json` and `chain-check-*-2026-09-12.json`. Smart Redbelly Blockchain (IPDPS 2023) describes the on-demand block model and the validation-once rule; the yellow paper v1.0 (2024) states the resend rule in the company's own words; the [research page](/research/) has both.

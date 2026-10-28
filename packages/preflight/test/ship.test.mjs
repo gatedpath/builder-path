@@ -108,6 +108,10 @@ describe('redbelly ship on a local chain 151', { skip: hasFoundry ? false : 'for
     assert.match(md, /^Deployment of GatedERC20: [\d,]+ gas = [\d.]+ RBNT = [\d.]+ US cents\./m);
     assert.match(md, /^\| `GatedERC20:transfer\(address,uint256\)` \| [\d,]+ \| [\d.]+ \| [\d.]+ \|$/m);
     assert.match(md, /^Slither: pass\. /m);
+    // The document is committed and may be published: no path from this machine, no keystore name.
+    assert.ok(!md.includes(project), 'the written report names no absolute path');
+    assert.ok(!md.includes('--account shipper'), 'the written report names no keystore');
+    assert.match(md, /--account <keystore-name>/);
     assert.match(md, /^## What this report does not prove$/m);
     assert.ok(!md.includes('!') || md.startsWith('<!--'), 'no exclamation mark outside the header');
     assert.ok(!/—/.test(md), 'no em dash');
@@ -127,7 +131,22 @@ describe('redbelly ship on a local chain 151', { skip: hasFoundry ? false : 'for
     const md = readFileSync(r.written, 'utf8');
     assert.match(md, /^### GatedERC20 at 0x0{38}c0$/m);
     assert.match(md, /request id 18\. Explorer: https:\/\/redbelly\.routescan\.io\/address\/0x0{38}c0\/contract\/151\/code$/m);
+    assert.match(md, /^This section describes the record as it stood at \d{4}-\d{2}-\d{2}T/m);
+    assert.match(r.contracts[0].writtenAt, /^\d{4}-\d{2}-\d{2}T/);
     rmSync(join(project, 'deployments', '151-GatedERC20.json'));
+  });
+
+  test('a dry run\'s record is not a contract: ignored by its name, and by its "broadcast": false', { timeout: 600_000 }, async () => {
+    mkdirSync(join(project, 'deployments'), { recursive: true });
+    const body = { chainId: 151, contractName: 'GatedERC20', contract: '0x00000000000000000000000000000000000000d0', deployer, admin: safe2 };
+    writeFileSync(join(project, 'deployments', '151-GatedERC20.dry-run.json'), JSON.stringify({ ...body, broadcast: false }));
+    writeFileSync(join(project, 'deployments', '151-Other.json'), JSON.stringify({ ...body, contractName: 'Other', broadcast: false }));
+    const r = await runShip(opts({ admin: safe2, verifier: mocks.permission }));
+    assert.equal(r.ok, true);
+    assert.deepEqual(r.contracts, []);
+    assert.match(readFileSync(r.written, 'utf8'), /^No deployment record for chain 151 under `deployments\/` yet\./m);
+    rmSync(join(project, 'deployments', '151-GatedERC20.dry-run.json'));
+    rmSync(join(project, 'deployments', '151-Other.json'));
   });
 
   test('a Safe at threshold 1 refuses: nothing written, the failing checks named, exit 1 from the CLI', { timeout: 600_000 }, async () => {

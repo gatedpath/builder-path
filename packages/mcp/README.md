@@ -17,7 +17,7 @@ For agents
 - docs_lookup links to Vine and docs.redbelly.network and quotes one consequence line; read the page.
 ```
 
-The local MCP server from PLAN.md sections 12.1 and 13: the boring Redbelly steps as tools an
+The local MCP server: the boring Redbelly steps as tools an
 agent can call, running on the builder's machine, holding nothing. `@modelcontextprotocol/sdk`
 1.30.0 (pinned; the `McpServer.registerTool`, `StdioServerTransport` and `InMemoryTransport`
 surfaces were read from that release's `dist/esm/*.d.ts` and README on 2026-09-12), zod 4.6.2,
@@ -64,7 +64,7 @@ scaffold is `reports/wave-7-run-2026-09-14.md`.
 asks that RPC for its chain ID and refuses 151 whatever the URL.
 
 The faucet tool from section 12.1 is not registered. `src/tools/faucet.stub.ts` records why
-(RESEARCH.md question 16, and FAUCETME's Discord login) and the shape it will take.
+(research question 16 on the builder site, and FAUCETME's Discord login) and the shape it will take.
 
 ## Install
 
@@ -160,7 +160,7 @@ on stdin/stdout and waits for a client.
 
 ## Routescan recipe status
 
-RESEARCH.md question 28 asked for the exact `forge verify-contract` invocation. Routescan's own
+Research question 28 (on the builder site) asked for the exact `forge verify-contract` invocation. Routescan's own
 Foundry article gives `--verifier-url 'https://api.routescan.io/v2/network/testnet/evm/<chainId>/etherscan'`
 with `--etherscan-api-key "verifyContract"` and `--compiler-version` matching `foundry.toml`, and
 Vine's environments page gives the network path and chain IDs, so the URLs are

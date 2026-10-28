@@ -1,0 +1,208 @@
+---
+import Ext from './Ext.astro';
+// The fee checker. Two reads of the same figures: once at build time, so the page carries a dated
+// snapshot with JavaScript off, and once in the visitor's browser, straight from the public RPC.
+// Nothing is sent anywhere else and nothing is stored. The history is read the same way: the base
+// fee at nine mainnet block heights, in one batch, priced for the enable call.
+import { FEE_CHAINS, GET_LATEST_PRICE, HISTORY_BLOCKS_151, HISTORY_GAS, PRICE_FEED_DECIMALS, REFERENCE_CALLS, USD_PER_GAS } from '../data/fees';
+import { chartSvg, cost, priceHistory, readFeeHistory, readFeesNow, type ChartPoint, type FeesNow } from '../lib/fees-reader';
+
+const builtAt = new Date().toISOString();
+const now: Record<string, FeesNow> = {};
+for (const chain of FEE_CHAINS) now[chain.key] = await readFeesNow(chain, { timeoutMs: 6000, selector: GET_LATEST_PRICE, priceDecimals: PRICE_FEED_DECIMALS });
+const main = FEE_CHAINS[0]!;
+let history: ChartPoint[] = [];
+try {
+  const head = now[main.key]?.head;
+  const blocks = head ? [...HISTORY_BLOCKS_151, head] : HISTORY_BLOCKS_151;
+  history = priceHistory(await readFeeHistory(main, blocks, { timeoutMs: 8000 }), HISTORY_GAS, USD_PER_GAS);
+} catch {
+  history = [];
+}
+const config = { chains: FEE_CHAINS.map((c) => ({ key: c.key, id: c.id, rpc: c.rpc, pricefeed: c.pricefeed })), selector: GET_LATEST_PRICE, priceDecimals: PRICE_FEED_DECIMALS, calls: REFERENCE_CALLS, historyBlocks: HISTORY_BLOCKS_151, historyGas: HISTORY_GAS, usdPerGas: USD_PER_GAS };
+const fmt = (n: number | null | undefined, digits = 0) => (n === null || n === undefined ? '—' : n.toLocaleString('en-AU', { maximumFractionDigits: digits }));
+const when = (iso: string) => iso.replace('T', ' ').replace(/\.\d+Z$/, ' UTC');
+const whenUnix = (t: number | null) => (t === null ? '—' : when(new Date(t * 1000).toISOString()));
+const priced = (r: FeesNow, gas: number) => (r.ok && r.baseFeeWei !== null && r.usdPerRbnt !== null ? cost(gas, r.baseFeeWei, r.usdPerRbnt) : null);
+const rbntChart = chartSvg(history, 'rbnt', { title: 'Enabling a wallet, in RBNT (log scale)', unit: 'RBNT', log: true });
+const usdChart = chartSvg(history, 'usd', { title: 'The same call, in US dollars', unit: 'USD' });
+---
+
+<div class="rb-fees not-content" id="rb-fees" data-built-at={builtAt}>
+  <p class="rb-fees__line">
+    <span data-fees-summary>Figures below were read at build time, {when(builtAt)}. With JavaScript on, your browser reads them again now, straight from the public RPCs.</span>
+    <button type="button" class="rb-button rb-button--secondary rb-fees__refresh" data-fees-refresh hidden>Check again</button>
+  </p>
+
+  <div class="rb-fees__grid">
+    {FEE_CHAINS.map((chain) => {
+      const r = now[chain.key]!;
+      return (
+        <section class="rb-fees__card" data-chain={chain.key} aria-labelledby={`fees-${chain.key}`}>
+          <h3 id={`fees-${chain.key}`} class="rb-fees__title">{chain.short}</h3>
+          <p class="rb-fees__state" data-field="state">{r.ok ? `Read in ${fmt(r.latencyMs)} ms at build, head block ${fmt(r.head)}` : `RPC did not answer at build: ${r.error}`}</p>
+          <dl class="rb-fees__rows">
+            <div><dt>Base fee</dt><dd data-field="baseFee">{r.ok && r.baseFeeWei !== null ? `${fmt(Number(r.baseFeeWei) / 1e9, 0)} gwei` : '—'}</dd></div>
+            <div><dt>Feed price</dt><dd data-field="feed">{r.ok && r.usdPerRbnt !== null ? `US$${fmt(r.usdPerRbnt, 6)} per RBNT, feed time ${whenUnix(r.feedTime)}` : '—'}</dd></div>
+            {REFERENCE_CALLS.map((c) => {
+              const p = priced(r, c.gas);
+              return (
+                <div><dt>{c.label} <span class="rb-fees__gas">({fmt(c.gas)} gas)</span></dt><dd data-field={`call-${c.key}`}>{p ? `${fmt(p.rbnt, 2)} RBNT, US$${fmt(p.usd, 2)}` : '—'}</dd></div>
+              );
+            })}
+            <div><dt>Last checked</dt><dd data-field="checkedAt">{when(r.checkedAt)} (at build)</dd></div>
+          </dl>
+          <p class="rb-fees__links"><Ext href={chain.explorer}>Routescan</Ext></p>
+        </section>
+      );
+    })}
+  </div>
+
+  <div class="rb-fees__calc" data-calc>
+    <label for="rb-fees-gas">Any gas figure, priced now on mainnet</label>
+    <div class="rb-fees__calc-row">
+      <input id="rb-fees-gas" type="text" inputmode="numeric" placeholder="for example 150000" data-calc-input />
+      <output data-calc-output aria-live="polite">Type a gas figure.</output>
+    </div>
+  </div>
+
+  <h3 class="rb-fees__h">Two years of the same call on mainnet</h3>
+  <p class="rb-fees__note">The base fee at nine block heights from the first week of mainnet to today, priced for the enable call ({fmt(HISTORY_GAS)} gas, as measured on 17 October 2026). The dollar line uses the network's fixed rate of US$0.01 per 21,000 gas. Hover a point for its block and date.</p>
+  <div class="rb-fees__charts" data-charts>
+    <div data-chart="rbnt" set:html={rbntChart} />
+    <div data-chart="usd" set:html={usdChart} />
+  </div>
+  <details class="rb-fees__table">
+    <summary>The same figures as a table</summary>
+    <table data-history-table>
+      <thead><tr><th>Date</th><th>Block</th><th>RBNT</th><th>US dollars</th></tr></thead>
+      <tbody>
+        {history.map((p) => (
+          <tr><td>{whenUnix(p.time).slice(0, 10)}</td><td>{fmt(p.block)}</td><td>{fmt(p.rbnt, 1)}</td><td>US${fmt(p.usd, 2)}</td></tr>
+        ))}
+      </tbody>
+    </table>
+  </details>
+  <script type="application/json" id="rb-fees-config" set:html={JSON.stringify(config)} />
+</div>
+
+<script>
+  import { chartSvg, cost, priceHistory, readFeeHistory, readFeesNow, type FeeChain, type FeesNow } from '../lib/fees-reader';
+
+  const root = document.getElementById('rb-fees');
+  const configEl = document.getElementById('rb-fees-config');
+  if (root && configEl) {
+    const config = JSON.parse(configEl.textContent ?? '{}') as {
+      chains: FeeChain[]; selector: string; priceDecimals: number;
+      calls: { key: string; label: string; gas: number }[]; historyBlocks: number[]; historyGas: number; usdPerGas: number;
+    };
+    const summary = root.querySelector<HTMLElement>('[data-fees-summary]');
+    const button = root.querySelector<HTMLButtonElement>('[data-fees-refresh]');
+    const input = root.querySelector<HTMLInputElement>('[data-calc-input]');
+    const output = root.querySelector<HTMLElement>('[data-calc-output]');
+    const fmt = (n: number | null | undefined, digits = 0) => (n === null || n === undefined ? '—' : n.toLocaleString('en-AU', { maximumFractionDigits: digits }));
+    const when = (iso: string) => iso.replace('T', ' ').replace(/\.\d+Z$/, ' UTC');
+    const whenUnix = (t: number | null) => (t === null ? '—' : when(new Date(t * 1000).toISOString()));
+    const set = (card: Element, field: string, text: string) => {
+      const el = card.querySelector<HTMLElement>(`[data-field="${field}"]`);
+      if (el) el.textContent = text;
+    };
+    let mainNow: FeesNow | null = null;
+    const render = (chain: FeeChain, r: FeesNow) => {
+      const card = root.querySelector(`[data-chain="${chain.key}"]`);
+      if (!card) return;
+      card.classList.toggle('rb-fees__card--down', !r.ok);
+      if (!r.ok) {
+        set(card, 'state', `RPC did not answer from your browser: ${r.error}. The build-time figures below stand until it does.`);
+        return;
+      }
+      set(card, 'state', `Read in ${fmt(r.latencyMs)} ms from your browser, head block ${fmt(r.head)}`);
+      set(card, 'baseFee', r.baseFeeWei === null ? '—' : `${fmt(Number(r.baseFeeWei) / 1e9, 0)} gwei`);
+      set(card, 'feed', r.usdPerRbnt === null ? '—' : `US$${fmt(r.usdPerRbnt, 6)} per RBNT, feed time ${whenUnix(r.feedTime)}`);
+      for (const c of config.calls) {
+        const p = r.baseFeeWei !== null && r.usdPerRbnt !== null ? cost(c.gas, r.baseFeeWei, r.usdPerRbnt) : null;
+        set(card, `call-${c.key}`, p ? `${fmt(p.rbnt, 2)} RBNT, US$${fmt(p.usd, 2)}` : '—');
+      }
+      set(card, 'checkedAt', `${when(r.checkedAt)} (from your browser)`);
+    };
+    const calc = () => {
+      if (!input || !output) return;
+      const gas = Number(input.value.replace(/[^0-9]/g, ''));
+      if (!gas) { output.textContent = 'Type a gas figure.'; return; }
+      if (!mainNow || !mainNow.ok || mainNow.baseFeeWei === null || mainNow.usdPerRbnt === null) { output.textContent = 'Waiting for the mainnet read.'; return; }
+      const p = cost(gas, mainNow.baseFeeWei, mainNow.usdPerRbnt);
+      output.textContent = `${fmt(gas)} gas costs ${fmt(p.rbnt, 3)} RBNT, US$${fmt(p.usd, 3)}, at the base fee and feed price read ${when(mainNow.checkedAt)}.`;
+    };
+    const run = async () => {
+      if (button) { button.disabled = true; button.textContent = 'Checking…'; }
+      if (summary) summary.textContent = 'Reading the public RPCs from your browser…';
+      const results = await Promise.all(config.chains.map(async (chain) => {
+        const r = await readFeesNow(chain, { timeoutMs: 8000, selector: config.selector, priceDecimals: config.priceDecimals });
+        render(chain, r);
+        if (chain.key === '151') mainNow = r;
+        return r;
+      }));
+      calc();
+      const main = config.chains[0];
+      if (main && mainNow && mainNow.ok && mainNow.head) {
+        try {
+          const points = priceHistory(await readFeeHistory(main, [...config.historyBlocks, mainNow.head], { timeoutMs: 10000 }), config.historyGas, config.usdPerGas);
+          const rb = root.querySelector('[data-chart="rbnt"]');
+          const us = root.querySelector('[data-chart="usd"]');
+          if (rb) rb.innerHTML = chartSvg(points, 'rbnt', { title: 'Enabling a wallet, in RBNT (log scale)', unit: 'RBNT', log: true });
+          if (us) us.innerHTML = chartSvg(points, 'usd', { title: 'The same call, in US dollars', unit: 'USD' });
+          const tbody = root.querySelector('[data-history-table] tbody');
+          if (tbody) tbody.innerHTML = points.map((p) => `<tr><td>${whenUnix(p.time).slice(0, 10)}</td><td>${fmt(p.block)}</td><td>${fmt(p.rbnt, 1)}</td><td>US$${fmt(p.usd, 2)}</td></tr>`).join('');
+        } catch { /* the build-time chart stands */ }
+      }
+      const okCount = results.filter((r) => r.ok).length;
+      if (summary) {
+        summary.textContent = okCount === results.length
+          ? `Read from your browser at ${when(new Date().toISOString())}, straight from the public RPCs. Nothing was sent anywhere else.`
+          : `${okCount} of ${results.length} RPCs answered from your browser at ${when(new Date().toISOString())}; the other card keeps its build-time figures.`;
+      }
+      if (button) { button.disabled = false; button.textContent = 'Check again'; button.hidden = false; }
+    };
+    input?.addEventListener('input', calc);
+    button?.addEventListener('click', () => void run());
+    void run();
+  }
+</script>
+
+<style>
+  .rb-fees { margin-block: 1.25rem 1.75rem; }
+  .rb-fees__line { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; margin: 0 0 1rem; font-size: var(--sl-text-sm); color: var(--rb-color-text-muted); }
+  .rb-fees__refresh { min-height: 2.25rem; padding-block: 0; }
+  .rb-fees__grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); }
+  .rb-fees__card { border: 1px solid var(--rb-color-hairline); border-left: 4px solid var(--rb-color-accent); border-radius: var(--rb-radius-lg); padding: 1rem 1.25rem; background: var(--rb-color-bg); }
+  .rb-fees__card--down { border-left-color: var(--rb-color-caution-border); }
+  .rb-fees__title { margin: 0; font-size: var(--sl-text-lg); font-weight: var(--rb-weight-card-title); color: var(--rb-color-heading); }
+  .rb-fees__state { margin: 0.25rem 0 0.75rem; font-size: var(--sl-text-sm); font-weight: 600; color: var(--rb-color-text); }
+  .rb-fees__card--down .rb-fees__state { color: var(--rb-color-caution-text); }
+  .rb-fees__rows { margin: 0; display: grid; gap: 0.375rem; font-size: var(--sl-text-sm); }
+  .rb-fees__rows div { display: grid; grid-template-columns: minmax(9rem, 45%) 1fr; gap: 0.5rem; padding-block: 0.25rem; border-top: 1px solid var(--rb-color-hairline-light); }
+  .rb-fees__rows dt { margin: 0; color: var(--rb-color-text-muted); }
+  .rb-fees__gas { color: var(--rb-color-text-muted); font-size: var(--sl-text-xs); }
+  .rb-fees__rows dd { margin: 0; color: var(--rb-color-text-strong); overflow-wrap: anywhere; }
+  .rb-fees__links { margin: 0.75rem 0 0; font-size: var(--sl-text-sm); }
+  .rb-fees__links a { color: var(--rb-color-accent); font-weight: 600; text-decoration: underline; text-underline-offset: 0.2em; }
+  .rb-fees__calc { margin: 1.25rem 0; padding: 1rem 1.25rem; border: 1px solid var(--rb-color-hairline); border-radius: var(--rb-radius-lg); background: var(--rb-color-bg); }
+  .rb-fees__calc label { display: block; font-size: var(--sl-text-sm); font-weight: 600; color: var(--rb-color-heading); margin-bottom: 0.5rem; }
+  .rb-fees__calc-row { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
+  .rb-fees__calc input { min-width: 12rem; padding: 0.4rem 0.6rem; font: inherit; border: 1px solid var(--rb-color-hairline); border-radius: var(--rb-radius-md, 0.375rem); background: var(--rb-color-bg); color: var(--rb-color-text); }
+  .rb-fees__calc output { font-size: var(--sl-text-sm); color: var(--rb-color-text-strong); }
+  .rb-fees__h { margin: 1.5rem 0 0.25rem; font-size: var(--sl-text-lg); color: var(--rb-color-heading); }
+  .rb-fees__note { margin: 0 0 0.75rem; font-size: var(--sl-text-sm); color: var(--rb-color-text-muted); }
+  .rb-fees__charts { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); }
+  .rb-fees__charts :global(.rb-chart) { width: 100%; height: auto; border: 1px solid var(--rb-color-hairline); border-radius: var(--rb-radius-lg); background: var(--rb-color-bg); }
+  .rb-fees__charts :global(.rb-chart__title) { font-size: 12px; font-weight: 600; fill: var(--rb-color-heading); }
+  .rb-fees__charts :global(.rb-chart__grid) { stroke: var(--rb-color-hairline-light); stroke-width: 1; }
+  .rb-fees__charts :global(.rb-chart__tick) { font-size: 10px; fill: var(--rb-color-text-muted); }
+  .rb-fees__charts :global(.rb-chart__label) { font-size: 11px; font-weight: 600; fill: var(--rb-color-text-strong); }
+  .rb-fees__charts :global(.rb-chart__line) { fill: none; stroke: var(--rb-color-accent); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+  .rb-fees__charts :global(.rb-chart__dot) { fill: var(--rb-color-bg); stroke: var(--rb-color-accent); stroke-width: 2; }
+  .rb-fees__charts :global(.rb-chart__dot:hover) { r: 6; }
+  .rb-fees__table { margin-top: 0.75rem; font-size: var(--sl-text-sm); }
+  .rb-fees__table table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+  .rb-fees__table th, .rb-fees__table td { text-align: left; padding: 0.3rem 0.5rem; border-top: 1px solid var(--rb-color-hairline-light); }
+</style>

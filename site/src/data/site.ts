@@ -1,8 +1,8 @@
 // Fixed strings and links shared by the header, footer and pages. The independence line is
 // the one differentiator DESIGN.md section 10 requires on every page; change it here only.
-export const SITE_NAME = 'Redbelly Development Tool';
+export const SITE_NAME = 'The Builder Path';
 export const INDEPENDENCE_LINE =
-  'An independent builder site for Redbelly Network. Not affiliated with or endorsed by Redbelly Network Pty Ltd. Network facts link to Vine.';
+  'Independent builder site for Redbelly Network. Not affiliated with or endorsed by Redbelly Network Pty Ltd. Network facts link to Vine.';
 
 /** The same statement, short enough for two lines on a phone; the full line is in the footer. */
 export const INDEPENDENCE_LINE_SHORT = 'Independent builder site. Not affiliated with or endorsed by Redbelly Network Pty Ltd.';

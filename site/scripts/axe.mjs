@@ -4,7 +4,11 @@ import { writeFileSync, mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { chromium } from 'playwright';
 import AxeBuilder from '@axe-core/playwright';
-import { serve, BASE, PAGES, CHROMIUM, siteDir } from './serve.mjs';
+import { serve, BASE, distRoutes, CHROMIUM, siteDir } from './serve.mjs';
+
+// Every page in dist/, not a list kept by hand (see distRoutes in serve.mjs).
+const ROUTES = distRoutes().map((path) => ({ path }));
+if (ROUTES.length === 0) { console.error('axe: no pages in dist/; build first'); process.exit(1); }
 
 mkdirSync(resolve(siteDir, 'reports'), { recursive: true });
 const stop = await serve();
@@ -17,8 +21,9 @@ try {
       const context = await browser.newContext({ viewport: { width, height: width === 390 ? 844 : 900 }, colorScheme: theme, isMobile: width === 390, hasTouch: width === 390 });
       await context.addInitScript((t) => localStorage.setItem('starlight-theme', t), theme);
       const page = await context.newPage();
-      for (const p of PAGES) {
-        await page.goto(BASE + p.path, { waitUntil: 'networkidle' });
+      for (const p of ROUTES) {
+        const res = await page.goto(BASE + p.path, { waitUntil: 'networkidle' });
+        if (!res || res.status() !== 200) { bad += 1; console.log(`${p.path} ${theme} ${width}: HTTP ${res?.status()}, not checked`); continue; }
         const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice']).analyze();
         const violations = r.violations.map((v) => ({ id: v.id, impact: v.impact, help: v.help, nodes: v.nodes.map((n) => n.target.join(' ')).slice(0, 5), count: v.nodes.length }));
         const serious = violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');
@@ -37,4 +42,5 @@ try {
 const summary = { ranAt: new Date().toISOString(), axeVersion: (await import('axe-core/package.json', { with: { type: 'json' } })).default.version, seriousOrCritical: bad, results };
 writeFileSync(resolve(siteDir, 'reports/axe.json'), JSON.stringify(summary, null, 2) + '\n');
 console.log(`axe: ${bad} serious or critical issue(s) across ${results.length} page renders`);
+if (results.length === 0) { console.error('axe: nothing was checked'); process.exit(1); }
 if (bad) process.exit(1);

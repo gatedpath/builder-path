@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // redbelly-agent-rules: write every rules file into a directory.
 //   --out <dir>      target directory (default: current directory)
-//   --only <format>  one of claude, agents, cursor, copilot, gemini, llms, llms-full; repeatable or comma-separated
+//   --only <format>  one of claude, agents, cursor, copilot, gemini, skill, llms, llms-full; repeatable or comma-separated
 //   --dry-run        print what would be written, touch nothing
 //   --check          exit 1 if any file on disk differs from what would be generated
 //   --list           print the formats and their paths

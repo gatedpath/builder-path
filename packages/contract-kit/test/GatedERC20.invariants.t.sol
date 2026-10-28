@@ -8,7 +8,7 @@ import { GatedERC20 } from "../src/GatedERC20.sol";
 
 /// @notice Drives the token through random sequences: subscriptions, issuer mints and
 /// distributions, transfers, burns, forced transfers, pauses, issuer changes and credential
-/// changes. The invariants are the ones PLAN.md section 6 asks for on a gated ERC-20, plus
+/// changes. The invariants are the ones the kit's security programme asks for on a gated ERC-20, plus
 /// the issuer allowance bound.
 ///
 /// Two flavours share the handler. With `allowDowngrade` the handler may revoke or expire a

@@ -1,46 +1,62 @@
 ---
-import Ext from './Ext.astro';
-// Landing-page frame: hero text, the three doors, the two-speed rule, the verification line.
+// Landing-page frame: hero text, the three doors, the two-speed rule, the evidence block.
+// The doors are three people, not three stages (PLAN.md 20.8): new to the network, looking for
+// something to build, shipping for real or with a team. Nothing here sorts a reader by skill.
 // One screen at desktop; the footer override below carries the independence line.
 import Door from './Door.astro';
 import TwoSpeed from './TwoSpeed.astro';
-import { FACTS_VERIFIED, formatDate, LINKS } from '../data/site';
+import Evidence from './Evidence.astro';
+import { cards } from '../data/cards';
+
+// Counted from the cards, never typed: a project counts as proven when it has a run record.
+const projectCount = cards.length;
+const provenCount = cards.filter((c) => c.run).length;
+const onScaffoldCount = cards.filter((c) => c.scope === 'scaffold').length;
+const toBuildCount = projectCount - onScaffoldCount;
+const liveCount = cards.filter((c) => c.deployed).length;
+const useRunCount = cards.filter((c) => c.deployed?.useRun).length;
+
+// Door two says these numbers in words, and the words are the owner's to edit in her text files,
+// so they are plain text below and not computed. This guard is what keeps them true: when the
+// cards change, the build stops here until the door's sentence and these four numbers are updated
+// together.
+const DOOR_TWO_SAYS = { projects: 18, onScaffold: 7, toBuild: 11, proven: 18, live: 5, useRun: 4 };
+const doorTwoIs = { projects: projectCount, onScaffold: onScaffoldCount, toBuild: toBuildCount, proven: provenCount, live: liveCount, useRun: useRunCount };
+for (const key of Object.keys(DOOR_TWO_SAYS) as (keyof typeof DOOR_TWO_SAYS)[]) {
+  if (DOOR_TWO_SAYS[key] !== doorTwoIs[key]) {
+    throw new Error(`front page, door two: the sentence says ${DOOR_TWO_SAYS[key]} ${key} and src/data/cards.ts now has ${doorTwoIs[key]}. Update the door's words and DOOR_TWO_SAYS in Landing.astro together.`);
+  }
+}
 ---
 
 <div class="rb-landing not-content">
   <section class="rb-landing__hero" aria-labelledby="_top">
     <p class="rb-eyebrow">Redbelly Network · chain 151 mainnet · chain 153 testnet</p>
-    <h1 id="_top">Build on Redbelly Network with your own tools and your own agent.</h1>
+    <h1 id="_top">Build on Redbelly Network the: your tools, your agent, your keys.</h1>
     <p class="rb-landing__lede">
-      A builder path from an idea to a dApp that is deployed, identity gated and checked before it reaches mainnet.
+      A path from an idea to a deployed dApp: identity-gated, checked, and only then mainnet.
     </p>
     <ul class="rb-landing__who">
-      <li>You write Solidity by hand. Take the golden path.</li>
-      <li>You direct an AI coding agent. Start with the rules files.</li>
-      <li>You already ship on Ethereum. The concept pages carry only what differs on this network.</li>
-      <li>You review before mainnet. Start at the gate.</li>
+      <li>If you write Solidity, take <a href="/start/">the golden path</a>.</li>
+      <li>If you direct an AI coding agent, start with <a href="/agents/">the rules files</a>.</li>
     </ul>
   </section>
 
   <section class="rb-landing__doors" aria-label="Three ways in">
-    <Door href="/start/" eyebrow="Start" title="Your first gated contract on testnet" text="Verify a wallet, get testnet RBNT, compile for Prague, deploy, gate one function. One path, followed start to finish." />
-    <Door href="/agents/" eyebrow="Build with an agent" title="Rules files, llms.txt, and the key-handling rule" text="Drop one file into your project and your agent stops inventing chain IDs. Claude Code, Codex, Cursor, Copilot, Gemini." />
-    <Door href="/review/" eyebrow="Review before mainnet" title="What the gate checks, and why" text="Pre-flight, the five credential states, admin behind a Safe, the ship report. The threat model here is not the one you carry over from Ethereum." />
+    <Door href="/concepts/" eyebrow="New to the network" title="What is different here, then your first gated contract" text="Four short pages on what changes for your code: finality, blocks on demand, gas priced in dollars, and the identity gate. Then one path from an empty folder to a gated contract, the same whether you write the Solidity or direct your own agent." />
+    <Door href="/tutorials/" eyebrow="Looking for something to build" title="Eighteen projects that need what this network has" text="Seven that change the gated scaffold you already have, then eleven things to build that only make sense where every holder is verified: a tokenised bond, tickets with an age gate, a cap table, an ERC-3643 security token suite. All eighteen are proven from a fresh scaffold, with the record of the run beside them. Five are live on testnet, deployed and verified from my own wallet, and four of those have had their use run on the real network." />
+    <Door href="/review/" eyebrow="Shipping for real, or with a team" title="What the gate checks before mainnet, and how to watch it after" text="Pre-flight, the five credential states, admin behind a Safe, the ship report a lead signs off, and alerts once the contract is live. The threat model here is not the one you carry over from Ethereum." />
   </section>
 
   <section class="rb-landing__speed" aria-labelledby="two-speeds">
-    <h2 id="two-speeds" class="rb-heading">Two speeds, stated openly</h2>
+    <h2 id="two-speeds" class="rb-heading">Fast to testnet, slow to mainnet</h2>
     <p>
-      An AI agent collapses the time it takes to build a working testnet dApp. It does not collapse the time it takes to build a safe mainnet one, and this network exists for assets with real value and real regulators behind them. The path therefore has two speeds, and the tooling enforces the second.
+      An AI agent makes a working testnet dApp quick to build. A safe mainnet one still takes as long as it ever did, and this network exists for assets with real value and real regulators behind them. So the path has two speeds, and the tooling enforces the slow one.
     </p>
-    <TwoSpeed />
+    <TwoSpeed links={false} />
   </section>
 
-  <section class="rb-landing__verified" aria-label="What is verified">
-    <p>
-      I checked every network fact here against Vine, docs.redbelly.network or the RPC on {formatDate(FACTS_VERIFIED)}, and each one is logged with its source in <Ext href={LINKS.research}>SOURCES.md</Ext>. This site does not claim a testnet run that did not happen. A step I have not executed says so.
-    </p>
-  </section>
+  <Evidence />
 </div>
 
 <style>
@@ -71,16 +87,17 @@ import { FACTS_VERIFIED, formatDate, LINKS } from '../data/site';
     content: '';
     position: absolute;
     left: 0;
-    top: 0.62em;
+    top: 0.55em;
     width: 0.375rem;
-    height: 1px;
+    height: 0.375rem;
+    border-radius: 50%;
     background: var(--rb-color-accent);
   }
+  .rb-landing__who a { color: var(--rb-color-text); text-decoration: underline; text-underline-offset: 0.2em; text-decoration-thickness: 1px; }
+  .rb-landing__who a:hover { color: var(--rb-color-accent-high); }
   .rb-landing__doors { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); }
   .rb-landing__speed { padding: 1.5rem; border-radius: var(--rb-radius-xl); background: var(--rb-color-surface); }
   @media (min-width: 50em) { .rb-landing__speed { padding: 2rem 2.5rem; } }
   .rb-landing__speed h2 { margin: 0; font-size: var(--sl-text-2xl); }
   .rb-landing__speed p { margin: 0.75rem 0 0; max-width: 48rem; line-height: 1.6; }
-  .rb-landing__verified p { margin: 0; font-size: var(--sl-text-sm); color: var(--rb-color-text-muted); max-width: 48rem; line-height: 1.6; }
-  .rb-landing__verified a { color: var(--rb-color-accent); }
 </style>

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // `redbelly <command>`: one bin for the checks a builder runs by hand. `preflight` is the seven
-// checks, `doctor` the machine, `gas` the report in RBNT and US cents, `ship` the mainnet gate that
-// writes its own report. Each is also its own bin (redbelly-preflight, redbelly-doctor) or an MCP tool.
+// checks, `doctor` the machine, `gas` the report in RBNT and US cents, `fees` what the measured calls
+// cost on each chain today, `ship` the mainnet gate that writes its own report. Each is also its own bin (redbelly-preflight, redbelly-doctor) or an MCP tool.
 import { realpathSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { main as preflightMain } from './cli.js';
@@ -12,7 +12,8 @@ const HELP = `redbelly <command> [options]
   preflight   the seven checks before a deploy (redbelly-preflight)
   doctor      the machine before the first command (redbelly-doctor)
   gas         gas per function in RBNT and US cents at the chain's base fee and feed price
-  ship        pre-flight, Slither, the five-state tests and the gas figures, written to deployments/ship-<chain>-<date>.md
+  fees        what the measured calls cost on 151 and 153 today: head block, base fee, feed price, RBNT and US cents
+  ship       pre-flight, Slither, the five-state tests and the gas figures, written to deployments/ship-<chain>-<date>.md
 
 redbelly <command> --help for each. Nothing here takes a key; signing tools take a keystore name.
 `;
@@ -21,6 +22,7 @@ const commands: Record<string, (argv: readonly string[]) => Promise<number>> = {
   preflight: preflightMain,
   doctor: doctorMain,
   gas: async (argv) => (await import('./gas-cli.js')).gasMain(argv),
+  fees: async (argv) => (await import('./fees-cli.js')).feesMain(argv),
   ship: async (argv) => (await import('./ship-cli.js')).shipMain(argv),
 };
 

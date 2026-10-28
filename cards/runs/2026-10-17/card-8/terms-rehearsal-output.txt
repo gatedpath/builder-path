@@ -1,0 +1,42 @@
+
+== 0. v2 on the fork: 0xEF86CEc1CEf0C78E5725fA6Cc3E9929788bBde35  grace 604800 [6.048e5] s  listing window 2592000 [2.592e6] s  defaultsBy(business) 0
+
+== 1. The lister cancels its own listing at once; a stranger cannot until the window has passed
+  stranger cancels 1:
+    refused: TooEarly(1, 1798139751 [1.798e9])
+  the lister cancels 1:
+    status 0x1  gas 30499
+    invoice 1: Cancelled
+  the investor funds the cancelled 1:
+    refused: WrongStatus(1, 1, 6)
+
+== 2. Collect: a funded invoice, the business pre-authorised the face value, the due date passes, anyone pulls it
+  a stranger collects 2 before the due date:
+    refused: TooEarly(2, 1795547752 [1.795e9])
+    isOverdue(2) true a day after the due date
+  a stranger collects 2 now:
+    status 0x1  gas 64319
+    invoice 2: Repaid   contract holds 10000000000   business left with 0
+    released to the investor: Released
+
+== 3. Default: a funded invoice, nothing pre-authorised, the due date and the grace period pass, the investor declares it; a late payment cures it
+  collect 3 with no allowance (the evidence of non-payment):
+    refused: ERC20InsufficientAllowance(0xEF86CEc1CEf0C78E5725fA6Cc3E9929788bBde35, 0, 10000000000 [1e10])
+  declare default a day after the due date, inside the grace period:
+    refused: TooEarly(3, 1798830957 [1.798e9])
+  a stranger declares it after the grace period:
+    refused: NotTheInvestor(3, 0xa0Ee7A142d267C1f36714E4a8F75612F20a79720)
+  the investor declares it:
+    status 0x1  gas 84750
+    invoice 3: Defaulted   defaultsBy(business) 1   unpaidBy(business) 10000000000 [1e10]
+  the business pays late:
+    status 0x1  gas 67612
+    invoice 3: Repaid   defaultsBy(business) 1 (history stays)   unpaidBy(business) 0 (cured)
+    released: Released
+
+== 4. A stale listing: listed, never funded, the window passes, a stranger closes it
+  stranger cancels 4:
+    status 0x1  gas 32926
+    invoice 4: Cancelled
+
+== 5. Done on the fork; nothing reached 153

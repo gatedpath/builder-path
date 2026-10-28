@@ -1,0 +1,6 @@
+{
+  "chain": 31337,
+  "rpc": "http://127.0.0.1:8554",
+  "maxRbnt": "100",
+  "confirmAboveRbnt": "10"
+}

@@ -1,6 +1,6 @@
 # Threat model
 
-A stub with the headings from PLAN.md section 6 of the Redbelly Development Tool. Fill each
+A stub with the headings from the Redbelly Development Tool's security programme. Fill each
 section before the first mainnet deploy; the ship report links here.
 
 ## Plan

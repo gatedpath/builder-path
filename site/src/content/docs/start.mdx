@@ -16,10 +16,11 @@ import TwoSpeed from '../../components/TwoSpeed.astro';
 import StepList from '../../components/StepList.astro';
 import Sample from '../../components/Sample.astro';
 import StatusPill from '../../components/StatusPill.astro';
+import Cast from '../../components/Cast.astro';
 import Ext from '../../components/Ext.astro';
 import VineAside from '../../components/VineAside.astro';
 import CardGrid from '../../components/CardGrid.astro';
-import { warmUpCards } from '../../data/cards';
+import { scaffoldCards } from '../../data/cards';
 
 <ForAgents
   page="Start"
@@ -63,10 +64,10 @@ The Eligibility SDK is on GitHub Packages, and it needs a GitHub token with `rea
    Every wallet on Redbelly is identity-verified before it can send anything. Verification is a passport plus a biometric check, done once, at the Access dApp. A credential issued on testnet carries over to mainnet.
 
    <VineAside href="https://vine.redbelly.network/identity/user-access/" label="Vine: user access">
-   Claim an access credential from an accredited issuer, then self-enable write access through a network contract. That is the whole flow; Vine has the screenshots.
+   Claim an access credential from an accredited issuer, then self-enable write access through a network contract. There is nothing more to it than that, and Vine has the screenshots.
    </VineAside>
 
-   Go to [access.redbelly.network](https://access.redbelly.network). Once you are done, the network's permission contract answers true for your address. Every later tool relies on this read, and it needs nothing from Redbelly:
+   Go to [access.redbelly.network](https://access.redbelly.network). Once you are done, the network's permission contract answers true for your address. The credential is claimed once, but each network is enabled separately, and the enable call is a real transaction: about 2.2 million gas, roughly a dollar at the network's dollar pricing, which came to 568 RBNT when I enabled my own development wallet on 17 October 2026. The accredited issuer pays it for the first wallet under your identity. A second wallet linked to the same identity pays its own, and the Access dApp offers testnet only after the mainnet enable; Redbelly told me on 11 October 2026 that a testnet-only path is coming. Every later tool relies on this read, and it needs nothing from Redbelly:
 
    <Sample id="helpers-is-allowed" title="test/unit.test.mjs (the isAllowed read, replayed against measured values)" />
 
@@ -100,7 +101,7 @@ The Eligibility SDK is on GitHub Packages, and it needs a GitHub token with `rea
        cast wallet import rbn-dev --interactive
        ```
 
-       <StatusPill variant="pending" label="Keystore import not run here" tipKey="keystore-import" /> The sessions that build this site hold no key, so nobody has run the import in a recorded session. If `foundryup` is blocked where you work, the `@foundry-rs/forge`, `anvil` and `cast` npm packages carry the same binaries; this run used 1.7.1 from there. One thing to know about those packages: their 1.7.1 wrapper exits 0 whatever the binary returned, so a failed `forge build` looks like success to anything reading the exit code. `npm run doctor` in step 5 detects the wrapper and prints the line that links the real binary over it.
+       <StatusPill variant="pending" label="Keystore import not run here" tipKey="keystore-import" /> The sessions that build this site hold no key, so nobody has run the import in a recorded session. Which wallet to import, and why it is not a disposable one on this network, is on [your developer wallet](/wallets/). If `foundryup` is blocked where you work, the `@foundry-rs/forge`, `anvil` and `cast` npm packages carry the same binaries; this run used 1.7.1 from there. One thing to know about those packages: their 1.7.1 wrapper exits 0 whatever the binary returned, so a failed `forge build` looks like success to anything reading the exit code. `npm run doctor` in step 5 detects the wrapper and prints the line that links the real binary over it.
      </TabItem>
      <TabItem label="Hardhat (with --hardhat)">
        Install per the [Hardhat docs](https://hardhat.org/docs). With `--hardhat` the scaffold's Hardhat 3 config reads the deployer from Hardhat's encrypted keystore, never from the config file:
@@ -115,14 +116,16 @@ The Eligibility SDK is on GitHub Packages, and it needs a GitHub token with `rea
 
 4. ### Get the project
 
-   `create-redbelly-dapp` writes a monorepo: Foundry contracts on the `Gated` base with five-state, fuzz and invariant tests, a Next.js web app with the verify-your-wallet interstitial, one gated action and the dev state panel, pinned CI, the five rules files, `npm run dev`, `npm run doctor`, `gas` and `ship` through a vendored copy of the pre-flight package, and a deploy script that refuses chain 151 without a Safe 1.4.1, a verified deployer and a ship report dated today. It is on npm, first published on 18 September 2026 and at version 0.2.0 since 19 September, so nothing needs cloning:
+   `create-redbelly-dapp` writes a monorepo: Foundry contracts on the `Gated` base with five-state, fuzz and invariant tests, a Next.js web app with the verify-your-wallet interstitial, one gated action and the dev state panel, pinned CI, the five rules files, `npm run dev`, `npm run doctor`, `gas` and `ship` through a vendored copy of the pre-flight package, and a deploy script that refuses chain 151 without a Safe 1.4.1, a verified deployer and a ship report dated today. It is on npm, first published on 18 September 2026 and at version 0.2.1 since 20 September, so nothing needs cloning:
 
    ```sh title="Scaffold with the defaults: gated-erc20, npm, web app, Foundry only"
    npm create redbelly-dapp@latest my-app -- --yes
    npm create redbelly-dapp@latest my-app -- --yes --hardhat   # plus a Hardhat 3 view in hardhat/
    ```
 
-   <StatusPill variant="verified" label="Run from npm, 19 Sep 2026, version 0.2.0" /> I ran the first line in an empty folder against the public registry the evening 0.2.0 was published: with the install, the 68 contract tests and a build of the web app it took 43 seconds. Versions 0.1.0 and 0.1.1 are superseded and deprecated; 0.2.0 is the security release that followed the audit of 19 September, and `@latest` selects it. Templates `gated-erc20` and `empty` ship. Choosing `gated-erc721` or `gated-vault` exits with the list of what each still needs and writes nothing. Nothing in the scaffolder makes a network call unless you pass `--install`, and nothing reads or asks for a key. The scaffold's gate is bound to request id 18, the over-18 recipe; the four warm-up cards at the end of this page start from there.
+   <Cast id="start-scaffold" />
+
+   <StatusPill variant="verified" label="Run from npm, 20 Sep 2026, version 0.2.1" /> <StatusPill variant="verified" label="Run again from npm, 26 Oct 2026, version 0.2.3: 68 tests" /> I ran the first line in an empty folder, with an empty npm cache, against the public registry the evening 0.2.1 was published: with the install, the 68 contract tests and a build of the web app it took 67 seconds. Versions 0.1.0 and 0.1.1 are superseded and deprecated; 0.2.0 is the security release that followed the audit of 19 September; 0.2.1 came a day later, a small release that corrects what two of the tools tell a builder, and `@latest` selects it. I ran it again from an empty folder on 26 October 2026, the day 0.2.3 was published and became `@latest`: the scaffold vendors 0.2.3 of the four packages, its rules files are stamped 0.2.3, `npm install` and `contracts:install` run, 68 tests pass and `doctor` runs. Templates `gated-erc20` and `empty` ship. Choosing `gated-erc721` or `gated-vault` exits with the list of what each still needs and writes nothing. Nothing in the scaffolder makes a network call unless you pass `--install`, and nothing reads or asks for a key. The scaffold's gate is bound to request id 18, the over-18 recipe; the four cards at the end of this page start from there.
 
    If you would rather deploy the smallest possible thing by hand first, the first-contract project in `phase-0/` is one state variable, one write and one event, with the same pins the scaffold uses in its `contracts/foundry.toml` (plus `[profile.testnet]` 153 and `[profile.mainnet]` 151 there):
 
@@ -146,6 +149,8 @@ The Eligibility SDK is on GitHub Packages, and it needs a GitHub token with `rea
    npm run doctor
    ```
 
+   <Cast id="start-doctor" />
+
    <StatusPill variant="verified" label="Run 14 Sep 2026: 0.9 s, ten pass, one warning" /> Every required check passed on the build machine; the one warning was Aderyn, which is optional and whose npm wrapper cannot fetch its binary behind this environment's proxy. A pasted `doctor` line means the same thing to the MCP server's `explain_failure`, because both read one failure table.
 
    Then install. A fresh scaffold has nothing installed, and `npm run dev` or `forge build` straight away stops with the two commands you skipped. The scaffolder prints the same two as its next steps.
@@ -155,15 +160,19 @@ The Eligibility SDK is on GitHub Packages, and it needs a GitHub token with `rea
    npm run contracts:install    # OpenZeppelin 5.6.1 from npm, forge-std v1.16.2 with forge install --no-git
    ```
 
+   <Cast id="start-install" />
+
    <StatusPill variant="verified" label="Run 14 Sep 2026: 42.6 s and 3.3 s" /> Most of the first command is Next.js and wagmi; the morning run the same day measured 30 s with a warmer npm cache and the 12 September run 72 s cold. The second is one package plus a git clone under `contracts/`. With `--hardhat`, the Hardhat view is an npm workspace of the root and the first command installs it too.
 
 6. ### Run the local loop
 
-   One command. It forks testnet on Anvil as chain 31337, deploys a `ReceptorMock` and your contract through the project's own deploy script, seeds Anvil accounts 2 to 6 into the five credential states in enum order, opens subscriptions, starts the web app, and prints a table with the impersonation command beside each wallet. Ctrl-C stops Anvil and the web app together.
+   That one command forks testnet on Anvil as chain 31337, deploys a `ReceptorMock` and your contract through the project's own deploy script, seeds Anvil accounts 2 to 6 into the five credential states in enum order, opens subscriptions, starts the web app, and prints a table with the impersonation command beside each wallet. Ctrl-C stops Anvil and the web app together.
 
    ```sh title="From my-app/"
    npm run dev
    ```
+
+   <Cast id="start-dev" />
 
    <StatusPill variant="verified" label="Run 14 Sep 2026: table in 17.9 s, web app answering 11.2 s later" /> This is what it printed in the morning run, on a fork at block 3035484 (the evening run, on the Foundry-only default, printed the same table at block 3035539 with the same addresses, in 17.9 s):
 
@@ -223,7 +232,7 @@ The Eligibility SDK is on GitHub Packages, and it needs a GitHub token with `rea
    If an AI coding agent is doing the typing, put the rules file in the project root before it writes a line. It holds the chain facts, the gas model, the identity gate, the two-speed rule, the key-handling rule and a never-do list, all rendered from one source. The scaffold already wrote all five; the [agents page](/agents/) has every format and a copy button for a project that did not start from the scaffold.
 
    ```sh title="All formats at once (outside a scaffold)"
-   npx redbelly-agent-rules --out .
+   npx -y @gatedpath/agent-rules --out .
    ```
 
    ```sh title="Inside a scaffold: check they haven't drifted"
@@ -246,7 +255,9 @@ The Eligibility SDK is on GitHub Packages, and it needs a GitHub token with `rea
    npm test        # forge test in contracts/
    ```
 
-   <StatusPill variant="verified" label="Run 19 Sep 2026, scaffold 0.2.0: 68 tests, 7 suites" /> Fifteen deploy pre-flight cases (the mainnet refusals, a chain id that must be the network's own, a Safe recognised by its code, the ship-report gate and the UTC date it looks for), twenty-three on the token, seven on the issuer registry, seven on the admin pattern, four fuzz properties at 512 runs and twelve invariants at 64 runs of depth 32; the contract kit's suite, copied into every scaffold. `forge fmt --check` clean. There are no Hardhat-only tests; with `--hardhat`, `npx hardhat compile` in `hardhat/` compiles the same sources with the same pins (re-run in the scaffolder's tests on 14 September).
+   <Cast id="start-test" />
+
+   <StatusPill variant="verified" label="Run 20 Sep 2026, scaffold 0.2.1: 68 tests, 7 suites" /> <StatusPill variant="verified" label="Run 26 Oct 2026, scaffold 0.2.3: 68 tests" /> Fifteen deploy pre-flight cases (the mainnet refusals, a chain id that must be the network's own, a Safe recognised by its code, the ship-report gate and the UTC date it looks for), twenty-three on the token, seven on the issuer registry, seven on the admin pattern, four fuzz properties at 512 runs and twelve invariants at 64 runs of depth 32; the contract kit's suite, copied into every scaffold. `forge fmt --check` clean. There are no Hardhat-only tests; with `--hardhat`, `npx hardhat compile` in `hardhat/` compiles the same sources with the same pins (re-run in the scaffolder's tests on 14 September).
 
    What the tests cost is the next thing a Redbelly builder asks, because the chain prices gas in dollars. `npm run gas -- --chain 153` prices the gas snapshot `forge test` wrote (one row per test; `--report` runs `forge test --gas-report --json` and prices each function and the deployment) at testnet's latest base fee and feed price, read-only, and prints gas, RBNT and US cents per row; `--diff <file>` compares two snapshots.
 
@@ -275,15 +286,15 @@ The Eligibility SDK is on GitHub Packages, and it needs a GitHub token with `rea
    cd contracts && redbelly-preflight --chain 153 --address 0xYourWallet
    ```
 
-   <StatusPill variant="verified" label="Run 14 Sep 2026 read-only against 153 with the known allowed address, twice" /> The scaffold's script passed 10 of 10 checks. The CLI passed chain id, deployer verified, compiler pins and the Slither report, skipped the Safe and git history (none given, no repository yet), and failed the balance check: the known allowed address holds 380.5 RBNT and the CLI wants 757.9 RBNT for a 3,000,000-gas deploy with a 25% margin at that evening's feed price (768.4 RBNT in the morning; US$1.43 either way), which is the fee rule doing its job on a wallet that isn't ours, not a fault. Your own wallet needs that much, or pass `--gas` with the measured figure from the gas report, 1,898,391, which brings it to about 480 RBNT; `ship` does that for you. Rehearse the mainnet refusal offline with `npm run preflight -- --chain 151 --offline`: it fails on the missing Safe and verifier before it touches a network, which is the point.
+   <StatusPill variant="verified" label="Run 14 Sep 2026 read-only against 153 with the known allowed address, twice" /> The scaffold's script passed 9 of 9 checks on the Foundry-only default (10 of 10 with `--hardhat`, which adds the Hardhat config check). The CLI passed chain id, deployer verified, compiler pins and the Slither report, skipped the Safe and git history (none given, no repository yet), and failed the balance check: the known allowed address holds 380.5 RBNT and the CLI wants 757.9 RBNT for a 3,000,000-gas deploy with a 25% margin at that evening's feed price (768.4 RBNT in the morning; US$1.43 either way), which is the fee rule doing its job on a wallet that isn't ours, not a fault. Your own wallet needs that much, or pass `--gas` with the measured figure from the gas report, 1,898,391, which brings it to about 480 RBNT; `ship` does that for you. Rehearse the mainnet refusal offline with `npm run preflight -- --chain 151 --offline`: it fails on the missing Safe and verifier before it touches a network, which is the point.
 
    The last check before signing writes the document you want anyway. `npm run ship -- --chain 153 --account <keystore-name>` runs the gas report, pre-flight with the keystore's address, the verifier check, `forge test` with the five-state suites counted, and the admin reading, and writes `contracts/deployments/ship-153-<today>.md` with every check, the readings, the gas table, and, once the deploy has happened, the contract's address, its constructor arguments already encoded and the exact verify command. It refuses to write when any check fails. On 153 the deploy script only warns without it; on 151 it refuses to broadcast without a report dated today, so `ship` is the mainnet gate as well as the report.
 
-   <StatusPill variant="pending" label="Not run on the real network: needs a keystore" tipKey="ship-real" /> <StatusPill variant="verified" label="Proven 14 Sep 2026 on a local chain 151 with the real Safe 1.4.1 bytecode" /> The [review page](/review/) has what the proof covered. No report exists for a real network yet.
+   <StatusPill variant="verified" label="Run 23 to 26 Oct 2026 on the real testnet, before each deploy" /> <StatusPill variant="verified" label="Proven 14 Sep 2026 on a local chain 151 with the real Safe 1.4.1 bytecode" /> The [review page](/review/) has what the proof covered. The first report for a real network was written on 23 October 2026, from my own keystore, before the deploy in the next step: thirty-five gas rows priced at block 3,055,909, the deployer allowed, the balance covering the deploy with the 25% margin, the Slither report fresh, 86 tests in four five-state suites. One warning, that no verifier was set, which is the testnet case: the script deploys the mock. The report has run the same way before every deploy of mine since, and from 0.2.3 the file it writes into `deployments/` names the project by its last two path segments and the keystore as `--account <keystore-name>`, so it carries no machine path and no name and can go into a public repository.
 
 10. ### Deploy to testnet
 
-    <StatusPill variant="pending" label="Not executed on the real network" tipKey="deploy-real" /> The rehearsal is step 6: the same deploy script, the same pre-flight, on a fork. The real thing needs a verified, funded wallet, and I have not run it on the real network yet. The keystore in the commands is named for a business delegate wallet (a sub-account of a verified business, which gets write access without its own KYC), which is the clean place for a deploy key. These are the exact commands, in order; nothing has run them yet:
+    <StatusPill variant="verified" label="Run 23 Oct 2026 on the real testnet: block 3,055,910, 1,972,293 gas" /> The rehearsal is step 6: the same deploy script, the same pre-flight, on a fork. The real thing needs a verified, funded wallet, and on 23 October 2026 I ran it on testnet from my own development wallet, a keystore in my own Terminal: the token landed at 0x26ab267769C249a007e2f1869272bf30fd169BaC and its mock verifier at 0x2E652B946DC303d8f53bC92D0787e13B109003e5, both in one block, within seconds, for 815.53 test RBNT at that day's base fee. Four more projects of mine went to 153 the same way on 23 and 25 October (an escrow, a token under its own policy, invoice financing and an age-gated ticket), every one verified on Routescan. On mainnet the clean place for a deploy key is a business delegate wallet (a sub-account of a verified business, which gets write access without its own KYC); the keystore in the commands is named for one. These are the exact commands, in order, as they ran:
 
     <Tabs syncKey="toolchain">
       <TabItem label="Foundry">
@@ -295,7 +306,7 @@ The Eligibility SDK is on GitHub Packages, and it needs a GitHub token with `rea
         DEPLOYER=$(cast wallet address --account rbn-delegate) npm run preflight
         npm run ship -- --chain 153 --account rbn-delegate
         cd contracts
-        forge script script/Deploy.s.sol --rpc-url redbelly_testnet --account rbn-delegate --broadcast
+        forge script script/Deploy.s.sol --rpc-url redbelly_testnet --account rbn-delegate --sender <your-address> --broadcast
         cat deployments/153-GatedERC20.json
         cd .. && npm run ship -- --chain 153 --account rbn-delegate    # fills in the address, the constructor arguments and the verify command
         ```
@@ -314,11 +325,13 @@ The Eligibility SDK is on GitHub Packages, and it needs a GitHub token with `rea
 
     <Sample id="deploy-preflight" />
 
-    What to expect on the real network: a block is produced when there are transactions, so your transaction lands within seconds or it is not coming. Poll for the receipt. A wallet may show the gas wrongly, and Vine says most do on Redbelly. The fee for a plain transfer is US$0.01 whatever the wallet displays.
+    Two things I learned on my own first deploy, 17 October 2026. The `--sender` flag is not optional: without it Foundry rehearses the script as its own default account, which fails the network's access check, so the pre-flight stops it before anything is sent. And a first deploy needs more test RBNT than one faucet claim gives: the mock verifier and the token together are about 3.5 million gas, which was 1,000 to 1,800 test RBNT at that month's prices, against 500 a claim and one claim a day. Claim for three days, or deploy something small first. The ship report asks for the keystore password at a hidden prompt, so run it in a terminal rather than from a button.
+
+    What to expect on the real network: a block is produced when there are transactions, so your transaction usually lands within seconds. If it has not after 30 seconds, the RPC endpoint sends it again to another governor, which Redbelly confirmed to me on 12 October 2026, so give it 45 seconds before you treat silence as a failure, and keep the same nonce. Poll for the receipt. A wallet may show the gas wrongly, and [Vine says](https://vine.redbelly.network/network-fees/) most do on Redbelly (read 12 September 2026). The fee for a plain transfer is US$0.01 whatever the wallet displays.
 
 11. ### Verify on Routescan
 
-    Routescan's own Foundry article gives the recipe. The dry run below compiles the `GatedERC20` the local loop deployed and prints the standard JSON input it would send (Solidity, Prague, optimizer at 200 runs) without sending it. Nothing has been submitted, because nothing of ours is on the real network yet (question 28, partial).
+    Routescan's own Foundry article gives the recipe. The dry run below compiles the `GatedERC20` the local loop deployed and prints the standard JSON input it would send (Solidity, Prague, optimizer at 200 runs) without sending it. The real submission was made on 23 October 2026 for the token deployed in step 10 and for its mock verifier, and Routescan answered "Pass - Verified" for both after one "Pending in queue"; ten contracts of mine were verified the same way by 25 October, the last four with the verify command the 0.2.3 ship report writes, unedited ([question 28](/research/#the-questions-this-site-cites), verified).
 
     <Tabs syncKey="toolchain">
       <TabItem label="Foundry">
@@ -337,7 +350,7 @@ The Eligibility SDK is on GitHub Packages, and it needs a GitHub token with `rea
           --constructor-args <the same encoding> --watch
         ```
 
-        <StatusPill variant="verified" label="Dry run 14 Sep 2026: 66,741 bytes of standard JSON input" /> <StatusPill variant="pending" label="Submission not made" tipKey="verify-submit" /> The `verifyContract` key is a placeholder Routescan documents as accepted; it is not a secret. The constructor takes the four roles as one tuple; on the local loop all four are the deployer. `forge verify-check` against both URLs answered `Verification not found` for a dummy guid on 12 September, which is the Etherscan-shaped reply forge expects and proves the URL form. The MCP server's `verify_routescan` tool builds the same command and dry-runs by default.
+        <StatusPill variant="verified" label="Dry run 14 Sep 2026: 66,741 bytes of standard JSON input" /> <StatusPill variant="verified" label="Submitted 23 to 25 Oct 2026: Pass - Verified, ten contracts" /> The `verifyContract` key is a placeholder Routescan documents as accepted; it is not a secret. The constructor takes the four roles as one tuple; on the local loop all four are the deployer. `forge verify-check` against both URLs answered `Verification not found` for a dummy guid on 12 September, which is the Etherscan-shaped reply forge expects and proves the URL form. The MCP server's `verify_routescan` tool builds the same command and dry-runs by default. One thing to know: the ship report's verify command is built from whatever deployment record exists when the report is written. From 0.2.3 the report says which record it read and when; run `npm run ship` again after the deploy, or build the command from the record the deploy just wrote, or you will submit an older address.
       </TabItem>
       <TabItem label="Hardhat (with --hardhat)">
         The scaffold's config declares Routescan as the Etherscan-style explorer for 153 and 151 (`chainDescriptors`, with the same placeholder key), so Hardhat 3's verify task knows where to post:
@@ -359,6 +372,6 @@ The Eligibility SDK is on GitHub Packages, and it needs a GitHub token with `rea
 
 ## Next: say this to your agent
 
-Four warm-up prompts that modify the contract you just built. Each names what to build, who may use it, where it runs and how to show it works; that shape is the point. I ran card 1 again on 14 September 2026 with the new wording, which asks the agent to prove the swap through the dev state panel, and I ran cards 2 to 4 on 12 September. Each compiled, passed the five-state tests and cleared pre-flight, and the badge on each card links to the run record with the prompt, the diff, the test output and the wall time. The plan asks for two agents before a card counts as verified, so a second run is pending. The [full grid of twelve](/tutorials/) is on the tutorials page.
+Four prompts that modify the contract you just built. Each names what to build, who may use it, where it runs and how to show it works; that shape is the point. I ran card 1 again on 14 September 2026 with the new wording, which asks the agent to prove the swap through the dev state panel, I ran cards 2 to 4 on 12 September and card 2 again on 18 September after its rewording. Each compiled, passed the five-state tests and cleared pre-flight, and the badge on each card links to the run record with the prompt, the diff, the test output and the wall time. The plan asks for two agents before a card counts as verified, so a second run is pending. The [full grid of eighteen](/tutorials/) is on the tutorials page.
 
-<CardGrid cards={warmUpCards} filters={false} id="warm-up-cards" />
+<CardGrid cards={scaffoldCards} filters={false} id="scaffold-cards" />

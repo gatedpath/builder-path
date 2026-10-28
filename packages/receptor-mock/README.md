@@ -17,7 +17,7 @@ The local development kit's identity half (`PLAN.md` sections 5.3 and 5.5, Phase
 a mock verifier that puts any wallet into any of five credential states, the `Gated` base contract
 every template gates with, adapters that present a real verifier through the same interface, and a
 Foundry test base that proves a gate against all five states so nobody forgets one. Solidity
-0.8.30, EVM Prague, 222 lines of source, no runtime dependencies in `src/`.
+0.8.30, EVM Prague, 496 lines of source in five files, no runtime dependencies in `src/`.
 
 ## Why an interface
 

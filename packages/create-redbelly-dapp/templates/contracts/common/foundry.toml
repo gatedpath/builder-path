@@ -32,7 +32,7 @@ runs = 64
 depth = 32
 fail_on_revert = false
 
-# Chain 153. `forge script --rpc-url redbelly_testnet --account <keystore-name>`.
+# Chain 153. `forge script --rpc-url redbelly_testnet --account <keystore-name> --sender <its address>`.
 [profile.testnet]
 eth_rpc_url = "__TESTNET_RPC__"
 chain_id = 153

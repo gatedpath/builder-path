@@ -51,7 +51,7 @@ export default defineConfig({
   markdown: { rehypePlugins: [rehypeFocusableTables, rehypeExternalLinks] },
   integrations: [
     starlight({
-      title: 'Redbelly Development Tool',
+      title: 'The Builder Path',
       description:
         'An independent builder site for Redbelly Network (chain 151 mainnet, 153 testnet): from idea to a deployed, identity-gated, checked dApp, for people and for people directing an AI coding agent.',
       customCss: ['./design/tokens.css', './src/styles/fonts.css', './src/styles/site.css'],
@@ -68,53 +68,76 @@ export default defineConfig({
       head: [
         { tag: 'link', attrs: { rel: 'preload', href: '/fonts/readex-pro-latin-wght.woff2', as: 'font', type: 'font/woff2', crossorigin: 'anonymous' } },
       ],
+      // Two shelves, decided by the owner on 22 September 2026 (arrangement C, "the path and the
+      // shelf"). The path is walkable top to bottom: an empty folder ends as a deployed, reviewed,
+      // watched contract. The reference below it never moves, so the pages a reader jumps into
+      // mid-task sit in the same place on all 41 pages. It sorts pages by what they are for and
+      // never sorts readers by what they know, which is what PLAN 20.8 asks for.
+      //
+      // Labels here are NOT reachable by her text tooling (extract-text.mjs reads the pages, not
+      // this file), so a rename is an edit to this file.
       sidebar: [
-        { label: 'Start here', link: '/start/' },
         {
-          label: 'Concepts',
+          label: 'The path',
           items: [
-            { label: 'Overview', link: '/concepts/' },
-            { label: 'Consensus and finality', link: '/concepts/consensus-and-finality/' },
-            { label: 'Blocks on demand', link: '/concepts/blocks-on-demand/' },
-            { label: 'Gas model', link: '/concepts/gas-model/' },
-            { label: 'Identity gate', link: '/concepts/identity-gate/' },
+            { label: 'Start here', link: '/start/' },
+            {
+              label: 'What changes for your code',
+              items: [
+                { label: 'Overview', link: '/concepts/' },
+                { label: 'Consensus and finality', link: '/concepts/consensus-and-finality/' },
+                { label: 'Blocks on demand', link: '/concepts/blocks-on-demand/' },
+                { label: 'Gas model', link: '/concepts/gas-model/' },
+                { label: 'The identity gate', link: '/concepts/identity-gate/' },
+              ],
+            },
+            { label: 'Your developer wallet', link: '/wallets/' },
+            {
+              label: 'Directing an agent',
+              items: [
+                { label: 'Bring your own agent', link: '/agents/' },
+                { label: 'Say what you want', link: '/agents-guide/say-what-you-want/' },
+                { label: 'Read what comes back', link: '/agents-guide/read-what-comes-back/' },
+                { label: 'What never goes into an agent', link: '/agents-guide/what-never-goes-in/' },
+              ],
+            },
+            {
+              label: 'Writing Solidity',
+              items: [
+                { label: 'The path', link: '/solidity/' },
+                { label: '1. Gate a function', link: '/solidity/gate-a-function/' },
+                { label: '2. Test all five states', link: '/solidity/test-five-states/' },
+                { label: '3. Read the gated token', link: '/solidity/the-gated-token/' },
+                { label: '4. Deploy, and be refused', link: '/solidity/deploy-and-refusals/' },
+                { label: '5. Safe and timelock', link: '/solidity/admin-safe-and-timelock/' },
+                { label: '6. Price it in dollars', link: '/solidity/gas-in-dollars/' },
+              ],
+            },
+            { label: 'Something to build', link: '/tutorials/' },
+            { label: 'Review before mainnet', link: '/review/' },
+            { label: 'Shipping with a team', link: '/teams/' },
+            { label: 'Operate what you shipped', link: '/operate/' },
           ],
         },
-        { label: 'Identity', link: '/identity/' },
         {
-          label: 'Directing an agent',
+          label: 'Reference',
           items: [
-            { label: 'Bring your own agent', link: '/agents/' },
-            { label: 'Say what you want', link: '/agents-guide/say-what-you-want/' },
-            { label: 'Read what comes back', link: '/agents-guide/read-what-comes-back/' },
-            { label: 'What never goes into an agent', link: '/agents-guide/what-never-goes-in/' },
+            { label: 'Identity for builders', link: '/identity/' },
+            { label: 'The packages', link: '/tools/' },
+            { label: 'When something fails', link: '/errors/' },
+            { label: 'Network status', link: '/status/' },
+            { label: 'What it costs', link: '/fees/' },
+            { label: 'Network research', link: '/research/' },
           ],
         },
-        {
-          label: 'Writing Solidity',
-          items: [
-            { label: 'The path', link: '/solidity/' },
-            { label: '1. Gate a function', link: '/solidity/gate-a-function/' },
-            { label: '2. Test all five states', link: '/solidity/test-five-states/' },
-            { label: '3. Read the gated token', link: '/solidity/the-gated-token/' },
-            { label: '4. Deploy, and be refused', link: '/solidity/deploy-and-refusals/' },
-            { label: '5. Safe and timelock', link: '/solidity/admin-safe-and-timelock/' },
-            { label: '6. Price it in dollars', link: '/solidity/gas-in-dollars/' },
-          ],
-        },
-        { label: 'Projects', link: '/tutorials/' },
-        { label: 'Tools', link: '/tools/' },
-        { label: 'Research', link: '/research/' },
-        { label: 'Review before mainnet', link: '/review/' },
-        { label: 'When something fails', link: '/errors/' },
-        { label: 'Operate', link: '/operate/' },
-        { label: 'Status', link: '/status/' },
       ],
       expressiveCode: {
         themes: [rbTheme],
         useStarlightDarkModeSwitch: false,
         useStarlightUiThemeColors: false,
-        defaultProps: { wrap: false, preserveIndent: true },
+        // Source and commands wrap at the box edge; what a program printed keeps its exact lines and
+        // scrolls, because wrapped output misrepresents what printed (owner's decision, 26 Sep 2026).
+        defaultProps: { wrap: true, preserveIndent: true, overridesByLang: { 'text,txt,ansi,log,console': { wrap: false } } },
         styleOverrides: {
           borderRadius: '10px',
           borderWidth: '0px',

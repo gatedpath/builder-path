@@ -17,16 +17,26 @@ const ctx = await browser.newContext();
 const page = await ctx.newPage();
 const errors = [];
 page.on('pageerror', (e) => errors.push(e.message));
+// without #edit on the address, nothing of the editor shows but one line at the foot
 await page.goto(url);
-await page.click('.rb-ed-bar button');                      // Edit text
+say('without #edit the page carries no bar and no outlines, only the foot line', await page.locator('.rb-ed-bar').count() === 0, await page.locator('[data-rb-marker]').count() === 0, await page.locator('.rb-ed-hint a[href="#edit"]').count() === 1);
+// with #edit: outlines, a bar, and a box that opens on a click
+await page.goto(url + '#edit');
+await page.waitForSelector('.rb-ed-bar');                    // the hashchange reloads the page; wait for the bar
+say('with #edit the bar is there and the text is outlined', await page.locator('.rb-ed-bar').count() === 1, (await page.locator('[data-rb-marker]').count()) > 10);
 const el = page.locator('[data-rb-marker]').nth(3);
 const marker = await el.getAttribute('data-rb-marker');
 const original = await el.getAttribute('data-rb-original');
-await el.click(); await page.keyboard.press('End'); await page.keyboard.type(' EDITED'); await page.keyboard.press('Enter');
+await el.click();
+say('a click opens the box with the paragraph in it', await page.locator('.rb-ed-box').isVisible(), (await page.locator('.rb-ed-box textarea').inputValue()) === (await el.textContent()));
+await page.locator('.rb-ed-box textarea').fill(original + ' EDITED');
+say('typing in the box changes the page as you go', (await el.textContent()).endsWith('EDITED'));
+await page.keyboard.press('Enter');
+say('Enter closes the box', await page.locator('.rb-ed-box').isHidden());
 const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('rb-edits-v2')));
 say('an edit is stored with the paragraph it was made on, and her words are kept', stored[marker].o === original, stored[marker].t.includes('EDITED'));
 // the export carries "# was:"
-await page.click('text=Save my edits');
+await page.click('.rb-ed-bar button:text-is("Save my edits")');
 const file = await page.locator('.rb-ed-panel textarea').inputValue();
 say('the exported file carries the paragraph each edit was written for', file.includes('# was: ' + original));
 // a rebuild renumbers: pretend this edit was written for a paragraph that [marker] no longer is
@@ -47,6 +57,13 @@ await page.evaluate(([m, o]) => { localStorage.clear(); localStorage.setItem('rb
 await page.reload();
 const migrated = await page.evaluate(() => ({ v1: localStorage.getItem('rb-edits-v1'), v2: JSON.parse(localStorage.getItem('rb-edits-v2')) }));
 say('a version 1 edit is carried over with its paragraph', migrated.v1 === null && migrated.v2[marker]?.o === original);
+// "Put this text back" reverts the one paragraph and forgets its edit
+await page.evaluate(([m, o]) => { localStorage.clear(); localStorage.setItem('rb-edits-v2', JSON.stringify({ [m]: { o, t: o + ' REVERT ME' } })); }, [marker, original]);
+await page.reload();
+await page.locator(`[data-rb-marker="${marker}"]`).click();
+await page.click('.rb-ed-box button[data-act="revert"]');
+const reverted = await page.evaluate(() => JSON.parse(localStorage.getItem('rb-edits-v2') || '{}'));
+say('"Put this text back" restores the paragraph and forgets that edit', (await page.locator(`[data-rb-marker="${marker}"]`).textContent()) === original, !reverted[marker]);
 say('no script error on the page', errors.length === 0);
 await browser.close();
 console.log(failed ? `check-editor: ${failed} problem(s)` : 'check-editor: the in-page editor keeps every edit with its paragraph');

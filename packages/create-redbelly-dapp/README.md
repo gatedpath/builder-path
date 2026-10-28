@@ -93,7 +93,7 @@ contract whose `VERSION()` is `1.4.1`, whose `masterCopy()` is a canonical Safe 
 and whose `getThreshold()` is at least 2; and it refuses to deploy a mock verifier there.
 `scripts/preflight.mjs` runs the same checks from the shell, offline where it can, so the refusal
 shows before anything is signed. Keys are never read: the documentation uses
-`forge script --account <keystore-name>`, `--ledger` or `--trezor`, and the Hardhat path uses
+`forge script --account <keystore-name> --sender <its address>`, `--ledger` or `--trezor`, and the Hardhat path uses
 `hardhat keystore set`.
 
 ## Tests

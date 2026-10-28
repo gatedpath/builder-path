@@ -1,0 +1,469 @@
+
+> test
+> cd contracts && forge test
+
+Compiling 43 files with Solc 0.8.30
+Solc 0.8.30 finished in 2.31s
+Compiler run successful!
+
+Ran 7 tests for test/AdminPattern.t.sol:AdminPatternTest
+[PASS] test_delayCannotBeShortenedWithoutTheTimelock() (gas: 11377)
+[PASS] test_deployerHoldsNothing() (gas: 49204)
+[PASS] test_emergencyPath_pauseIsImmediate_unpauseWaits() (gas: 90281)
+[PASS] test_slowPath_cancelBeforeExecution() (gas: 50484)
+[PASS] test_slowPath_roleGrant_thenOperationalRoleActsAtOnce() (gas: 274683)
+[PASS] test_slowPath_verifierChangeGoesThroughTheTimelock() (gas: 78469)
+[PASS] test_strangerCanDoNothing() (gas: 24343)
+Suite result: ok. 7 passed; 0 failed; 0 skipped; finished in 2.33ms (387.13µs CPU time)
+
+Ran 15 tests for test/DeployPreflight.t.sol:DeployPreflightTest
+[PASS] test_mainnet_accepts_safe_with_threshold_two_and_verified_deployer_and_todays_ship_report() (gas: 363352)
+[PASS] test_mainnet_refuses_a_safe_lookalike_and_a_safe_that_cannot_sign() (gas: 490874)
+[PASS] test_mainnet_refuses_a_ship_report_that_does_not_say_so() (gas: 492572)
+[PASS] test_mainnet_refuses_eoa_admin() (gas: 65153)
+[PASS] test_mainnet_refuses_threshold_one() (gas: 276354)
+[PASS] test_mainnet_refuses_unverified_deployer() (gas: 251411)
+[PASS] test_mainnet_refuses_without_admin_safe() (gas: 57588)
+[PASS] test_mainnet_refuses_without_todays_ship_report() (gas: 351470)
+[PASS] test_mainnet_refuses_wrong_version_or_singleton() (gas: 303372)
+[PASS] test_other_chain_skips_identity() (gas: 22476)
+[PASS] test_redbelly_refuses_when_registry_missing() (gas: 19972)
+[PASS] test_refuses_when_the_simulated_chain_is_not_the_rpcs() (gas: 49684)
+[PASS] test_ship_report_path_is_todays_utc_date() (gas: 42329)
+[PASS] test_testnet_allows_eoa_admin_but_still_checks_identity() (gas: 87354)
+[PASS] test_testnet_warns_without_ship_report_and_accepts_with_one() (gas: 154896)
+Suite result: ok. 15 passed; 0 failed; 0 skipped; finished in 3.45ms (2.99ms CPU time)
+
+Ran 20 tests for test/GatedPair.t.sol:GatedPairTest
+[PASS] testFuzz_mintThenBurnReturnsNoMoreThanDeposited(uint96,uint96) (runs: 512, μ: 321207, ~: 321026)
+[PASS] test_addLiquidity_firstDepositIsGatedToo() (gas: 552915)
+[PASS] test_addLiquidity_fiveStatesOnTheProvider() (gas: 364940)
+[PASS] test_addLiquidity_gateIsOnTheWalletThatReceivesThePosition() (gas: 263352)
+[PASS] test_admin_onlyTheOwnerRepointsTheGates() (gas: 172269)
+[PASS] test_createPair_isDeterministicAndRefusesDuplicates() (gas: 2385098)
+[PASS] test_factory_bindsTheRecipeAndTheNetworkGate() (gas: 46322)
+[PASS] test_factory_refusesZeroPermission() (gas: 92965)
+[PASS] test_feeTo_treasuryIsMintedWithoutTheProviderGate() (gas: 398115)
+[PASS] test_lpTransfer_recipientMustPassTheProviderGate() (gas: 350507)
+[PASS] test_removeLiquidity_holderWhoseCredentialExpiredExits() (gas: 396793)
+[PASS] test_removeLiquidity_revokedHolderExitsToo() (gas: 235380)
+[PASS] test_removeLiquidity_toAnUnverifiedRecipientIsRefused() (gas: 226129)
+[PASS] test_skim_recipientMustBeVerified() (gas: 261239)
+[PASS] test_swap_everyNonValidStateStillSwaps() (gas: 382812)
+[PASS] test_swap_flashBorrowerContractIsRefused() (gas: 315293)
+[PASS] test_swap_holdsTheConstantProduct() (gas: 245548)
+[PASS] test_swap_toAnotherPairOfTheFactoryIsAllowed() (gas: 2620931)
+[PASS] test_swap_unverifiedRecipientIsRefused() (gas: 245799)
+[PASS] test_swap_verifiedWalletWithoutTheCredentialSwaps() (gas: 260702)
+Suite result: ok. 20 passed; 0 failed; 0 skipped; finished in 109.85ms (108.81ms CPU time)
+
+Ran 4 tests for test/GatedERC20.fuzz.t.sol:GatedERC20FuzzTest
+[PASS] testFuzz_distribute_mintsExactlyTheEligibleSubset(uint8[6],uint256[6]) (runs: 512, μ: 337123, ~: 343608)
+[PASS] testFuzz_forceTransfer_needsHashAndEligibleRecipient(uint256,bytes32,uint8,uint8) (runs: 512, μ: 170908, ~: 164667)
+[PASS] testFuzz_subscribe_onlyValidOnce(address,uint8) (runs: 512, μ: 71486, ~: 55074)
+[PASS] testFuzz_transfer_requiresBothValid(address,address,uint8,uint8,uint256) (runs: 512, μ: 168555, ~: 167204)
+Suite result: ok. 4 passed; 0 failed; 0 skipped; finished in 453.09ms (519.20ms CPU time)
+
+Ran 23 tests for test/GatedERC20.t.sol:GatedERC20Test
+[PASS] test_admin_theLastOneCannotLeave_butCanHandOver() (gas: 65585)
+[PASS] test_burn_revertsInAllInvalidStates() (gas: 194226)
+[PASS] test_canTransfer_mirrorsTheGate() (gas: 203110)
+[PASS] test_distribute_everyoneIneligibleMintsNothingButStillNeedsAnIssuer() (gas: 54157)
+[PASS] test_distribute_lengthMismatch() (gas: 12601)
+[PASS] test_distribute_skipsIneligibleAndRecordsDenial() (gas: 204128)
+[PASS] test_forceTransfer_doesNotLeakTheForcingFlag() (gas: 197164)
+[PASS] test_forceTransfer_movesFromRevokedHolder_withJustificationHash() (gas: 188644)
+[PASS] test_forceTransfer_recipientRevertsInAllInvalidStates() (gas: 237666)
+[PASS] test_forceTransfer_refusesTheZeroAddressOnEitherSide() (gas: 203515)
+[PASS] test_forceTransfer_requiresJustification_andRole() (gas: 168049)
+[PASS] test_mint_needsAnActiveIssuer() (gas: 64031)
+[PASS] test_mint_revertsForIneligibleRecipient() (gas: 177294)
+[PASS] test_pause_blocksEverythingButUnpause_andRolesSplit() (gas: 271253)
+[PASS] test_requestIdChange_movesTheGate() (gas: 169356)
+[PASS] test_roles_fallBackToAdmin() (gas: 1811513)
+[PASS] test_roles_separatedWhenGiven() (gas: 33617)
+[PASS] test_setVerifierAndRequestId_onlyAdmin() (gas: 40937)
+[PASS] test_subscribe_revertsInAllInvalidStates() (gas: 181420)
+[PASS] test_subscribe_valid_once_and_closed() (gas: 177450)
+[PASS] test_transferFrom_checksRealPartiesNotTheSpender() (gas: 322456)
+[PASS] test_transfer_bothPartiesInAllFiveStates() (gas: 351635)
+[PASS] test_zeroAdminRefused() (gas: 119316)
+Suite result: ok. 23 passed; 0 failed; 0 skipped; finished in 453.09ms (3.75ms CPU time)
+
+Ran 6 tests for test/GatedERC20.invariants.t.sol:GatedERC20Invariants
+[PASS] invariant_forcedTransfersCarryAHash() (runs: 64, calls: 2048, reverts: 0)
+
+╭----------+-------------------------------+-------+---------+----------╮
+| Contract | Selector                      | Calls | Reverts | Discards |
++=======================================================================+
+| Handler  | burn                          | 160   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | distribute                    | 155   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | forceTransfer                 | 149   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | forceTransferAtTheZeroAddress | 177   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | mint                          | 147   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | pause                         | 180   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | reissue                       | 189   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | setStatus                     | 185   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | subscribe                     | 171   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | transfer                      | 180   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | unpause                       | 180   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | warp                          | 175   | 0       | 0        |
+╰----------+-------------------------------+-------+---------+----------╯
+
+[PASS] invariant_issuerWithinAllowance() (runs: 64, calls: 2048, reverts: 0)
+
+╭----------+-------------------------------+-------+---------+----------╮
+| Contract | Selector                      | Calls | Reverts | Discards |
++=======================================================================+
+| Handler  | burn                          | 160   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | distribute                    | 155   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | forceTransfer                 | 149   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | forceTransferAtTheZeroAddress | 177   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | mint                          | 147   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | pause                         | 180   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | reissue                       | 189   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | setStatus                     | 185   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | subscribe                     | 171   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | transfer                      | 180   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | unpause                       | 180   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | warp                          | 175   | 0       | 0        |
+╰----------+-------------------------------+-------+---------+----------╯
+
+[PASS] invariant_noIneligibleRecipient() (runs: 64, calls: 2048, reverts: 0)
+
+╭----------+-------------------------------+-------+---------+----------╮
+| Contract | Selector                      | Calls | Reverts | Discards |
++=======================================================================+
+| Handler  | burn                          | 160   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | distribute                    | 155   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | forceTransfer                 | 149   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | forceTransferAtTheZeroAddress | 177   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | mint                          | 147   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | pause                         | 180   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | reissue                       | 189   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | setStatus                     | 185   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | subscribe                     | 171   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | transfer                      | 180   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | unpause                       | 180   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | warp                          | 175   | 0       | 0        |
+╰----------+-------------------------------+-------+---------+----------╯
+
+[PASS] invariant_noTransferWhilePaused() (runs: 64, calls: 2048, reverts: 0)
+
+╭----------+-------------------------------+-------+---------+----------╮
+| Contract | Selector                      | Calls | Reverts | Discards |
++=======================================================================+
+| Handler  | burn                          | 160   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | distribute                    | 155   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | forceTransfer                 | 149   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | forceTransferAtTheZeroAddress | 177   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | mint                          | 147   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | pause                         | 180   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | reissue                       | 189   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | setStatus                     | 185   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | subscribe                     | 171   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | transfer                      | 180   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | unpause                       | 180   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | warp                          | 175   | 0       | 0        |
+╰----------+-------------------------------+-------+---------+----------╯
+
+[PASS] invariant_skipsAreOnTheLog() (runs: 64, calls: 2048, reverts: 0)
+
+╭----------+-------------------------------+-------+---------+----------╮
+| Contract | Selector                      | Calls | Reverts | Discards |
++=======================================================================+
+| Handler  | burn                          | 160   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | distribute                    | 155   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | forceTransfer                 | 149   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | forceTransferAtTheZeroAddress | 177   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | mint                          | 147   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | pause                         | 180   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | reissue                       | 189   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | setStatus                     | 185   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | subscribe                     | 171   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | transfer                      | 180   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | unpause                       | 180   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | warp                          | 175   | 0       | 0        |
+╰----------+-------------------------------+-------+---------+----------╯
+
+[PASS] invariant_supplyConserved() (runs: 64, calls: 2048, reverts: 0)
+
+╭----------+-------------------------------+-------+---------+----------╮
+| Contract | Selector                      | Calls | Reverts | Discards |
++=======================================================================+
+| Handler  | burn                          | 160   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | distribute                    | 155   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | forceTransfer                 | 149   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | forceTransferAtTheZeroAddress | 177   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | mint                          | 147   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | pause                         | 180   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | reissue                       | 189   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | setStatus                     | 185   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | subscribe                     | 171   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | transfer                      | 180   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | unpause                       | 180   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | warp                          | 175   | 0       | 0        |
+╰----------+-------------------------------+-------+---------+----------╯
+
+Suite result: ok. 6 passed; 0 failed; 0 skipped; finished in 482.91ms (1.33s CPU time)
+
+Ran 7 tests for test/IssuerRegistry.t.sol:IssuerRegistryTest
+[PASS] testFuzz_mintsNeverExceedAllowanceInsideWindow(uint64,uint256,uint256[8],uint64) (runs: 512, μ: 243469, ~: 248801)
+[PASS] test_allowanceIsSpentAndBounded() (gas: 177976)
+[PASS] test_beforeWindow_insideWindow_afterWindow() (gas: 176625)
+[PASS] test_onlyIssuerAdminSets() (gas: 24313)
+[PASS] test_replacingResetsMinted_andRevokeStops() (gas: 136936)
+[PASS] test_windowValidation() (gas: 34857)
+[PASS] test_zeroValidFromMeansNow_andEventCarriesIt() (gas: 81901)
+Suite result: ok. 7 passed; 0 failed; 0 skipped; finished in 482.94ms (121.19ms CPU time)
+
+Ran 6 tests for test/GatedERC20.invariants.t.sol:GatedERC20NoDowngradeInvariants
+[PASS] invariant_forcedTransfersCarryAHash() (runs: 64, calls: 2048, reverts: 0)
+
+╭----------+-------------------------------+-------+---------+----------╮
+| Contract | Selector                      | Calls | Reverts | Discards |
++=======================================================================+
+| Handler  | burn                          | 160   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | distribute                    | 155   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | forceTransfer                 | 149   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | forceTransferAtTheZeroAddress | 177   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | mint                          | 147   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | pause                         | 180   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | reissue                       | 189   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | setStatus                     | 185   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | subscribe                     | 171   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | transfer                      | 180   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | unpause                       | 180   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | warp                          | 175   | 0       | 0        |
+╰----------+-------------------------------+-------+---------+----------╯
+
+[PASS] invariant_issuerWithinAllowance() (runs: 64, calls: 2048, reverts: 0)
+
+╭----------+-------------------------------+-------+---------+----------╮
+| Contract | Selector                      | Calls | Reverts | Discards |
++=======================================================================+
+| Handler  | burn                          | 160   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | distribute                    | 155   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | forceTransfer                 | 149   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | forceTransferAtTheZeroAddress | 177   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | mint                          | 147   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | pause                         | 180   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | reissue                       | 189   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | setStatus                     | 185   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | subscribe                     | 171   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | transfer                      | 180   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | unpause                       | 180   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | warp                          | 175   | 0       | 0        |
+╰----------+-------------------------------+-------+---------+----------╯
+
+[PASS] invariant_noIneligibleHolder() (runs: 64, calls: 2048, reverts: 0)
+
+╭----------+-------------------------------+-------+---------+----------╮
+| Contract | Selector                      | Calls | Reverts | Discards |
++=======================================================================+
+| Handler  | burn                          | 160   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | distribute                    | 155   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | forceTransfer                 | 149   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | forceTransferAtTheZeroAddress | 177   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | mint                          | 147   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | pause                         | 180   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | reissue                       | 189   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | setStatus                     | 185   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | subscribe                     | 171   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | transfer                      | 180   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | unpause                       | 180   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | warp                          | 175   | 0       | 0        |
+╰----------+-------------------------------+-------+---------+----------╯
+
+[PASS] invariant_noIneligibleRecipient() (runs: 64, calls: 2048, reverts: 0)
+
+╭----------+-------------------------------+-------+---------+----------╮
+| Contract | Selector                      | Calls | Reverts | Discards |
++=======================================================================+
+| Handler  | burn                          | 160   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | distribute                    | 155   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | forceTransfer                 | 149   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | forceTransferAtTheZeroAddress | 177   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | mint                          | 147   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | pause                         | 180   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | reissue                       | 189   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | setStatus                     | 185   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | subscribe                     | 171   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | transfer                      | 180   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | unpause                       | 180   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | warp                          | 175   | 0       | 0        |
+╰----------+-------------------------------+-------+---------+----------╯
+
+[PASS] invariant_noTransferWhilePaused() (runs: 64, calls: 2048, reverts: 0)
+
+╭----------+-------------------------------+-------+---------+----------╮
+| Contract | Selector                      | Calls | Reverts | Discards |
++=======================================================================+
+| Handler  | burn                          | 160   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | distribute                    | 155   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | forceTransfer                 | 149   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | forceTransferAtTheZeroAddress | 177   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | mint                          | 147   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | pause                         | 180   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | reissue                       | 189   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | setStatus                     | 185   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | subscribe                     | 171   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | transfer                      | 180   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | unpause                       | 180   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | warp                          | 175   | 0       | 0        |
+╰----------+-------------------------------+-------+---------+----------╯
+
+[PASS] invariant_supplyConserved() (runs: 64, calls: 2048, reverts: 0)
+
+╭----------+-------------------------------+-------+---------+----------╮
+| Contract | Selector                      | Calls | Reverts | Discards |
++=======================================================================+
+| Handler  | burn                          | 160   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | distribute                    | 155   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | forceTransfer                 | 149   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | forceTransferAtTheZeroAddress | 177   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | mint                          | 147   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | pause                         | 180   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | reissue                       | 189   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | setStatus                     | 185   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | subscribe                     | 171   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | transfer                      | 180   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | unpause                       | 180   | 0       | 0        |
+|----------+-------------------------------+-------+---------+----------|
+| Handler  | warp                          | 175   | 0       | 0        |
+╰----------+-------------------------------+-------+---------+----------╯
+
+Suite result: ok. 6 passed; 0 failed; 0 skipped; finished in 482.98ms (1.49s CPU time)
+
+Ran 8 test suites in 483.75ms (2.47s CPU time): 88 tests passed, 0 failed, 0 skipped (88 total tests)

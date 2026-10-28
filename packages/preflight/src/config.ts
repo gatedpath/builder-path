@@ -12,6 +12,8 @@ export interface ProjectConfig {
   file: string | null;
   profile: string | null;
   solc: string | null;
+  /** foundry `auto_detect_solc = true`: solc chosen per file from its pragma; the pin cannot be read from the config alone. */
+  autoDetectSolc: boolean;
   evmVersion: string | null;
   optimizerRuns: number | null;
   /** foundry: `src`; hardhat: `contracts`. */
@@ -33,7 +35,7 @@ export function readProjectConfig(project: string, profile?: string, env: NodeJS
     const file = join(project, name);
     if (existsSync(file)) return readHardhatConfig(file, profile ?? null);
   }
-  return { kind: 'none', file: null, profile: null, solc: null, evmVersion: null, optimizerRuns: null, sourceDir: 'src', chainId: null, rpcEndpoints: {}, rpcUrl: null };
+  return { kind: 'none', file: null, profile: null, solc: null, autoDetectSolc: false, evmVersion: null, optimizerRuns: null, sourceDir: 'src', chainId: null, rpcEndpoints: {}, rpcUrl: null };
 }
 
 // ---------- Foundry ----------
@@ -133,6 +135,7 @@ export function readFoundryConfig(file: string, profile: string): ProjectConfig 
     file,
     profile,
     solc: str('solc') ?? str('solc_version'),
+    autoDetectSolc: get('auto_detect_solc') === true,
     evmVersion: str('evm_version'),
     optimizerRuns: num('optimizer_runs'),
     sourceDir: str('src') ?? 'src',
@@ -175,6 +178,7 @@ export function readHardhatConfig(file: string, network: string | null): Project
     file,
     profile: chosen,
     solc,
+    autoDetectSolc: false,
     evmVersion: evm ? evm[1]! : null,
     optimizerRuns: runs ? Number(runs[1]) : null,
     sourceDir: contractsDir ? contractsDir[1]!.replace(/^\.\//, '') : 'contracts',

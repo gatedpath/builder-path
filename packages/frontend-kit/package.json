@@ -1,6 +1,6 @@
 {
   "name": "@gatedpath/frontend-kit",
-  "version": "0.2.0",
+  "version": "0.2.3",
   "description": "React components and one hook for the five eligibility states every Redbelly dApp has: not connected, connected but not verified on the network, verified but ineligible for this action, eligible, credential expiring soon; plus explainError, the plain words for a viem or wagmi error from the shared failure table. wagmi + viem, headless with a small default style.",
   "license": "MIT",
   "repository": {

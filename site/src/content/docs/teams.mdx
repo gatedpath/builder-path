@@ -1,0 +1,111 @@
+---
+title: For a team that ships
+description: 'What a lead needs to bring a team onto Redbelly Network: adding the kit to a repository you already have, one rules file for every developer''s agent, CI, who holds which role, the ship report as the release document, watching the network''s own contracts, and a key policy.'
+lastVerified: '2026-09-26'
+---
+
+import ForAgents from '../../components/ForAgents.astro';
+import StatusPill from '../../components/StatusPill.astro';
+import Sample from '../../components/Sample.astro';
+
+<ForAgents
+  page="For a team that ships"
+  facts={[
+    'To add the gate to an existing Foundry project: npm install --save-dev @gatedpath/receptor-mock, then two remappings, @gatedpath/receptor-mock/=node_modules/@gatedpath/receptor-mock/src/ and @gatedpath/receptor-mock-test/=node_modules/@gatedpath/receptor-mock/test/. Inherit Gated, pass the verifier and request id to its constructor, implement _authorizeVerifierChange.',
+    'Gating a function changes the constructor and makes every existing test of that function fail with NotEligible. That failure is correct. Replace the test with GatedTest and assertRevertsForAllInvalidStates; do not loosen the gate to make an old test pass.',
+    'Every Solidity file in the kit is pragma solidity 0.8.30 exactly. Pin solc_version = "0.8.30" and evm_version = "prague" in foundry.toml; pre-flight fails compiler-pins without them.',
+    'Write the rules files with npx -y @gatedpath/agent-rules --out . and check them in CI with npx -y @gatedpath/agent-rules --check --out . (exit 1 when a file has drifted). Never edit a generated rules file by hand.',
+    'redbelly-doctor and redbelly-preflight run in a project that is not a scaffold. Pre-flight exits 1 on any fail; never deploy past it, and never pass it a key.',
+    'No developer key, seed phrase or keystore password goes into a repository, a CI secret or an agent. Admin roles sit on Safes from the first testnet deploy; the deployer holds nothing afterwards.',
+  ]}
+/>
+
+The rest of this site is written for one person at one machine. If you answer for several of them, most of what you need is already built and sits on other pages, so I have gathered it here in the order I would put it in place. One part is new, which is bringing the kit into a repository you already have.
+
+## Add the kit to a repository you already have
+
+The scaffolder makes a new project, and a team usually has one already. So I ran the steps below on 21 September 2026, with the packages at 0.2.1 from npm, on the project that `forge init` gives everybody: the stock `Counter`, its test and its deploy script.
+
+<StatusPill variant="verified" label="Run 21 Sep 2026 on the stock Foundry project" /> <StatusPill variant="pending" label="Not yet run on a repository we did not write" />
+
+Please take the second pill seriously. The stock project is small and I set it up myself, so this shows you the steps and where they stick, but it does not prove anything about your repository. I will replace the pill when a team's real repository has been through it.
+
+1. Install the gate and tell Foundry where it is. The package has no dependencies of its own.
+
+   ```sh
+   npm install --save-dev @gatedpath/receptor-mock
+   ```
+
+   ```text title="remappings.txt, two lines added"
+   @gatedpath/receptor-mock/=node_modules/@gatedpath/receptor-mock/src/
+   @gatedpath/receptor-mock-test/=node_modules/@gatedpath/receptor-mock/test/
+   ```
+
+2. Gate one function, so that the contract inherits `Gated`, takes the verifier and the request id in its constructor, puts `gated` on the function, and implements `_authorizeVerifierChange` with whatever owner check you already use. [Gate a function](/solidity/gate-a-function/) has the code.
+
+3. Pin the compiler, because every Solidity file in the kit says `pragma solidity 0.8.30;` exactly, and the network is Prague. The stock `foundry.toml` pins neither, and pre-flight fails it until `solc_version` and `evm_version` are set as they are in this file, which `forge` builds from in this repository:
+
+   <Sample id="foundry-toml" />
+
+4. Replace each old test of a gated function with a five-state test. [Test all five states](/solidity/test-five-states/) has the pattern, and in the run it was one call to `assertRevertsForAllInvalidStates`.
+
+### The three places it got stuck
+
+Each of these stopped my run, and I expect each one to stop yours.
+
+- The constructor changed, so everything that deploys the contract broke: the test's `setUp` and the deploy script both failed to compile until they passed a verifier and a request id. In the run the test passes a `ReceptorMock` and the deploy script reads both from the environment.
+- An old test of a gated function fails, with `NotEligible`. The test contract is not a verified wallet, so the gate refuses it, which means the gate is working. Please do not loosen the gate until the old test passes.
+- Pre-flight failed `compiler-pins` on the stock `foundry.toml`, as in step 3.
+
+<StatusPill variant="verified" label="A project pinned to an older compiler: run 26 Sep 2026" /> Because the kit's pragma is exact, a project whose `foundry.toml` pins another compiler cannot build with the gate until it moves the pin to 0.8.30. Measured on 26 September 2026 on the same stock project with `solc = "0.8.25"` in its `foundry.toml`: `forge build` stopped in 11.3 seconds at version resolution with `No solc version exists that matches the version requirement: =0.8.30`, naming `Gated.sol`, and downloaded nothing. The fix is that one line; the project's own `^0.8.13` files compile under 0.8.30 unchanged. The [run record of 26 September 2026](https://github.com/gatedpath/builder-path/blob/main/cards/runs/2026-09-26/adopt-older-compiler.md) has it. Still not run: a project that takes OpenZeppelin as a git submodule, a project with CI of its own, and Hardhat.
+
+The whole run, with every command and what it printed, is in the [run record of 21 September 2026](https://github.com/gatedpath/builder-path/blob/main/cards/runs/2026-09-21/adopt-in-a-plain-foundry-project.md).
+
+## One rules file for every agent on the team
+
+On a team, each developer's agent starts from whatever that developer told it. One command writes the same rules into seven files from one source, one for each agent tool that reads its own, so every agent works under the same guardrails: never ask for a key, test all five credential states, never deploy past pre-flight.
+
+```sh
+npm install --save-dev @gatedpath/agent-rules
+npx -y @gatedpath/agent-rules --out .
+```
+
+In the run this wrote `CLAUDE.md`, `AGENTS.md`, `.cursor/rules/redbelly.mdc`, `.github/copilot-instructions.md`, `GEMINI.md`, `llms.txt` and `llms-full.txt`, and I would commit them. If someone edits a rules file by hand, a guardrail has moved without anyone deciding it should, so CI runs the check, which exits 1 when a file has drifted:
+
+```sh
+npx -y @gatedpath/agent-rules --check --out .
+```
+
+[Bring your own agent](/agents/) says what is in the rules and why.
+
+## CI
+
+The scaffold ships a workflow in which every action is pinned to a release tag and nothing holds a key or deploys. Its jobs are the list I would add to an existing pipeline: build with warnings as errors, unit, fuzz and invariant tests, a format check, Slither, Aderyn, a gas snapshot diff on pull requests, and the rules-file check above. It is `templates/base/.github/workflows/ci.yml` in [the scaffolder's package](https://github.com/gatedpath/builder-path/tree/main/packages/create-redbelly-dapp).
+
+<StatusPill variant="pending" label="Not yet added to an existing pipeline" /> That workflow ships in every scaffold. I have not merged it into a pipeline a team already had.
+
+## Who holds which role
+
+On this network a key stands for a verified person, so no single developer's wallet should be able to pause a token, move a balance or change the verifier. In the contract kit a governance Safe of 2 of 3 is the only proposer and executor of a timelock, the timelock holds the admin role, the fast roles (pause, forced transfer, issuers) sit on Safes, and the deployer holds nothing after the deploy transaction. On mainnet the deploy script refuses an admin that is not a Safe 1.4.1 with a threshold of at least two, and refuses a timelock delay under one day.
+
+I would decide who the signers are before the first testnet deploy, and not leave it until mainnet. [Safe and timelock](/solidity/admin-safe-and-timelock/) has the layout and what is slow and what is fast.
+
+## The ship report, as the document a lead signs
+
+A lead needs one document to sign before mainnet, and `redbelly ship` writes it: the gas report, every pre-flight check with its result, the verifier, the tests and how many suites test the gate, the deployer and admin readings, and each contract with the command that verifies it. The deploy script refuses chain 151 without that day's report. [Review before mainnet](/review/#the-ship-report) covers it.
+
+Both tools run in a project that is not a scaffold. In the run, `npx redbelly-doctor` passed every required check and said that the project was not a scaffold, and `npx redbelly-preflight --chain 153` read the public testnet RPC, printed seven lines and exited 1, because two checks had failed. Its last line was "Do not deploy."
+
+## Watch the network's own contracts
+
+Redbelly told me on 17 September 2026 that there is no announcement channel for changes to the network's system contracts. If your team has a product on the network, you do not want to hear about a change from your users. `redbelly-system-watch` in the ops kit reads the registry, the permission contract's implementation, its admin and its owner, and the role and upgrade logs, and reports what changed since your baseline. It is read-only and needs no wallet. [Operate](/operate/#the-networks-own-contracts) has the commands.
+
+## A key policy for a team
+
+I would write it down before the second developer joins, and mine would say this.
+
+- Every developer's deploy wallet is linked to that developer as a verified person, and they answer for it. [Your developer wallet](/wallets/) has what Redbelly's own pages say. Nobody shares a wallet, and nobody deploys from another person's.
+- Keys live in a keystore or on a hardware wallet. Never in `.env`, never in a CI secret, never in a message to an agent or to each other. [What never goes into an agent](/agents-guide/what-never-goes-in/) has the list and what to do if it happens anyway.
+- CI never signs anything. The pipeline builds, tests and checks, and a person runs the command that deploys.
+- Company deployments belong under the company, and a verified business can add delegate wallets that write to the network under the business and not under an employee's personal identity. [Business verification and delegate wallets](/identity/#business-verification-and-delegate-wallets) covers it.
+- Most of the work needs no wallet, because the local loop runs on a fork where Anvil signs, so a new developer can build, test and rehearse a deploy on the first day without linking anything.

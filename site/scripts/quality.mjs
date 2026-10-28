@@ -1,5 +1,5 @@
 // Runs every quality gate in order: build, astro check, bundle budget, axe, the tooltip
-// geometry check, Lighthouse, screenshots. Any failure stops the run with a non-zero exit.
+// geometry check, the sideways-scroll check, Lighthouse, screenshots. Any failure stops the run with a non-zero exit.
 import { spawnSync } from 'node:child_process';
 import { siteDir } from './serve.mjs';
 
@@ -10,6 +10,9 @@ const steps = [
   [process.execPath, ['scripts/budget.mjs']],
   [process.execPath, ['scripts/axe.mjs']],
   [process.execPath, ['scripts/check-tips.mjs']],
+  [process.execPath, ['scripts/check-overflow.mjs']],
+  [process.execPath, ['scripts/check-copy.mjs']],
+  [process.execPath, ['scripts/check-motion.mjs']],
   [process.execPath, ['scripts/lighthouse.mjs']],
   [process.execPath, ['scripts/screenshots.mjs']],
 ];

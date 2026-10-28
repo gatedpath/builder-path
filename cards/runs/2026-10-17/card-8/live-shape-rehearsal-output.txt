@@ -1,0 +1,88 @@
+
+== 0. Where we are: a fork of 153 at today's block, the live contracts under test
+    rpc http://127.0.0.1:8550  chain id 153  block 3056729  time 1792931875
+    InvoiceFinancing 0xcd7F22Ddc8d22224A98f1c98c601F890cb3F3d90  owner 0x38d8fd4d6bAd7Af440Ed5D35a4E381f5f2936B59  invoiceCount 0
+    investor gate now: verifier 0x2E652B946DC303d8f53bC92D0787e13B109003e5 request 708   lister gate now: 0x2E652B946DC303d8f53bC92D0787e13B109003e5 request 0
+    stablecoin 0x9cF4E639C35141cF4C36E5c38dc88151FB89E6Db "mUSD" 6 decimals
+    owner impersonated on the fork (a fork can; the network cannot)
+
+== 1. The live shapes: a BusinessIdentifier with its adapter, a ZKPVerifier (2.x shape) with the kit's Iden3 adapter
+    identifier 0xef11D1c2aA48826D4c41e54ab82D1Ff5Ad8A64Ca (idp = account 7, representative = account 8; "Acme Invoices Pty Ltd")
+    business adapter 0x39dD11C243Ac4Ac250980FA3AEa016f73C509f37   zkp verifier 0x76ca03a67C049477FfB09694dFeF00416dB69746 (request 708 set)   investor adapter 0x332Fb35767182F8ac9F9C1405db626105F6694E0 (surface ZKPVerifierV2)
+
+== 2. The owner repoints the live contract: lister gate to the business adapter (request 0), investor gate to the Iden3 adapter
+    status 0x1  gas 31623  block 3056735
+    status 0x1  gas 30605  block 3056736
+    investor gate: 0x332Fb35767182F8ac9F9C1405db626105F6694E0 request 708   lister gate: 0x39dD11C243Ac4Ac250980FA3AEa016f73C509f37 request 0
+  a stranger (account 3) tries the same:
+    refused: OwnableUnauthorizedAccount(0x90F79bf6EB2c4f870365E785982E1f101E93b906)  selector 0x118cdaa7
+
+== 3. Roles on the identifier: the representative adds account 9 as a delegate; the reads are live
+    status 0x1  gas 51545  block 3056737
+    isLister(delegate 9) true   isLister(representative 8) true   isLister(investor 3) false
+    adapter request 1 (representatives only): delegate 9 false   representative 8 true   request 2 (unknown): representative 8 false
+  the delegate tries to add a delegate of its own:
+    refused: UnauthorisedAccess("Caller must have IDP or Authorised Representative")  selector 0x84d65ae5
+  the representative tries to add a representative (the issuer's right):
+    refused: UnauthorisedAccess("Caller must be IDP")  selector 0x84d65ae5
+
+== 4. Proofs on the ZKP verifier: account 3 has an accepted proof for 708, account 4 has none
+    status 0x1  gas 46644  block 3056738
+    isEligible(investor 3) true   isEligible(account 4) false   isEligible(delegate 9) false
+    the adapter over a request never set (709) reads: false   (the verifier reverts; the adapter reads false)
+  recording a proof for the unset request 709:
+    refused: RequestIdNotFound(709)  selector 0x0381c14a
+
+== 5. Realistic values, and the input edges: face 48,250.00 mUSD, 250 bps, due in 45 days, document 0x667e2aa2a6ad065b9cfa36e61f1b9c3d689330218f9597b27a4a8c893c84a6c0
+    advanceFor(face, 250) = 47,043.75 mUSD
+  discount 0:
+    refused: BadDiscount(0)  selector 0xc47a6dc9
+  discount 10000:
+    refused: BadDiscount(10000 [1e4])  selector 0xc47a6dc9
+  due date = now:
+    refused: DueDateInThePast(1792931906 [1.792e9])  selector 0x0a0b7d47
+  face value 0:
+    refused: ZeroFaceValue()  selector 0xf3e09fea
+  the investor (a wholesale credential, not a delegate) lists:
+    refused: NotEligible(0x90F79bf6EB2c4f870365E785982E1f101E93b906, 0)  selector 0x879342fb
+  the delegate (9) lists invoice 1:
+    status 0x1  gas 150385  block 3056743
+    invoice 1: Listed  (0xa0Ee7A142d267C1f36714E4a8F75612F20a79720, 0x0000000000000000000000000000000000000000, 48250000000 [4.825e10], 250, 1796819875 [1.796e9], 1, 0x667e2aa2a6ad065b9cfa36e61f1b9c3d689330218f9597b27a4a8c893c84a6c0)
+    rounding: advanceFor(1, 1) = 1 (a 1-unit face at 1 bps gives no discount at all)   advanceFor(39999, 1) = 39996
+
+== 6. Funding: account 4 (no proof) refused, the delegate refused, the investor (3) funds and the advance lands in the DELEGATE's wallet
+  account 4:
+    refused: NotEligible(0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65, 708)  selector 0x879342fb
+  delegate 9:
+    refused: NotEligible(0xa0Ee7A142d267C1f36714E4a8F75612F20a79720, 708)  selector 0x879342fb
+  investor 3:
+    status 0x1  gas 98075  block 3056744
+    invoice 1: Funded  (0xa0Ee7A142d267C1f36714E4a8F75612F20a79720, 0x90F79bf6EB2c4f870365E785982E1f101E93b906, 48250000000 [4.825e10], 250, 1796819875 [1.796e9], 2, 0x667e2aa2a6ad065b9cfa36e61f1b9c3d689330218f9597b27a4a8c893c84a6c0)
+    investor 0.00   delegate wallet 9 47,043.75   representative 8 0.00   contract 0.00   (the advance went to the wallet that listed, not to a business treasury)
+
+== 7. The due date passes (50 days on the fork's clock); repayment after it is accepted, nothing enforces the date
+    now 1797251913 > due 1796819875: yes
+  the delegate repays the face value 5 days late:
+    status 0x1  gas 59839  block 3056748
+    invoice 1: Repaid  (0xa0Ee7A142d267C1f36714E4a8F75612F20a79720, 0x90F79bf6EB2c4f870365E785982E1f101E93b906, 48250000000 [4.825e10], 250, 1796819875 [1.796e9], 3, 0x667e2aa2a6ad065b9cfa36e61f1b9c3d689330218f9597b27a4a8c893c84a6c0)
+    contract holds 48,250.00 mUSD
+
+== 8. A delegate removed mid-flight: the representative removes 9; the next list is refused at once; the repaid invoice is unaffected
+    status 0x1  gas 29505  block 3056749
+    isLister(9) false
+  the removed delegate lists again:
+    refused: NotEligible(0xa0Ee7A142d267C1f36714E4a8F75612F20a79720, 0)  selector 0x879342fb
+  the owner narrows the lister gate to representatives only (request 1); 9 re-added as a delegate is still refused, 8 passes:
+    isLister(delegate 9) false   isLister(representative 8) true
+
+== 9. The investor's proof withdrawn (revocation at the verifier): release refused, the money stays; restored: released
+  investor 3, proof withdrawn, releases:
+    refused: NotEligible(0x90F79bf6EB2c4f870365E785982E1f101E93b906, 708)  selector 0x879342fb
+  the delegate releases:
+    refused: NotEligible(0xa0Ee7A142d267C1f36714E4a8F75612F20a79720, 708)  selector 0x879342fb
+  investor 3, proof restored, releases:
+    status 0x1  gas 74727  block 3056755
+    invoice 1: Released  (0xa0Ee7A142d267C1f36714E4a8F75612F20a79720, 0x90F79bf6EB2c4f870365E785982E1f101E93b906, 48250000000 [4.825e10], 250, 1796819875 [1.796e9], 4, 0x667e2aa2a6ad065b9cfa36e61f1b9c3d689330218f9597b27a4a8c893c84a6c0)
+    investor 48,250.00 mUSD (paid 47,043.75, received 48,250.00)   contract 0.00
+
+== 10. Done on the fork. Chain 153, block 3056755; nothing reached 153; the live contract on 153 still points at the shared mock

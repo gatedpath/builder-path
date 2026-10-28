@@ -18,7 +18,7 @@ import { ReceptorMock } from "@gatedpath/receptor-mock/ReceptorMock.sol";
 ///                over-18 recipe (recipes/over-18); the AU wholesale recipe is 708.
 ///
 /// Sign with a keystore or hardware wallet; the key never touches this file or the shell:
-///   forge script script/Deploy.s.sol --rpc-url redbelly_testnet --account <keystore-name> --broadcast
+///   forge script script/Deploy.s.sol --rpc-url redbelly_testnet --account <keystore-name> --sender <your-address> --broadcast
 contract Deploy is RedbellyDeployScript {
     function run() external returns (GatedExample example) {
         Preflight memory p = preflight();

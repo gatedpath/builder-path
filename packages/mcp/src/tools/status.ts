@@ -35,7 +35,9 @@ export interface Status {
   next: { step: Step | 'done'; command: string | null; why: string };
 }
 
-const RULES_FORMATS = formats.filter((f) => f !== 'llms' && f !== 'llms-full');
+// The files a scaffold writes (its rules:write script). The llms files are for a site and the
+// SKILL.md folder is opt-in, so none of those three counts as missing here.
+const RULES_FORMATS = formats.filter((f) => f !== 'llms' && f !== 'llms-full' && f !== 'skill');
 
 function layout(project: string): { root: string; contracts: string; scaffold: boolean } {
   if (existsSync(join(project, 'foundry.toml'))) {
@@ -287,7 +289,7 @@ export async function status(args: z.infer<typeof statusInput>): Promise<CallToo
   else if (!deployments[153])
     next = {
       step: 'testnet deploy',
-      command: `${cdContracts}forge script script/Deploy.s.sol --rpc-url redbelly_testnet --account <keystore-name> --broadcast`,
+      command: `${cdContracts}forge script script/Deploy.s.sol --rpc-url redbelly_testnet --account <keystore-name> --sender <your-address> --broadcast`,
       why: "This step signs. It needs a Foundry keystore whose address passes permission.isAllowed on 153 and holds RBNT for the gas; status never signs and won't invent a keystore name. Until you have one, run npm run dev for the local loop.",
     };
   else if (verified !== true)

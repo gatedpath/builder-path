@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# The site publishes /llms.txt and /llms-full.txt for AI crawlers on purpose.
+# Sitemap: added when the site has an address.

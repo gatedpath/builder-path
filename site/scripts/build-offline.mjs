@@ -62,6 +62,19 @@ const editorCss = readFileSync(join(SITE, 'src/offline/rb-editor.css'), 'utf8');
 writeFileSync(join(OUT, 'rb-editor.js'), editorJs);
 writeFileSync(join(OUT, 'rb-editor.css'), editorCss);
 
+// The recordings' Play button. The published site loads it as a module, which a browser refuses
+// from a folder on disk, so here the same two source files are joined into one ordinary script:
+// imports and the word `export` removed, wrapped so nothing leaks, and run when the page is ready.
+const playerJs = ['src/lib/cast-term.js', 'src/lib/cast-player.js']
+  .map((f) => readFileSync(join(SITE, f), 'utf8').replace(/^import .*$/gm, '').replace(/^export /gm, ''))
+  .join('\n');
+writeFileSync(join(OUT, 'rb-cast.js'), `(() => {\n${playerJs}\nmountCasts();\n})();\n`);
+
+// Copy buttons, the same way and for the same reason. Offline this also wires the code blocks'
+// own buttons, whose script is a module that never loads from a folder, so they said nothing.
+const copyJs = readFileSync(join(SITE, 'src/lib/copy.js'), 'utf8').replace(/^export /gm, '');
+writeFileSync(join(OUT, 'rb-copy.js'), '(() => {\n' + copyJs + '\nmountCopy({ codeBlocks: true });\n})();\n');
+
 // ---------------------------------------------------------------- rewrite
 
 function walk(dir, out = []) {
@@ -126,6 +139,8 @@ for (const file of htmlFiles) {
     `<link rel="stylesheet" href="${prefix}rb-editor.css">`,
     page ? `<script>window.RB_PAGE=${JSON.stringify(page)}</script>` : '',
     `<script src="${prefix}rb-editor.js" defer></script>`,
+    `<script src="${prefix}rb-copy.js" defer></script>`,
+    html.includes('class="rb-cast') ? `<script src="${prefix}rb-cast.js" defer></script>` : '',
   ].filter(Boolean).join('\n');
 
   if (html.includes('</head>')) html = html.replace('</head>', `${inject}\n</head>`);
@@ -149,14 +164,24 @@ pages works. Read it exactly as a visitor would.
 EDITING THE WORDS
 -----------------
 
-Every page has an "Edit text" button in the bottom right corner.
+Open any page, then add #edit to the end of the address in the browser's address bar and
+press return. For example:
 
-  1. Press it. The text you can change gets a faint outline.
-  2. Click a paragraph, a heading or a bullet and retype it. Press Escape to undo that one.
-  3. The counter in the bar says how many changes you have made, across all pages.
+    .../Website Offline/identity/index.html#edit
+
+  1. The text you can change gets a faint dashed outline, and a bar appears at the bottom.
+  2. Click a paragraph, a heading or a bullet. A box opens under the page with that text in it.
+     Type in the box and the page changes as you go. Enter finishes; Shift+Enter starts a new
+     line; "Put this text back" undoes that one.
+  3. The counter in the bar says how many changes you have made, across all pages. Your edits
+     follow you from page to page while #edit is on the address, and they are shown in place
+     when you come back.
   4. Press "Save my edits" when you are done. It offers the file to download, and shows the
      text so you can copy it if the download does not work from a folder on disk.
   5. Put that file in the "Website Text Edits" folder beside this one, and tell Claude.
+
+"Exit" in the bar takes #edit off the address; the page then looks exactly like the real site
+again. Without #edit, the only sign of the editor is one line at the foot of each page.
 
 Your edits stay in the browser between visits, so you can stop and come back. They are only
 in this browser though, so save the file before you finish for the day.
@@ -176,7 +201,7 @@ recorded. The words are yours; the facts are not.
 
 About nine in ten blocks can be edited here. The rest are in the text files only: each page's
 summary line (which never appears on the page), a handful of sentences carrying a number the
-page works out as it loads, and the twelve prompt-card summaries on the tutorials page. Nothing
+page works out as it loads, and the prompt-card summaries on the tutorials page. Nothing
 is lost either way, since both roads lead to the same place.
 
 

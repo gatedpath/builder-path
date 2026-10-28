@@ -18,6 +18,7 @@ import { join, dirname, basename, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseMdx, parseAstro, parseData } from './text-lib.mjs';
 import { planFile } from './text-merge.mjs';
+import { chipTooltipLabels, findTooltipUses, placeTooltips, readTooltipKeys } from './text-tooltips.mjs';
 
 const SITE = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const ROOT = resolve(SITE, '..');
@@ -36,8 +37,8 @@ const KIND_LABEL = {
 
 /** The pages, in the order they appear in the site's sidebar, with the names she will recognise. */
 const PAGES = [
-  { slug: 'front-page', url: '/', title: 'Front page', sources: ['src/components/Landing.astro', 'src/components/TwoSpeed.astro'] },
-  { slug: 'start', url: '/start/', title: 'Start: the golden path', sources: ['src/content/docs/start.mdx', 'src/data/tips.ts'] },
+  { slug: 'front-page', url: '/', title: 'Front page', sources: ['src/components/Landing.astro', 'src/components/TwoSpeed.astro', 'src/components/Evidence.astro'] },
+  { slug: 'start', url: '/start/', title: 'Start: the golden path', sources: ['src/content/docs/start.mdx'] },
   { slug: 'agents', url: '/agents/', title: 'Bring your own agent', sources: ['src/content/docs/agents.mdx'] },
   { slug: 'tools', url: '/tools/', title: 'Tools', sources: ['src/content/docs/tools.mdx', 'src/data/tools.ts'] },
   { slug: 'identity', url: '/identity/', title: 'Identity for builders', sources: ['src/content/docs/identity.mdx'] },
@@ -72,6 +73,10 @@ const PAGES = [
   { slug: 'project-4-break-it-on-purpose', url: '/tutorials/break-it-on-purpose/', title: 'Project 4: Break it on purpose', sources: ['src/content/docs/tutorials/break-it-on-purpose.mdx'] },
   // Added 18 September 2026, at the end as always.
   { slug: 'project-5-tokenised-bond', url: '/tutorials/tokenised-bond/', title: 'Project 5: Tokenised bond', sources: ['src/content/docs/tutorials/tokenised-bond.mdx'] },
+  // Added 21 September 2026, at the end as always.
+  { slug: 'wallets', url: '/wallets/', title: 'A developer wallet is not a throwaway', sources: ['src/content/docs/wallets.mdx'] },
+  { slug: 'teams', url: '/teams/', title: 'For a team that ships', sources: ['src/content/docs/teams.mdx'] },
+  { slug: 'fees', url: '/fees/', title: 'What it costs', sources: ['src/content/docs/fees.mdx', 'src/components/LiveFees.astro'] },
 ];
 
 function parseSource(rel) {
@@ -97,6 +102,19 @@ function wrap(text, width = 92) {
   return out.join('\n');
 }
 
+// Tooltips: written once in src/data/tips.ts, handed to her in the file of the page each one is on
+// (scripts/text-tooltips.mjs says why). key -> its block, as parseData reads it.
+const TIPS_FILE = 'src/data/tips.ts';
+const TOOLTIP_DIR = 'Tooltips';
+const tipBlocks = new Map();
+if (existsSync(join(SITE, TIPS_FILE))) {
+  const lineOf = readTooltipKeys(readFileSync(join(SITE, TIPS_FILE), 'utf8'));
+  const byLine = new Map(parseData(join(SITE, TIPS_FILE), SITE).map((b) => [b.startLine, b]));
+  for (const [key, line] of lineOf) if (byLine.has(line)) tipBlocks.set(key, byLine.get(line));
+}
+const tipPlaced = new Map();      // key -> title of the page that carries it
+const tipAlsoOn = new Map();      // key -> titles of other pages that show it too
+
 const manifest = { generated: new Date().toISOString().slice(0, 10), pages: [] };
 mkdirSync(OUT, { recursive: true });
 
@@ -110,26 +128,45 @@ if (existsSync(join(OUT, 'manifest.json'))) {
 
 const bar = '='.repeat(88);
 
-function render(page, n, blocks) {
+// A project card is several short fields; "DESCRIPTION" on all of them told her nothing.
+const CARD_FIELD_LABEL = {
+  outcome: 'PROJECT CARD: WHAT IT IS',
+  why: 'PROJECT CARD: WHY THIS NETWORK',
+  who: 'PROJECT CARD: WHO TRANSACTS  (describe, never promise a number)',
+  learn: 'PROJECT CARD: WHAT YOU LEARN',
+};
+
+function labelOf(b) {
+  if (!b.label && b.kind === 'dataField' && b.file?.endsWith('src/data/cards.ts') && CARD_FIELD_LABEL[b.field]) return CARD_FIELD_LABEL[b.field];
+  if (b.tipKey && tipAlsoOn.has(b.tipKey)) return `${b.label}  Also shown on: ${tipAlsoOn.get(b.tipKey).join(', ')}.`;
+  return b.label ?? KIND_LABEL[b.kind] ?? b.kind.toUpperCase();
+}
+
+function render(page, n, blocks, opts = {}) {
   const lines = [];
   lines.push(bar);
-  lines.push(`  ${page.title.toUpperCase()}`);
-  lines.push(`  Page ${n} of ${PAGES.length}`);
+  lines.push(opts.tooltips ? `  TOOLTIPS ON: ${page.title.toUpperCase()}` : `  ${page.title.toUpperCase()}`);
+  lines.push(`  Page ${n} of ${PAGES.length}${opts.tooltips ? `   (the page's own words are in ${String(n).padStart(2, '0')}-${page.slug}.txt, one folder up)` : ''}`);
   lines.push(bar);
   lines.push('');
+  if (opts.tooltips) {
+    lines.push('  A tooltip is the small note that appears when a reader points at a pill or a chip.');
+    lines.push('  Each label below says which one it hangs on, in the order they come on the page.');
+    lines.push('');
+  }
   lines.push('  Edit the words under each marker. Keep the markers on their own lines.');
   lines.push('  Leave anything inside curly braces { } exactly as it is: those are live numbers.');
   lines.push('  Technical words (commands, addresses, page names) must survive word for word.');
-  lines.push('  README.txt in this folder has the full rules and what happens next.');
+  lines.push(opts.tooltips ? '  README.txt, one folder up, has the full rules and what happens next.' : '  README.txt in this folder has the full rules and what happens next.');
   lines.push('');
   for (const b of blocks) {
     lines.push('');
-    lines.push(`[${b.marker}]  ${KIND_LABEL[b.kind] ?? b.kind.toUpperCase()}`);
+    lines.push(`[${b.marker}]  ${labelOf(b)}`);
     lines.push(wrap(b.text));
   }
   lines.push('');
   lines.push(bar);
-  lines.push(`  End of ${page.title}. ${blocks.length} blocks.`);
+  lines.push(opts.tooltips ? `  End of the tooltips on ${page.title}. ${blocks.length} tooltips.` : `  End of ${page.title}. ${blocks.length} blocks.`);
   lines.push(bar);
   lines.push('');
   return lines.join('\n');
@@ -142,23 +179,71 @@ PAGES.forEach((page, pageIndex) => {
   const n = pageIndex + 1;
   const blocks = [];
   for (const rel of page.sources) {
-    for (const b of parseSource(rel)) blocks.push(b);
+    const own = parseSource(rel);
+    const abs = join(SITE, rel);
+    if (tipBlocks.size && existsSync(abs) && /\.(mdx|md|astro)$/.test(rel)) {
+      const placedHere = placeTooltips({ blocks: own, uses: findTooltipUses(readFileSync(abs, 'utf8')), tipBlocks, placed: tipPlaced, pageTitle: page.title });
+      for (const { key, pageTitle } of placedHere.alsoOn) tipAlsoOn.set(key, [...(tipAlsoOn.get(key) ?? []), pageTitle]);
+      for (const b of placedHere.blocks) blocks.push(b);
+    } else if (rel === 'src/data/cards.ts' && existsSync(abs)) {
+      // The chips' tooltips belong to this page; say which chip each one is on.
+      const chipLabels = chipTooltipLabels(readFileSync(abs, 'utf8'));
+      for (const b of own) blocks.push(chipLabels.has(b.startLine) ? { ...b, label: chipLabels.get(b.startLine), tooltip: true } : b);
+    } else {
+      for (const b of own) blocks.push(b);
+    }
   }
   if (!blocks.length) { console.warn(`  no prose found for ${page.slug}`); return; }
-  const pageBlocks = blocks.map((b, k) => ({ ...b, marker: `${n}.${k + 1}` }));
-  const name = `${String(n).padStart(2, '0')}-${page.slug}.txt`;
-  const path = join(OUT, name);
-  const plan = existsSync(path) && !FORCE
-    ? planFile({ oldBlocks: previous.get(name) ?? null, newBlocks: pageBlocks, onDisk: readFileSync(path, 'utf8') })
-    : { action: 'write', blocks: pageBlocks.map((b) => ({ ...b, sourceText: b.text })), carried: [], conflicts: [], unknown: [] };
-  // With no earlier manifest the old rule is all there is: a file that differs is left alone.
-  if (plan.action === 'keep' && !previous.has(name) && readFileSync(path, 'utf8') === render(page, n, pageBlocks)) plan.action = 'current';
-  plans.push({ page, n, name, path, pageBlocks, plan });
+  // Her request of 20 September 2026: tooltips have a folder of their own, one file per page, with
+  // the page in the file's name. The page's words are numbered first and its tooltips after them,
+  // so the page file has no gaps and the tooltip file carries on from it. Markers stay [page.block]
+  // and unique, which is all the writer-back and the offline editor go by.
+  const isTooltip = (b) => Boolean(b.tooltip || b.tipKey);
+  const ordered = [...blocks.filter((b) => !isTooltip(b)), ...blocks.filter(isTooltip)];
+  const pageBlocks = ordered.map((b, k) => ({ ...b, tooltip: isTooltip(b) || undefined, marker: `${n}.${k + 1}` }));
+  const stem = `${String(n).padStart(2, '0')}-${page.slug}`;
+  const name = `${stem}.txt`;
+  const before = previous.get(name) ?? null;
+
+  const planFor = (file, path, newBlocks, oldBlocks, opts) => {
+    const plan = existsSync(path) && !FORCE
+      ? planFile({ oldBlocks, newBlocks, onDisk: readFileSync(path, 'utf8') })
+      : { action: 'write', blocks: newBlocks.map((b) => ({ ...b, sourceText: b.text })), carried: [], conflicts: [], unknown: [] };
+    // With no earlier manifest the old rule is all there is: a file that differs is left alone.
+    if (plan.action === 'keep' && !oldBlocks && readFileSync(path, 'utf8') === render(page, n, newBlocks, opts)) plan.action = 'current';
+    return { page, n, name: file, path, plan, opts };
+  };
+
+  // Once the manifest knows which blocks are tooltips, the page file is judged against the page's
+  // own words alone. On the first run after the move it does not know yet, and the page file is
+  // judged against everything she was last given, so the tooltips are seen to leave and none of
+  // their markers looks unknown.
+  const prose = pageBlocks.filter((b) => !b.tooltip);
+  const alreadySplit = Boolean(before?.some((b) => b.tooltip));
+  plans.push({ ...planFor(name, join(OUT, name), prose, alreadySplit ? before.filter((b) => !b.tooltip) : before, {}), pageBlocks, tooltipsFile: null });
+
+  const tips = pageBlocks.filter((b) => b.tooltip);
+  if (tips.length) {
+    const tipName = `${TOOLTIP_DIR}/${stem}-tooltips.txt`;
+    const entry = planFor(tipName, join(OUT, tipName), tips, before ? before.filter((b) => b.tooltip) : null, { tooltips: true });
+    // Tooltips that were in the page file until now: there is no earlier tooltip file to judge by.
+    if (!existsSync(join(OUT, tipName))) entry.plan.action = 'write';
+    plans.push(entry);
+    plans.at(-2).tooltipsFile = tipName;
+  }
 });
+
+const unplaced = [...tipBlocks.keys()].filter((k) => !tipPlaced.has(k));
+if (unplaced.length) console.warn(`  tooltip(s) in ${TIPS_FILE} that no page shows, so they are in no text file: ${unplaced.join(', ')}`);
 
 // An export from the offline site, or any other loose .txt, carries markers issued against the
 // previous pages. If the pages have moved, those markers may now name different paragraphs.
 const generated = new Set(plans.map((p) => p.name));
+// A tooltip file for a page that no longer has tooltips would be read back as edits to nothing.
+if (existsSync(join(OUT, TOOLTIP_DIR))) {
+  const stale = readdirSync(join(OUT, TOOLTIP_DIR)).filter((f) => f.endsWith('.txt') && !generated.has(`${TOOLTIP_DIR}/${f}`));
+  if (stale.length) console.warn(`  in ${TOOLTIP_DIR}/, no longer matched by any page (move or delete): ${stale.join(', ')}`);
+}
 const loose = readdirSync(OUT).filter((f) => f.endsWith('.txt') && f !== 'README.txt' && !generated.has(f));
 const pagesMoved = plans.some((p) => p.plan.action === 'refresh' || p.plan.action === 'merge');
 if (loose.length && pagesMoved && !FORCE) {
@@ -173,12 +258,13 @@ let written = 0;
 let skipped = 0;
 let blockTotal = 0;
 
-for (const { page, n, name, path, pageBlocks, plan } of plans) {
+mkdirSync(join(OUT, TOOLTIP_DIR), { recursive: true });
+for (const { page, n, name, path, pageBlocks, plan, opts, tooltipsFile } of plans) {
   if (plan.action === 'keep') {
     console.log(`  kept your edits: ${name}  (${plan.carried.length || 'some'} block(s); use --force to discard them)`);
     skipped += 1;
   } else {
-    writeFileSync(path, render(page, n, plan.blocks));
+    writeFileSync(path, render(page, n, plan.blocks, opts));
     written += 1;
     if (plan.action === 'refresh') console.log(`  refreshed from the page: ${name}  (none of your edits were in it)`);
     if (plan.action === 'merge') {
@@ -203,8 +289,10 @@ for (const { page, n, name, path, pageBlocks, plan } of plans) {
 
   // The manifest always records the page's own text; her wording lives only in her file, and the
   // difference between the two is how the writer-back knows a block is hers.
-  manifest.pages.push({ n, slug: page.slug, url: page.url, title: page.title, file: name, sources: page.sources, blocks: pageBlocks });
-  blockTotal += pageBlocks.length;
+  if (pageBlocks) {
+    manifest.pages.push({ n, slug: page.slug, url: page.url, title: page.title, file: name, tooltipsFile, sources: page.sources, blocks: pageBlocks });
+    blockTotal += pageBlocks.length;
+  }
 }
 
 writeFileSync(join(OUT, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
@@ -229,6 +317,24 @@ block, so your wording can be put back in the right place afterwards.
 
 Rewrite the words under the marker. You can use as many lines as you like; the line
 breaks do not matter, only the words.
+
+TOOLTIPS
+--------
+
+A tooltip is the small note that appears when a reader points at a pill or a chip. They have a
+folder of their own, Tooltips, with one file for each page that has any, named after the page:
+
+    Tooltips/06-review-tooltips.txt      the tooltips on the page in 06-review.txt
+
+Inside, each tooltip sits under a label that says what it hangs on, in the order they come on
+the page:
+
+    [6.31]  TOOLTIP  (appears when a reader points at the pill "No report for a real network yet")
+    No report exists for a real network yet. The first one is written ...
+
+Edit it like any other block. The words in quotes are the pill itself, which you will find in
+the page's own file. If a tooltip is ever used on two pages it is in the first page's file
+only, and its label names the other page, so there is never a second copy to keep in step.
 
 
 THE FOUR RULES
@@ -294,9 +400,10 @@ THE OTHER WAY TO EDIT
 ---------------------
 
 "Website Offline" beside this folder is the whole site as files you can open in a browser
-with no internet. Every page there has an "Edit text" button in the corner. Turn it on, click
-a paragraph, retype it, and press "Save my edits". It downloads a file in the same format as
-these, which goes in this folder and is applied the same way. Use whichever suits the moment:
+with no internet. Open a page there, add #edit to the end of its address, and the text you can
+change gets a dashed outline; click any of it and a box opens under the page to type in. Press
+"Save my edits" when you are done. It downloads a file in the same format as these, which goes
+in this folder and is applied the same way. Use whichever suits the moment:
 the offline site to see the words in place, these files to work through a page end to end.
 
 About nine in ten blocks can be edited in the browser. Three kinds cannot, and they are here
@@ -305,7 +412,7 @@ in the text files only:
   - the PAGE SUMMARY at the top of each file, which is never printed on the page itself;
   - a handful of sentences that carry a number the page works out as it loads, such as the
     measured window on the status page;
-  - the twelve prompt-card summaries on the tutorials page, which the page prints behind a
+  - the prompt-card summaries on the tutorials page, which the page prints behind a
     fixed label.
 
 
